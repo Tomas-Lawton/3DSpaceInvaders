@@ -1,22 +1,21 @@
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 let scene, camera, renderer, currentModel, controls;
 const models = {};
 
-const canvas = document.getElementById('ship-hanger');
-
+const canvas = document.getElementById("ship-hanger");
 
 export const modelPaths = [
-  { path: 'public/ships/ship_0/', rotation: { x: 0, y: 0, z: 0 } },
-  { path: 'public/ships/ship_1/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-  { path: 'public/ships/ship_2/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-  { path: 'public/ships/ship_3/', rotation: { x: 0, y: -Math.PI / 2, z: 0 } },
-  { path: 'public/ships/ship_4/', rotation: { x: 0, y: 0, z: 0 } },
-  { path: 'public/ships/ship_5/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-  { path: 'public/ships/ship_6/', rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-  { path: 'public/ships/ship_7/', rotation: { x: 0, y: 2 * Math.PI, z: 0 } },
+  { path: "public/ships/ship_0/", rotation: { x: 0, y: 0, z: 0 } },
+  { path: "public/ships/ship_1/", rotation: { x: 0, y: Math.PI / 2, z: 0 } },
+  { path: "public/ships/ship_2/", rotation: { x: 0, y: Math.PI / 2, z: 0 } },
+  { path: "public/ships/ship_3/", rotation: { x: 0, y: -Math.PI / 2, z: 0 } },
+  { path: "public/ships/ship_4/", rotation: { x: 0, y: 0, z: 0 } },
+  { path: "public/ships/ship_5/", rotation: { x: 0, y: Math.PI / 2, z: 0 } },
+  { path: "public/ships/ship_6/", rotation: { x: 0, y: Math.PI / 2, z: 0 } },
+  { path: "public/ships/ship_7/", rotation: { x: 0, y: 2 * Math.PI, z: 0 } },
 ];
 
 export function initHUD() {
@@ -30,24 +29,22 @@ export function initHUD() {
   renderer.setClearColor(0x87ceeb, 0); // Make the background transparent
 
   const ambientLight = new THREE.AmbientLight(0xffffff);
-// // (0, 255, 238, 0.55)
-// const ambientLight = new THREE.AmbientLight(
-//   new THREE.Color(0x00ffec), // RGB (0, 255, 238) as a hex value
-//   0.55 // Intensity (brightness)
-// );
-new THREE.Color(0x00ffec), // RGB (0, 255, 238) as a hex value
-0.55
+  // // (0, 255, 238, 0.55)
+  // const ambientLight = new THREE.AmbientLight(
+  //   new THREE.Color(0x00ffec), // RGB (0, 255, 238) as a hex value
+  //   0.55 // Intensity (brightness)
+  // );
+  new THREE.Color(0x00ffec), // RGB (0, 255, 238) as a hex value
+    0.55;
 
   const light = new THREE.DirectionalLight(0xffffff, 10);
   light.position.set(5, 10, 7.5);
   scene.add(light);
   scene.add(ambientLight);
 
-
   const light2 = new THREE.DirectionalLight(new THREE.Color(0x00ffec), 0.55);
   light2.position.set(-5, 10, -7.5);
   scene.add(light2);
-
 
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true; // Smooth orbiting
@@ -57,7 +54,7 @@ new THREE.Color(0x00ffec), // RGB (0, 255, 238) as a hex value
   controls.autoRotate = true;
 
   loadShipModels().then(() => {
-    switchModel('ship-1'); // Display the default model (ship_0)
+    switchModel("ship-1"); // Display the default model (ship_0)
   });
 
   animate();
@@ -72,35 +69,34 @@ function animate() {
 async function loadShipModels() {
   const loader = new GLTFLoader();
 
-// FACE FORWARD
-// { path: 'public/ships/ship_0/', rotation: { x: 0, y: (0) + 1.5 * Math.PI, z: 0 } },
-// { path: 'public/ships/ship_1/', rotation: { x: 0, y: (Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
-// { path: 'public/ships/ship_2/', rotation: { x: 0, y:( Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
-// { path: 'public/ships/ship_3/', rotation: { x: 0, y: (-Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
-// { path: 'public/ships/ship_4/', rotation: { x: 0, y: (0) + 1.5 * Math.PI, z: 0 } },
-// { path: 'public/ships/ship_5/', rotation: { x: 0, y: (Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
-// { path: 'public/ships/ship_6/', rotation: { x: 0, y: (Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
-// { path: 'public/ships/ship_7/', rotation: { x: 0, y: (2 * Math.PI), z: 0 } },
-
+  // FACE FORWARD
+  // { path: 'public/ships/ship_0/', rotation: { x: 0, y: (0) + 1.5 * Math.PI, z: 0 } },
+  // { path: 'public/ships/ship_1/', rotation: { x: 0, y: (Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
+  // { path: 'public/ships/ship_2/', rotation: { x: 0, y:( Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
+  // { path: 'public/ships/ship_3/', rotation: { x: 0, y: (-Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
+  // { path: 'public/ships/ship_4/', rotation: { x: 0, y: (0) + 1.5 * Math.PI, z: 0 } },
+  // { path: 'public/ships/ship_5/', rotation: { x: 0, y: (Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
+  // { path: 'public/ships/ship_6/', rotation: { x: 0, y: (Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
+  // { path: 'public/ships/ship_7/', rotation: { x: 0, y: (2 * Math.PI), z: 0 } },
 
   try {
     const modelPromises = modelPaths.map(async (modelData, index) => {
-      const gltf = await loader.setPath(modelData.path).loadAsync('scene.gltf');
+      const gltf = await loader.setPath(modelData.path).loadAsync("scene.gltf");
       const model = gltf.scene.clone();
       models[`ship-${index + 1}`] = { model, rotation: modelData.rotation };
     });
 
     await Promise.all(modelPromises);
   } catch (error) {
-    console.error('Error loading models:', error);
+    console.error("Error loading models:", error);
   }
 }
 
-document.getElementById('ships-bar').addEventListener('click', (e) => {
-  console.log("Click detected on: ", e.target);  // Log the clicked element
-  if (e.target.classList.contains('ship-option')) {
+document.getElementById("ships-bar").addEventListener("click", (e) => {
+  console.log("Click detected on: ", e.target); // Log the clicked element
+  if (e.target.classList.contains("ship-option")) {
     const shipId = e.target.id;
-    console.log("Switching to model: ", shipId);  // Log the shipId being clicked
+    console.log("Switching to model: ", shipId); // Log the shipId being clicked
     switchModel(shipId);
   }
 });
@@ -115,13 +111,17 @@ function switchModel(shipId) {
   }
 
   currentModel = models[shipId];
-  
+
   if (!currentModel.isNormalized) {
     normalizeModelSize(currentModel.model, 55);
     normalizeModelPosition(currentModel.model);
     currentModel.isNormalized = true; // Mark this model as normalized
   }
-  currentModel.model.rotation.set(currentModel.rotation.x, currentModel.rotation.y, currentModel.rotation.z);
+  currentModel.model.rotation.set(
+    currentModel.rotation.x,
+    currentModel.rotation.y,
+    currentModel.rotation.z
+  );
   scene.add(currentModel.model);
 
   previousModelId = shipId;
@@ -135,7 +135,11 @@ export function normalizeModelSize(model, targetSize = 1) {
   const scaleFactor = targetSize / maxDimension;
 
   // Only scale if the current scale is not already the target scale
-  if (Math.abs(model.scale.x - scaleFactor) > 0.01 || Math.abs(model.scale.y - scaleFactor) > 0.01 || Math.abs(model.scale.z - scaleFactor) > 0.01) {
+  if (
+    Math.abs(model.scale.x - scaleFactor) > 0.01 ||
+    Math.abs(model.scale.y - scaleFactor) > 0.01 ||
+    Math.abs(model.scale.z - scaleFactor) > 0.01
+  ) {
     model.scale.set(scaleFactor, scaleFactor, scaleFactor);
   }
 }
@@ -159,7 +163,10 @@ function addGround() {
 
 function addBackground() {
   const geometry = new THREE.BoxGeometry(1000, 1000, 1000);
-  const material = new THREE.MeshBasicMaterial({ color: 0x87ceeb, side: THREE.BackSide });
+  const material = new THREE.MeshBasicMaterial({
+    color: 0x87ceeb,
+    side: THREE.BackSide,
+  });
   const background = new THREE.Mesh(geometry, material);
   scene.add(background);
 }

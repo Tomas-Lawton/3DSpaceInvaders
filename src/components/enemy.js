@@ -28,6 +28,7 @@ export const enemy = (() => {
           this.enemies.push(enemyObject);
         });
       }
+      console.log("Created enmies: ", numEnemies)
     }
 
     createEnemy(aroundPoint, callback) {
@@ -44,7 +45,7 @@ export const enemy = (() => {
           console.log(x, y, z);
           enemyObject.position.set(x, y, z);
 
-          // Add variation within the group itself for smaller offsets
+          // Add position variation within the group itself for smaller offsets
           enemyObject.position.add(
             new THREE.Vector3(
               (Math.random() - 0.5) * 50,
@@ -58,8 +59,9 @@ export const enemy = (() => {
             (child) =>
               child.isMesh && (child.castShadow = child.receiveShadow = true)
           );
-          loadedModel.rotation.y = 1.5 * Math.PI;
-          loadedModel.scale.set(0.1, 0.1, 0.1);
+          // loadedModel.rotation.y = 1.5 * Math.PI;
+          loadedModel.rotation.y = (2 * (Math.PI / 2) + Math.PI);
+          loadedModel.scale.set(0.5, 0.5, 0.5);
           enemyObject.add(loadedModel);
 
           const glowGeometry = new THREE.SphereGeometry(0.3, 8, 8);
@@ -74,7 +76,8 @@ export const enemy = (() => {
           enemyObject.add(glowPoint);
 
           const redLight = new THREE.PointLight(0xff0000, 15, 200);
-          redLight.position.set(0, 1, -1);
+          redLight.intensity = 50;
+          redLight.position.set(0, 1, 0);
           enemyObject.add(redLight);
 
           enemyObject.rotation.y = Math.PI;
@@ -133,6 +136,8 @@ export const enemy = (() => {
           alternateTarget = this.target
         } 
         const phaseSpeed = 0.004; // Adjust for smoothness
+        // const phaseSpeed = 0.001; // Adjust for smoothness
+
 
         // Determine which target to aim at (player or alternate target)
         const playerDistance = enemy.position.distanceTo(playerCurrentPosition);
@@ -166,7 +171,7 @@ export const enemy = (() => {
 
     animateForwardMovement(enemy) {
       if (enemy) {
-        let speed = 0.6;
+        let speed = 0.7;
         let direction = new THREE.Vector3();
         enemy.getWorldDirection(direction); // Get the direction the ship is facing
         direction.multiplyScalar(speed);

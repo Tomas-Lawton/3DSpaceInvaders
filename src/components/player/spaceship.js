@@ -4,8 +4,12 @@ import { third_person_camera } from "../../scene/camera.js";
 import { mapValue } from "../../utils/utils.js"; // Assuming you have a utility function for mapping values
 import { selectShip, progressContainer, progressText } from "../dom.js";
 import { PHYSICS_CONSTANTS } from "../../utils/constants.js";
-import { cursor, incrementOre } from "../dom.js";
-import { modelPaths, normalizeModelSize, normalizeModelPosition} from "../../hud/hud.js"
+import { incrementOre } from "../dom.js";
+import {
+  modelPaths,
+  normalizeModelSize,
+  normalizeModelPosition,
+} from "../../hud/hud.js";
 
 export const spaceship = (() => {
   class Spaceship {
@@ -25,11 +29,15 @@ export const spaceship = (() => {
       this.thirdPersonCamera = null; // follow cam
 
       this.velocityRectangle = new THREE.Mesh(
-        new THREE.BoxGeometry(3, 3, 3),
+        new THREE.BoxGeometry(.15, .15, .15),
+        // new THREE.CylinderGeometry(.15, .15, .15),
+
         new THREE.MeshStandardMaterial({
+          emissiveIntensity: 2.5,
           emissive: 0xc87dff,
-          emissiveIntensity: 3,
-          color: 0x9400ff,
+          color: 0xc87dff,
+          // color: 0x00ffee,
+          // emissive: 0x00ffee,
           side: THREE.DoubleSide,
         })
       );
@@ -48,7 +56,7 @@ export const spaceship = (() => {
       this.setHealth(health, true);
       this.damageAmount = 26;
 
-      selectShip.addEventListener("click", () => this.setSpaceshipModel(2))
+      selectShip.addEventListener("click", () => this.setSpaceshipModel(2));
 
       return this;
     }
@@ -147,9 +155,9 @@ export const spaceship = (() => {
 
     setSpaceshipModel(shipId) {
       if (!modelPaths[shipId]) return;
-    
+
       const selectedModel = modelPaths[shipId];
-    
+
       // Remove previous model if it exists
       if (this.mesh) {
         this.scene.remove(this.mesh);
@@ -165,62 +173,68 @@ export const spaceship = (() => {
         });
         this.mesh.clear();
       }
-    
+
       this.loader.setPath(selectedModel.path).load(
         "scene.gltf",
         (gltf) => {
           this.mesh = new THREE.Group();
           const tempObjectGroup = new THREE.Group();
           const loadedModel = gltf.scene;
-    
+
           loadedModel.traverse((child) => {
             if (child.isMesh) {
               child.castShadow = true;
               child.receiveShadow = true;
             }
           });
-    
+
           loadedModel.rotation.set(
             selectedModel.rotation.x,
             selectedModel.rotation.y - Math.PI / 2,
             selectedModel.rotation.z
           );
-    
+
           // Normalize model if needed
           if (!selectedModel.isNormalized) {
             normalizeModelSize(loadedModel, 55);
-            normalizeModelPosition(loadedModel);
+            // normalizeModelPosition(loadedModel);
             selectedModel.isNormalized = true;
           }
-    
+
           tempObjectGroup.add(loadedModel);
-    
+
           // Add lights
           const ambientLight = new THREE.PointLight(0x660099, 1, 50);
           ambientLight.position.set(0, 5, 0);
           tempObjectGroup.add(ambientLight);
-    
-          const spotLight = new THREE.SpotLight(0xff6600, 3, 5, Math.PI * 1.1, 0.2);
+
+          const spotLight = new THREE.SpotLight(
+            0xff6600,
+            3,
+            5,
+            Math.PI * 1.1,
+            0.2
+          );
           spotLight.position.copy(tempObjectGroup.position);
           tempObjectGroup.add(spotLight);
-    
-          // Add boosters (velocity rectangle)
-          this.velocityRectangle.position.copy(tempObjectGroup.position);
+
+          // this.velocityRectangle.position.copy(tempObjectGroup.position);
+          // this.velocityRectangle.position.set(0, 0, 30);
           tempObjectGroup.add(this.velocityRectangle);
-    
+
           this.mesh.add(tempObjectGroup);
           this.mesh.rotation.y = Math.PI;
-    
+
           this.scene.add(this.mesh);
-    
+
           // Set up the third-person camera
           this.thirdPersonCamera = new third_person_camera.ThirdPersonCamera({
             camera: this.camera,
             target: this.mesh,
           });
-    
+
           this.updateSpaceshipPosition();
-    
+
           // Hide loading screen
           progressContainer.style.display = "none";
         },
@@ -264,7 +278,7 @@ export const spaceship = (() => {
       laserBeam.lookAt(laserPosition.add(direction));
       this.scene.add(laserBeam);
 
-      const velocity = direction.multiplyScalar(22);
+      const velocity = direction.normalize().multiplyScalar(30);
       if (this.lightSound) {
         this.lightSound.currentTime = 0;
         this.lightSound.volume = 0.25;
@@ -280,7 +294,7 @@ export const spaceship = (() => {
         0,
         maxVelocity,
         0,
-        -150
+        -80
       );
       this.velocityRectangle.geometry.dispose(); // Dispose of the old geometry
       this.velocityRectangle.geometry = new THREE.BoxGeometry(
@@ -288,13 +302,13 @@ export const spaceship = (() => {
         3,
         rectangleLength
       ); // Adjust width and height as needed
-      this.velocityRectangle.position.z = rectangleLength / 2;
+      this.velocityRectangle.position.z = rectangleLength / 2 - 40;
     }
 
     checkCollision(mainObj, colisionObj) {
       const laserBox = new THREE.Box3().setFromObject(mainObj);
-      const asteroidBox = new THREE.Box3().setFromObject(colisionObj);
-      if (laserBox.intersectsBox(asteroidBox)) {
+      const colisionBox = new THREE.Box3().setFromObject(colisionObj);
+      if (laserBox.intersectsBox(colisionBox)) {
         console.log("Collision");
         return true; // Collision detected
       }
@@ -315,43 +329,48 @@ export const spaceship = (() => {
           }
 
           // check asteroid collisions
-          if (asteroidLoader.asteroidSystem) {
-            for (const system of asteroidLoader.asteroidSystem) {
-              system.children.forEach((asteroid) => {
-                if (asteroid instanceof THREE.Light) {
-                  return;
-                }
-                if (this.checkCollision(laserBeam, asteroid)) {
-                  this.scene.remove(laserBeam);
-                  this.activeLasers.splice(index, 1);
-                  asteroid.health -= this.damageAmount;
-                  if (this.softBoom) {
-                    this.softBoom.currentTime = 0;
-                    this.softBoom.volume = 0.5;
-                    this.softBoom.play();
+          if (asteroidLoader) {
+            if (asteroidLoader.asteroidSystem) {
+              for (const system of asteroidLoader.asteroidSystem) {
+                system.children.forEach((asteroid) => {
+                  if (asteroid instanceof THREE.Light) {
+                    return;
                   }
-                  this.startRumbleEffect(asteroid);
-                  asteroid.velocity.add(velocity.clone().multiplyScalar(0.002)); //smack it away a bit
+                  if (this.checkCollision(laserBeam, asteroid)) {
+                    this.scene.remove(laserBeam);
+                    this.activeLasers.splice(index, 1);
+                    asteroid.health -= this.damageAmount;
+                    if (this.softBoom) {
+                      this.softBoom.currentTime = 0;
+                      this.softBoom.volume = 0.5;
+                      this.softBoom.play();
+                    }
+                    this.startRumbleEffect(asteroid);
+                    asteroid.velocity.add(
+                      velocity.clone().multiplyScalar(0.002)
+                    ); //smack it away a bit
 
-                  this.showHealthBar(asteroid);
+                    this.showHealthBar(asteroid);
 
-                  if (asteroid.health <= 0) {
-                    this.removeHealthBar(asteroid);
-                    asteroid.parent.remove(asteroid);
-                    this.playSound();
-                    incrementOre(asteroid.type);
+                    if (asteroid.health <= 0) {
+                      this.removeHealthBar(asteroid);
+                      asteroid.parent.remove(asteroid);
+                      this.playSound();
+                      incrementOre(asteroid.type);
+                    }
+                    return;
                   }
-                  return;
-                }
-              });
+                });
+              }
             }
           }
 
           // check enemy collisions
+          console.log(enemyLoader)
           if (enemyLoader && enemyLoader.enemies) {
             enemyLoader.enemies.forEach((enemy) => {
               if (this.checkCollision(laserBeam, enemy)) {
-                console.log("hit")
+                console.log("hit");
                 this.scene.remove(laserBeam);
                 this.activeLasers.splice(index, 1);
                 enemy.health -= this.damageAmount;
@@ -520,19 +539,20 @@ export const spaceship = (() => {
       if (currentTimestamp - this.lastCollisionCheck < 1000) {
         return;
       }
-
-      if (asteroidLoader.asteroidSystem) {
-        for (const system of asteroidLoader.asteroidSystem) {
-          system.children.forEach((asteroid) => {
-            if (asteroid instanceof THREE.Light) {
-              return;
-            }
-            if (this.checkCollision(this.mesh, asteroid)) {
-              this.userHit(40);
-              this.lastCollisionCheck = currentTimestamp;
-              return;
-            }
-          });
+      if (asteroidLoader) {
+        if (asteroidLoader.asteroidSystem) {
+          for (const system of asteroidLoader.asteroidSystem) {
+            system.children.forEach((asteroid) => {
+              if (asteroid instanceof THREE.Light) {
+                return;
+              }
+              if (this.checkCollision(this.mesh, asteroid)) {
+                this.userHit(40);
+                this.lastCollisionCheck = currentTimestamp;
+                return;
+              }
+            });
+          }
         }
       }
     }
@@ -689,11 +709,19 @@ const centerX = window.innerWidth / 2;
 const centerY = window.innerHeight / 2;
 let mouseX = 0;
 let mouseY = 0;
-function handleMouseMove(event) {
+
+var cursorBig = document.querySelector(".big");
+var cursorSmall = document.querySelector(".small");
+window.addEventListener("mousemove", (event) => {
   mouseX = event.clientX - centerX;
   mouseY = event.clientY - centerY;
-  cursor.style.left = event.pageX + "px";
-  cursor.style.top = event.pageY + "px";
-}
+  // console.log(mouseX, mouseY);
 
-window.addEventListener("mousemove", handleMouseMove);
+  cursorBig.style.transform = `translate3d(calc(${event.clientX}px - 50%), calc(${event.clientY}px - 50%), 0)`;
+  // cursor.style.left = event.pageX + "px";
+  // cursor.style.top = event.pageY + "px";
+
+  cursorSmall.style.left = event.pageX + "px";
+  cursorSmall.style.top = event.pageY + "px";
+  // cursorBig.style.transform = `translate3d(calc(${mouseY}px), calc(${mouseY}px), 0)`;
+});

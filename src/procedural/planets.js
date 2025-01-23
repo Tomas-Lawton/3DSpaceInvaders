@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { getRandomDeepColor } from "../utils/utils.js";
 import { updateCloestPlanet } from "../components/dom.js";
+import { enemy } from "../components/enemy.js";
 
 export const planets = (() => {
   class PlanetLoader {
@@ -11,7 +12,8 @@ export const planets = (() => {
       this.planetLoader = new GLTFLoader();
       this.path = "public/planet/";
       this.defaultHealth = 1000;
-      this.enemiesSpawned = false;
+      this.enemiesSpawned = false; // redundant can use loader only
+      this.enemyLoader = null;
     }
 
     // Method to load planets asynchronously
@@ -112,7 +114,7 @@ export const planets = (() => {
 
 
 
-    animatePlanets(playerCurrentPosition, reposition, createEnemies) {
+    animatePlanets(playerCurrentPosition, reposition) {
       if (this.enemyLoader) {
         this.enemyLoader.animateEnemies(playerCurrentPosition);
       }
@@ -147,7 +149,11 @@ export const planets = (() => {
           if (playerDistance < 500) { //  closer than 1000: spawn enemy group
             if (!this.enemiesSpawned) { 
                 this.enemiesSpawned = true;
-                createEnemies(5, planet.position);
+                const enemyCount = 5
+                const enemyLoader = new enemy.EnemyLoader(this.scene);
+                enemyLoader.initaliseEnemies(enemyCount, planet.position);
+                this.enemyLoader = enemyLoader;
+
                 console.log("DOGFIGHT")
             }
           }

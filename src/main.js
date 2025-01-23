@@ -7,11 +7,17 @@ import { spaceship } from "./components/player/spaceship.js";
 // import { setupGUI } from "./components/gui.js";
 import { entity } from "./utils/entity.js";
 import { initRenderer, initComposer } from "./scene/renderer.js";
-import { updateVelocityBar, updateHealthBar, progressContainer, toggleHUD, updatePlayerPositionUI } from "./components/dom.js";
+import {
+  updateVelocityBar,
+  updateHealthBar,
+  progressContainer,
+  toggleHUD,
+  updatePlayerPositionUI,
+} from "./components/dom.js";
 import { player_input } from "./components/player/player-input.js";
-import { PHYSICS_CONSTANTS } from "./utils/constants.js"
+import { PHYSICS_CONSTANTS } from "./utils/constants.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { initHUD } from "./hud/hud.js"
+import { initHUD } from "./hud/hud.js";
 
 class Game {
   constructor() {
@@ -25,7 +31,12 @@ class Game {
 
   initScene() {
     this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+    this.camera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      1,
+      1000
+    );
     this.renderer = initRenderer();
     this.composer = initComposer(this.renderer, this.scene, this.camera);
 
@@ -60,18 +71,18 @@ class Game {
       this.playerEntity.AddComponent(new player_input.PlayerInput());
       this.playerEntity.InitEntity();
     } else {
-      progressContainer.style.display = 'none';
+      progressContainer.style.display = "none";
     }
 
     // setupGUI({ audioManager: this.audioManager });
-    
+
     this.animate();
   }
 
   setupPauseListener() {
-    window.addEventListener('keydown', (event) => {
-      if (event.key === 'e' || event.key === 'E') {    
-        this.isPaused = !this.isPaused;  // Toggle the pause state
+    window.addEventListener("keydown", (event) => {
+      if (event.key === "e" || event.key === "E") {
+        this.isPaused = !this.isPaused; // Toggle the pause state
         if (this.isPaused) {
           console.log("Game Paused");
         } else {
@@ -104,36 +115,46 @@ class Game {
     this.previousTime = currentTime;
     if (this.playerShip !== undefined && this.playerShip.mesh === null) return; // wait to load
 
-    if (!this.isPaused) {   // Only update if the game is not paused
+    if (!this.isPaused) {
+      // Only update if the game is not paused
       this.Update(timeElapsed);
     }
   }
 
   Update(timeElapsed) {
-
     // get current inputs
     if (this.playerEntity && this.playerEntity.GetComponent("PlayerInput")) {
       this.playerEntity.Update();
       let input = this.playerEntity.Attributes.InputCurrent;
       if (input) {
         // update ship
-        if (this.playerShip && this.world && this.audioManager){
-          this.playerShip.Update(input.forwardAcceleration, input.upwardAcceleration, timeElapsed, this.audioManager, this.world.asteroidLoader, this.world.enemyLoader);
+        if (this.playerShip && this.world && this.audioManager) {
+          this.playerShip.Update(
+            input.forwardAcceleration,
+            input.upwardAcceleration,
+            timeElapsed,
+            this.audioManager,
+            this.world.asteroidLoader,
+            this.world.planetLoader.enemyLoader
+          );
           // update hud
-          updateVelocityBar(this.playerShip.forwardVelocity, PHYSICS_CONSTANTS.maxVelocity);
-          updateHealthBar(this.playerShip.health, this.playerShip.maxHealth)
-          updatePlayerPositionUI(this.playerShip.mesh.position)
+          updateVelocityBar(
+            this.playerShip.forwardVelocity,
+            PHYSICS_CONSTANTS.maxVelocity
+          );
+          updateHealthBar(this.playerShip.health, this.playerShip.maxHealth);
+          updatePlayerPositionUI(this.playerShip.mesh.position);
         }
       }
     }
 
-     // update world
-     if (this.world && this.audioManager){
+    // update world
+    if (this.world && this.audioManager) {
       let playerCurrentPosition;
       if (this.playerShip === undefined) {
-        playerCurrentPosition = new THREE.Vector3(0, 0, 0);  // Just assign the vector itself
+        playerCurrentPosition = new THREE.Vector3(0, 0, 0); // Just assign the vector itself
       } else {
-        playerCurrentPosition = this.playerShip.mesh.position;  // Access the position of the ship's mesh
+        playerCurrentPosition = this.playerShip.mesh.position; // Access the position of the ship's mesh
       }
       this.world.Update(playerCurrentPosition, this.audioManager); // depends on user and sound
     }
@@ -144,15 +165,27 @@ class Game {
 const game = new Game();
 let shootingInterval;
 
+
+
+const cursorBig = document.querySelector('.big');
+const cursorSmall = document.querySelector('.small');
+
 window.addEventListener("mousedown", () => {
-  if (game.playerShip) {
-    game.playerShip.fireLaser();
-    shootingInterval = setInterval(() => {
+  if (!game.isPaused) {
+    if (game.playerShip) {
+      game.playerShip.fireLaser();
+      shootingInterval = setInterval(() => {
         game.playerShip.fireLaser();
-    }, 150);
+      }, 150);
+    }
+
+    cursorBig.classList.add("click");
+    cursorSmall.classList.add("hover__small");
   }
 });
 
 window.addEventListener("mouseup", () => {
-    clearInterval(shootingInterval);
+  clearInterval(shootingInterval);
+  cursorBig.classList.remove("click");
+  cursorSmall.classList.remove("hover__small");
 });

@@ -1,5 +1,15 @@
 @import url("https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Sixtyfour+Convergence&display=swap");
 
+/* OPTIONAL / defining page color variables */
+:root {
+  --black: #000000;
+  --grey1: #a3a3a3;
+  --grey2: #383838;
+  --white: #ffffff;
+  --green: #00FFEE;
+}
+
+
 body {
   background-color: black;
   margin: 0;
@@ -237,15 +247,72 @@ h1 {
   z-index: 10;
 }
 
-#custom-cursor {
+
+
+/* CURSOR */
+* {
+  cursor: none;
+}
+::selection {
+  user-select: none;
+}
+
+/* REQUIRED / besides position, pointer-events, transform, and transition, the rest are customizable styling */
+.small {
+  height: 8px;
+  width: 8px;
+  background-color: var(--green);
+  border-radius: 10px;
+  filter: drop-shadow(0 0 5px var(--green)) drop-shadow(0 0 20px var(--green));
+  
+  position: fixed;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  transition: height 0.2s, width 0.2s;
+}
+
+/* REQUIRED / besides position, pointer-events, transform, and transition, the rest are customizable styling */
+.big {
+  height: 30px;
+  width: 30px;
+  border: 2px solid #00ffeead;
+  border-radius: 100px;
+  filter: drop-shadow(0 0 5px var(--green)) drop-shadow(0 0 20px var(--green));
+  
+  position: fixed;
+  pointer-events: none;
+  transform: translate(calc(-50%), -50%);
+  transition: height 0.5s, width 0.5s, filter 0.5s;
+}
+
+.hover__big {
+  height: 100px;
+  width: 100px;
+  filter: drop-shadow(0 0 5px var(--green)) drop-shadow(0 0 20px var(--green)) drop-shadow(0 0 40px var(--green));
+  
+  transition: height 0.5s, width 0.5s, filter 0.5s;
+}
+
+.hover__small {
+  height: 2px;
+  width: 2px;
+  
+  transition: height 0.2s, width 0.2s;
+}
+
+
+
+/* #custom-cursor {
   width: 35px;
   height: 35px;
   position: absolute;
   pointer-events: none;
   border-radius: 50%;
-  background: url("./sprite/target_big.png") no-repeat center center; /* Use absolute URL */
-  background-size: contain; /* Ensures the image fits within the element */
-}
+  background: url("./sprite/target_big.png") no-repeat center center;
+  background-size: contain; 
+
+  transform: translate(-50%, -50%);
+} */
 
 #ores {
   position: absolute;

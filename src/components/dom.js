@@ -13,7 +13,7 @@ const nearestPlanet = document.getElementById("nearest-planet")
 
 const ores = document.getElementById("ores");
 const [ironElem, goldElem, crystalElem] = ores.children; 
-export const cursor = document.getElementById("custom-cursor");
+// export const cursor = document.getElementById("custom-cursor");
 export const progressContainer = document.getElementById("progress-container")
 export const progressText = document.getElementById("progress")
 export const canvas = document.getElementById('three-canvas');

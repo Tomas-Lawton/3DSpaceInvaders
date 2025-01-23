@@ -3,7 +3,6 @@ import * as THREE from "three";
 import { Ring } from "../procedural/ring.js";
 import { asteroids } from "../procedural/asteroids.js";
 import { planets } from "../procedural/planets.js";
-import { enemy } from "../components/enemy.js";
 
 // import { getRandomDeepColor } from "../utils/utils.js";
 
@@ -20,13 +19,13 @@ export const gameworld = (() => {
         this.scene.add(softLight);
 
         this.createSky();
-        this.createStarfield(2000); //procedural
-        this.createAsteroidSystems(2); //procedural
+        // this.createStarfield(2000); //procedural
+        // this.createAsteroidSystems(2); //procedural
         this.createPlanets(1); //procedural
-        this.createStar();
-        this.addGround();
+        // this.createStar();
+        // this.addGround();
 
-        this.createLoops();
+        // this.createLoops();
       }
     }
     Update(playerCurrentPosition, audioManager) {
@@ -41,7 +40,6 @@ export const gameworld = (() => {
         this.planetLoader.animatePlanets(
           playerCurrentPosition,
           this.repositionObj,
-          this.createEnemies
         );
       }
 
@@ -49,22 +47,17 @@ export const gameworld = (() => {
         this.animateStars(playerCurrentPosition);
       }
 
-      // this.rings.forEach((ring) => {
-      //   ring.update();
-      //   if (ring.checkCollisionWithRing(playerShip.mesh)) {
-      //     console.log("Collision detected! Playing sound.");
-      //     audioManager.playNextSound();
-      //   }
-      // });
+      this.rings.forEach((ring) => {
+        ring.update();
+        // if (ring.checkCollisionWithRing(playerCurrentPosition)) {
+        //   console.log("Collision detected! Playing sound.");
+        //   audioManager.playNextSound();
+        // }
+      });
 
       this.scene.backgroundRotation.y += 0.0001;
     }
 
-    async createEnemies(enemyCount, aroundPoint) {
-      const enemyLoader = new enemy.EnemyLoader(this.scene);
-      enemyLoader.initaliseEnemies(enemyCount, aroundPoint);
-      this.enemyLoader = enemyLoader;
-    }
 
     async createPlanets(planetNum) {
       const planetsLoader = new planets.PlanetLoader(this.scene);
