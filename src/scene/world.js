@@ -23,8 +23,11 @@ export const gameworld = (() => {
         this.createAsteroidSystems(2); //procedural
         this.createPlanets(1); //procedural
         // this.createStar();
-        // this.addGround();
+        this.addGround();
 
+
+        const axesHelper = new THREE.AxesHelper(10);
+        this.scene.add(axesHelper);
         // this.createLoops();
       }
     }

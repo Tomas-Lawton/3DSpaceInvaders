@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
+
 let scene, camera, renderer, currentModel, controls;
 const models = {};
 
@@ -11,8 +12,6 @@ export const modelPaths = [
   { path: "public/ships/ship_0/", rotation: { x: 0, y: 0, z: 0 } },
   { path: "public/ships/ship_1/", rotation: { x: 0, y: Math.PI / 2, z: 0 } },
   { path: "public/ships/ship_2/", rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-  { path: "public/ships/ship_3/", rotation: { x: 0, y: -Math.PI / 2, z: 0 } },
-  { path: "public/ships/ship_4/", rotation: { x: 0, y: 0, z: 0 } },
   { path: "public/ships/ship_5/", rotation: { x: 0, y: Math.PI / 2, z: 0 } },
   { path: "public/ships/ship_6/", rotation: { x: 0, y: Math.PI / 2, z: 0 } },
   { path: "public/ships/ship_7/", rotation: { x: 0, y: 2 * Math.PI, z: 0 } },
@@ -93,10 +92,11 @@ async function loadShipModels() {
 }
 
 document.getElementById("ships-bar").addEventListener("click", (e) => {
-  console.log("Click detected on: ", e.target); // Log the clicked element
+  // console.log("Click detected on: ", e.target); // Log the clicked element
   if (e.target.classList.contains("ship-option")) {
     const shipId = e.target.id;
     console.log("Switching to model: ", shipId); // Log the shipId being clicked
+    document.getElementById("select-ship").dataset.shipId = shipId;
     switchModel(shipId);
   }
 });
@@ -144,12 +144,31 @@ export function normalizeModelSize(model, targetSize = 1) {
   }
 }
 
+// export function normalizeModelPosition(model) {
+//   const bbox = new THREE.Box3().setFromObject(model);
+//   const center = bbox.getCenter(new THREE.Vector3());
+//   // Translate the model to ensure its center is at the origin (0, 0, 0)
+//   model.position.sub(center);
+//   model.position.y = -15;
+// }
+
 export function normalizeModelPosition(model) {
-  const bbox = new THREE.Box3().setFromObject(model);
-  const center = bbox.getCenter(new THREE.Vector3());
-  // Translate the model to ensure its center is at the origin (0, 0, 0)
+  const box = new THREE.Box3().setFromObject(model); // Compute bounding box
+  const center = new THREE.Vector3();
+  box.getCenter(center); // Get the center of the bounding box
+
+  // Adjust the model's position so its center aligns with the origin
   model.position.sub(center);
-  model.position.y = -15;
+
+  // Align the model's bottom to y = 0
+  const size = new THREE.Vector3();
+  box.getSize(size);
+  // model.position.y += size.y / 2; // Move up by half the height to align the bottom
+
+
+  const offsetY = box.min.y; // Get the minimum y value of the bounding box
+  model.position.y -= offsetY; // Adjust the model's position to align the bottom with y = 0
+
 }
 
 function addGround() {

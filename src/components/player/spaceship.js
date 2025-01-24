@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { third_person_camera } from "../../scene/camera.js";
 import { mapValue } from "../../utils/utils.js"; // Assuming you have a utility function for mapping values
-import { selectShip, progressContainer, progressText } from "../dom.js";
+import { progressContainer, progressText } from "../dom.js";
 import { PHYSICS_CONSTANTS } from "../../utils/constants.js";
 import { incrementOre } from "../dom.js";
 import {
@@ -28,19 +28,17 @@ export const spaceship = (() => {
       this.mesh = null; // 3d
       this.thirdPersonCamera = null; // follow cam
 
-      this.velocityRectangle = new THREE.Mesh(
-        new THREE.BoxGeometry(.15, .15, .15),
-        // new THREE.CylinderGeometry(.15, .15, .15),
-
-        new THREE.MeshStandardMaterial({
-          emissiveIntensity: 2.5,
-          emissive: 0xc87dff,
-          color: 0xc87dff,
-          // color: 0x00ffee,
-          // emissive: 0x00ffee,
-          side: THREE.DoubleSide,
-        })
-      );
+      // this.velocityRectangle = new THREE.Mesh(
+      //   new THREE.BoxGeometry(0.15, 0.15, 0.15),
+      //   new THREE.MeshStandardMaterial({
+      //     emissiveIntensity: 2.5,
+      //     emissive: 0xc87dff,
+      //     color: 0xc87dff,
+      //     // color: 0x00ffee,
+      //     // emissive: 0x00ffee,
+      //     side: THREE.DoubleSide,
+      //   })
+      // );
 
       this.lightSound = new Audio("public/audio/pew.mp3");
       this.boomSound = new Audio("public/audio/boom.mp3");
@@ -56,7 +54,14 @@ export const spaceship = (() => {
       this.setHealth(health, true);
       this.damageAmount = 26;
 
-      selectShip.addEventListener("click", () => this.setSpaceshipModel(2));
+      let selectShip = document.getElementById("select-ship");
+      selectShip.addEventListener("click", () => {
+        // this.setSpaceshipModel(2)}
+
+        const updatedShipId = parseInt(selectShip.dataset.shipId);
+        console.log("Updating, ", updatedShipId);
+        this.setSpaceshipModel(updatedShipId);
+      });
 
       return this;
     }
@@ -81,82 +86,26 @@ export const spaceship = (() => {
       }
     }
 
-    // setSpaceshipModel() {
-    //   this.loader.load(
-    //     "scene.gltf",
-    //     (gltf) => {
-    //       // PLAYER (it's a mesh in a mesh)
-    //       this.mesh = new THREE.Group();
-    //       const tempObjectGroup = new THREE.Group();
-    //       const loadedModel = gltf.scene;
-    //       // console.log(loadedModel)
-    //       //REMOVE THESE LINES TO FIX MOUSE ROTATE CAMERA
+    // normalizeModelPosition(model) {
+    //   const box = new THREE.Box3().setFromObject(model); // Compute bounding box
+    //   const center = new THREE.Vector3();
+    //   box.getCenter(center); // Get the center of the bounding box
 
-    //       // Set shadow properties and initial rotation
-    //       loadedModel.traverse(
-    //         (child) =>
-    //           child.isMesh && (child.castShadow = child.receiveShadow = true)
-    //       );
-    //       loadedModel.rotation.y = 1.5 * Math.PI;
-    //       loadedModel.position.z += 22;
-    //       // loadedModel.scale.set(.3, .3, .3)
-    //       // loadedModel.scale.set(2, 2, 2)
-    //       // loadedModel.scale.set(30, 30, 30)
+    //   // Adjust the model's position so its center aligns with the origin
+    //   model.position.sub(center);
 
-    //       tempObjectGroup.add(loadedModel);
-
-    //       // Add lights
-    //       const ambientLightColor = 0x660099;
-    //       const ambientLight = new THREE.PointLight(ambientLightColor, 1, 50);
-    //       ambientLight.position.set(0, 5, 0);
-    //       tempObjectGroup.add(ambientLight);
-
-    //       const spotLight = new THREE.SpotLight(
-    //         0xff6600,
-    //         3,
-    //         5,
-    //         Math.PI * 1.1,
-    //         0.2
-    //       );
-    //       spotLight.position.copy(tempObjectGroup.position);
-    //       tempObjectGroup.add(spotLight);
-
-    //       // Add boosters (velocity rectangle)
-    //       this.velocityRectangle.position.copy(tempObjectGroup.position);
-    //       tempObjectGroup.add(this.velocityRectangle);
-
-    //       this.mesh.add(tempObjectGroup);
-
-    //       this.mesh.rotation.y = Math.PI
-
-    //       this.scene.add(this.mesh);
-
-    //       // Initialize third-person camera
-    //       this.thirdPersonCamera = new third_person_camera.ThirdPersonCamera({
-    //         camera: this.camera,
-    //         target: this.mesh,
-    //       });
-
-    //       this.updateSpaceshipPosition();
-
-    //       // Hide loading screen
-    //       progressContainer.style.display = "none";
-    //       return this.mesh;
-    //     },
-    //     (xhr) => {
-    //       let progressAmount = (xhr.loaded / xhr.total) * 100;
-    //       progressText.innerHTML = `LOADING ${progressAmount}/100`;
-    //     },
-    //     (error) => {
-    //       console.error("An error happened", error);
-    //     }
-    //   );
+    //   // Optionally, align the model's bottom to the ground
+    //   const size = new THREE.Vector3();
+    //   box.getSize(size);
+    //   model.position.y -= size.y / 2;
     // }
 
     setSpaceshipModel(shipId) {
+      console.log("Loading Spaceship: ", shipId);
       if (!modelPaths[shipId]) return;
 
       const selectedModel = modelPaths[shipId];
+      console.log(selectedModel);
 
       // Remove previous model if it exists
       if (this.mesh) {
@@ -196,14 +145,13 @@ export const spaceship = (() => {
 
           // Normalize model if needed
           if (!selectedModel.isNormalized) {
-            normalizeModelSize(loadedModel, 55);
-            // normalizeModelPosition(loadedModel);
+            // normalizeModelSize(loadedModel, 55);
+            normalizeModelPosition(loadedModel);
             selectedModel.isNormalized = true;
           }
 
           tempObjectGroup.add(loadedModel);
 
-          // Add lights
           const ambientLight = new THREE.PointLight(0x660099, 1, 50);
           ambientLight.position.set(0, 5, 0);
           tempObjectGroup.add(ambientLight);
@@ -217,17 +165,13 @@ export const spaceship = (() => {
           );
           spotLight.position.copy(tempObjectGroup.position);
           tempObjectGroup.add(spotLight);
-
-          // this.velocityRectangle.position.copy(tempObjectGroup.position);
-          // this.velocityRectangle.position.set(0, 0, 30);
-          tempObjectGroup.add(this.velocityRectangle);
+          // tempObjectGroup.add(this.velocityRectangle);
 
           this.mesh.add(tempObjectGroup);
           this.mesh.rotation.y = Math.PI;
 
           this.scene.add(this.mesh);
 
-          // Set up the third-person camera
           this.thirdPersonCamera = new third_person_camera.ThirdPersonCamera({
             camera: this.camera,
             target: this.mesh,
@@ -288,22 +232,17 @@ export const spaceship = (() => {
       this.activeLasers.push({ laserBeam, velocity, direction });
     }
 
-    updateVelocityRectangle(currentVelocity, maxVelocity) {
-      const rectangleLength = mapValue(
-        currentVelocity,
-        0,
-        maxVelocity,
-        0,
-        -80
-      );
-      this.velocityRectangle.geometry.dispose(); // Dispose of the old geometry
-      this.velocityRectangle.geometry = new THREE.BoxGeometry(
-        3,
-        3,
-        rectangleLength
-      ); // Adjust width and height as needed
-      this.velocityRectangle.position.z = rectangleLength / 2 - 40;
-    }
+    // updateVelocityRectangle(currentVelocity, maxVelocity) {
+    //   const rectangleLength = mapValue(currentVelocity, 0, maxVelocity, 0, -80);
+    //   this.velocityRectangle.geometry.dispose(); // Dispose of the old geometry
+    //   this.velocityRectangle.geometry = new THREE.BoxGeometry(
+    //     3,
+    //     3,
+    //     rectangleLength
+    //   ); // Adjust width and height as needed
+    //   this.velocityRectangle.position.z = rectangleLength / 2 - 60;
+    //   this.velocityRectangle.position.y = 10
+    // }
 
     checkCollision(mainObj, colisionObj) {
       const laserBox = new THREE.Box3().setFromObject(mainObj);
@@ -366,7 +305,7 @@ export const spaceship = (() => {
           }
 
           // check enemy collisions
-          console.log(enemyLoader)
+          // console.log(enemyLoader);
           if (enemyLoader && enemyLoader.enemies) {
             enemyLoader.enemies.forEach((enemy) => {
               if (this.checkCollision(laserBeam, enemy)) {
@@ -612,10 +551,10 @@ export const spaceship = (() => {
       );
       this.moveSpaceship();
       this.handleLaserMovement(asteroidLoader, enemyLoader);
-      this.updateVelocityRectangle(
-        this.forwardVelocity,
-        PHYSICS_CONSTANTS.maxVelocity
-      );
+      // this.updateVelocityRectangle(
+      //   this.forwardVelocity,
+      //   PHYSICS_CONSTANTS.maxVelocity
+      // );
       this.checkAsteroidCollisions(asteroidLoader);
       this.checkEnemyLaserCollisions(enemyLoader);
 
@@ -639,6 +578,17 @@ export const spaceship = (() => {
           this.mesh.children[0].rotation.x,
           mappedTargetX,
           0.8
+        );
+
+        // YAW
+        const maxRotation = Math.PI / 2;
+        const midX = window.innerWidth / 2;
+        this.mesh.children[0].rotation.z = mapValue(
+          mouseX,
+          -midX,
+          midX,
+          -maxRotation,
+          maxRotation
         );
       }
     }

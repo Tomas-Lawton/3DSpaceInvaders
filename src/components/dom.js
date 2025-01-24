@@ -17,7 +17,6 @@ const [ironElem, goldElem, crystalElem] = ores.children;
 export const progressContainer = document.getElementById("progress-container")
 export const progressText = document.getElementById("progress")
 export const canvas = document.getElementById('three-canvas');
-export const selectShip = document.getElementById("select-ship")
 
 
 let iron = 0
