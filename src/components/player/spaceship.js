@@ -56,9 +56,8 @@ export const spaceship = (() => {
 
       let selectShip = document.getElementById("select-ship");
       selectShip.addEventListener("click", () => {
-        // this.setSpaceshipModel(2)}
-
-        const updatedShipId = parseInt(selectShip.dataset.shipId);
+        const updatedShipId =
+          parseInt(selectShip.dataset.shipId.replace("ship-", ""), 10) - 1;
         console.log("Updating, ", updatedShipId);
         this.setSpaceshipModel(updatedShipId);
       });
