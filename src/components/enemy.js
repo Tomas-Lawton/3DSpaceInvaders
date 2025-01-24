@@ -28,7 +28,7 @@ export const enemy = (() => {
           this.enemies.push(enemyObject);
         });
       }
-      console.log("Created enmies: ", numEnemies)
+      console.log("Created enmies: ", numEnemies);
     }
 
     createEnemy(aroundPoint, callback) {
@@ -60,7 +60,7 @@ export const enemy = (() => {
               child.isMesh && (child.castShadow = child.receiveShadow = true)
           );
           // loadedModel.rotation.y = 1.5 * Math.PI;
-          loadedModel.rotation.y = (2 * (Math.PI / 2) + Math.PI);
+          loadedModel.rotation.y = 2 * (Math.PI / 2) + Math.PI;
           loadedModel.scale.set(0.5, 0.5, 0.5);
           enemyObject.add(loadedModel);
 
@@ -129,42 +129,79 @@ export const enemy = (() => {
     //   }
     // }
 
-    phaseTowardsTarget(enemy, playerCurrentPosition, alternateTarget = null) {
+    // phaseTowardsTarget(enemy, playerCurrentPosition, alternateTarget = null) {
 
+    //   if (enemy) {
+    //     if (this.target) {
+    //       alternateTarget = this.target
+    //     }
+    //     const phaseSpeed = 0.007; // Adjust for smoothness
+    //     // const phaseSpeed = 0.001; // Adjust for smoothness
+
+    //     // Determine which target to aim at (player or alternate target)
+    //     const playerDistance = enemy.position.distanceTo(playerCurrentPosition);
+    //     const targetDistance = alternateTarget
+    //       ? enemy.position.distanceTo(alternateTarget)
+    //       : Infinity;
+
+    //     // Choose the closer target
+    //     const chosenTargetPosition =
+    //       playerDistance < targetDistance
+    //         ? playerCurrentPosition
+    //         : alternateTarget;
+
+    //     // Calculate the direction to the chosen target
+    //     const directionToTarget = new THREE.Vector3();
+    //     directionToTarget
+    //       .subVectors(chosenTargetPosition, enemy.position)
+    //       .normalize();
+
+    //     // Create a quaternion for the rotation towards the target
+    //     const targetQuaternion = new THREE.Quaternion();
+    //     targetQuaternion.setFromUnitVectors(
+    //       new THREE.Vector3(0, 0, 1), // Default forward direction of the enemy
+    //       directionToTarget // Target direction
+    //     );
+
+    //     // Spherically interpolate (slerp) towards the target orientation
+    //     enemy.quaternion.slerp(targetQuaternion, phaseSpeed);
+    //   }
+    // }
+
+    phaseTowardsTarget(
+      enemy,
+      playerCurrentPosition,
+      alternateTarget = null,
+      inRangeDistance = 300,
+      maxPlanetDistance = 600
+    ) {
       if (enemy) {
         if (this.target) {
-          alternateTarget = this.target
-        } 
-        const phaseSpeed = 0.007; // Adjust for smoothness
-        // const phaseSpeed = 0.001; // Adjust for smoothness
-
-
-        // Determine which target to aim at (player or alternate target)
+          alternateTarget = this.target;
+        }
+        const phaseSpeed = 0.014;
         const playerDistance = enemy.position.distanceTo(playerCurrentPosition);
-        const targetDistance = alternateTarget
+        const planetDistance = alternateTarget
           ? enemy.position.distanceTo(alternateTarget)
           : Infinity;
 
-        // Choose the closer target
+        // shoot user if in range, otherwise stay at the planet, also return to planet if enemy chases user out of range
         const chosenTargetPosition =
-          playerDistance < targetDistance
+          playerDistance < inRangeDistance && planetDistance < maxPlanetDistance
             ? playerCurrentPosition
             : alternateTarget;
 
-        // Calculate the direction to the chosen target
         const directionToTarget = new THREE.Vector3();
         directionToTarget
           .subVectors(chosenTargetPosition, enemy.position)
           .normalize();
 
-        // Create a quaternion for the rotation towards the target
         const targetQuaternion = new THREE.Quaternion();
         targetQuaternion.setFromUnitVectors(
-          new THREE.Vector3(0, 0, 1), // Default forward direction of the enemy
-          directionToTarget // Target direction
+          new THREE.Vector3(0, 0, 1),
+          directionToTarget
         );
 
-        // Spherically interpolate (slerp) towards the target orientation
         enemy.quaternion.slerp(targetQuaternion, phaseSpeed);
       }
     }
@@ -209,8 +246,8 @@ export const enemy = (() => {
 
     checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null) {
       if (this.target) {
-        alternateTarget = this.target
-      } 
+        alternateTarget = this.target;
+      }
 
       const currentTime = performance.now(); // For laser cooldown
 
