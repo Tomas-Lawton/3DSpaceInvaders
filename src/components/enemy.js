@@ -135,7 +135,7 @@ export const enemy = (() => {
         if (this.target) {
           alternateTarget = this.target
         } 
-        const phaseSpeed = 0.004; // Adjust for smoothness
+        const phaseSpeed = 0.007; // Adjust for smoothness
         // const phaseSpeed = 0.001; // Adjust for smoothness
 
 
@@ -171,7 +171,7 @@ export const enemy = (() => {
 
     animateForwardMovement(enemy) {
       if (enemy) {
-        let speed = 0.7;
+        let speed = 0.9;
         let direction = new THREE.Vector3();
         enemy.getWorldDirection(direction); // Get the direction the ship is facing
         direction.multiplyScalar(speed);
