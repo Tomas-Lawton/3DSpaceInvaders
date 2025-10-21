@@ -28,7 +28,9 @@ export const spaceship = (() => {
       this.mesh = null; // 3d
       this.thirdPersonCamera = null; // follow cam
 
-      // this.velocityRectangle = new THREE.Mesh(
+      this.shipGroup = null;
+
+      // this.boosterFlame = new THREE.Mesh(
       //   new THREE.BoxGeometry(0.15, 0.15, 0.15),
       //   new THREE.MeshStandardMaterial({
       //     emissiveIntensity: 2.5,
@@ -40,6 +42,18 @@ export const spaceship = (() => {
       //   })
       // );
 
+      this.boosterFlame = new THREE.Mesh(
+        new THREE.ConeGeometry(1.5, 10, 8),
+        new THREE.MeshStandardMaterial({
+          emissiveIntensity: 2.5,
+          emissive: 0xc87dff,
+          color: 0xc87dff,
+          transparent: true,
+          opacity: 0.7,
+          side: THREE.DoubleSide,
+        })
+      );
+
       this.lightSound = new Audio("public/audio/pew.mp3");
       this.boomSound = new Audio("public/audio/boom.mp3");
       this.softBoom = new Audio("public/audio/soft_boom.mp3");
@@ -49,7 +63,14 @@ export const spaceship = (() => {
       this.forwardVelocity = 0;
       this.upwardVelocity = 0;
 
+      // Cool
       this.activeLasers = [];
+      this.engineParticles = [];
+      this.maxParticles = 200;
+      this.wingTrails = {
+        left: [],
+        right: [],
+      };
 
       this.setHealth(health, true);
       this.damageAmount = 26;
@@ -85,20 +106,6 @@ export const spaceship = (() => {
       }
     }
 
-    // normalizeModelPosition(model) {
-    //   const box = new THREE.Box3().setFromObject(model); // Compute bounding box
-    //   const center = new THREE.Vector3();
-    //   box.getCenter(center); // Get the center of the bounding box
-
-    //   // Adjust the model's position so its center aligns with the origin
-    //   model.position.sub(center);
-
-    //   // Optionally, align the model's bottom to the ground
-    //   const size = new THREE.Vector3();
-    //   box.getSize(size);
-    //   model.position.y -= size.y / 2;
-    // }
-
     setSpaceshipModel(shipId) {
       console.log("Loading Spaceship: ", shipId);
       if (!modelPaths[shipId]) return;
@@ -127,6 +134,7 @@ export const spaceship = (() => {
         (gltf) => {
           this.mesh = new THREE.Group();
           const tempObjectGroup = new THREE.Group();
+          this.shipGroup = tempObjectGroup;
           const loadedModel = gltf.scene;
 
           loadedModel.traverse((child) => {
@@ -151,6 +159,10 @@ export const spaceship = (() => {
 
           tempObjectGroup.add(loadedModel);
 
+          const cockpitGlow = new THREE.PointLight(0x00ffff, 5, 30); // Increased intensity and distance
+          cockpitGlow.position.set(0, 2, 8); // Adjusted position
+          tempObjectGroup.add(cockpitGlow);
+
           const ambientLight = new THREE.PointLight(0x660099, 1, 50);
           ambientLight.position.set(0, 5, 0);
           tempObjectGroup.add(ambientLight);
@@ -164,7 +176,7 @@ export const spaceship = (() => {
           );
           spotLight.position.copy(tempObjectGroup.position);
           tempObjectGroup.add(spotLight);
-          // tempObjectGroup.add(this.velocityRectangle);
+          tempObjectGroup.add(this.boosterFlame);
 
           this.mesh.add(tempObjectGroup);
           this.mesh.rotation.y = Math.PI;
@@ -231,17 +243,171 @@ export const spaceship = (() => {
       this.activeLasers.push({ laserBeam, velocity, direction });
     }
 
-    // updateVelocityRectangle(currentVelocity, maxVelocity) {
+    // updateboosterFlame(currentVelocity, maxVelocity) {
     //   const rectangleLength = mapValue(currentVelocity, 0, maxVelocity, 0, -80);
-    //   this.velocityRectangle.geometry.dispose(); // Dispose of the old geometry
-    //   this.velocityRectangle.geometry = new THREE.BoxGeometry(
+    //   this.boosterFlame.geometry.dispose(); // Dispose of the old geometry
+    //   this.boosterFlame.geometry = new THREE.BoxGeometry(
     //     3,
     //     3,
     //     rectangleLength
     //   ); // Adjust width and height as needed
-    //   this.velocityRectangle.position.z = rectangleLength / 2 - 60;
-    //   this.velocityRectangle.position.y = 10
+    //   this.boosterFlame.position.z = rectangleLength / 2 - 60;
+    //   this.boosterFlame.position.y = 10;
     // }
+
+    updateBoosterFlame(currentVelocity, maxVelocity) {
+      const flameLength = mapValue(currentVelocity, 0, maxVelocity, 5, 150);
+
+      this.boosterFlame.geometry.dispose();
+
+      this.boosterFlame.geometry = new THREE.ConeGeometry(
+        2, // radius at base
+        flameLength, // height/length of cone
+        8 // segments (8 is good for performance)
+      );
+
+      this.boosterFlame.position.set(
+        0,
+        8, // Raised up a bit (adjust this value to move it higher/lower)
+        -flameLength / 2 - 5
+      );
+
+      this.boosterFlame.rotation.x = -Math.PI / 2;
+
+      this.boosterFlame.visible = currentVelocity > 0.1;
+
+      const intensity = mapValue(currentVelocity, 0, maxVelocity, 1, 4);
+      this.boosterFlame.material.emissiveIntensity = intensity;
+
+      const opacity = 0.6 + Math.sin(Date.now() * 0.01) * 0.05;
+      this.boosterFlame.material.opacity = opacity;
+    }
+
+    // createEngineParticle() {
+    //   const particle = new THREE.Mesh(
+    //     new THREE.SphereGeometry(0.2, 8, 8), // Small and tight
+    //     new THREE.MeshStandardMaterial({
+    //       emissive: 0xc87dff,
+    //       emissiveIntensity: 2,
+    //       transparent: true,
+    //       opacity: 1,
+    //       color: 0xc87dff,
+    //     })
+    //   );
+
+    //   // Spawn at ship's exact current position (not offset)
+    //   particle.position.copy(this.mesh.position);
+    //   particle.position.y += .4; // Match booster height
+
+    //   particle.velocity = new THREE.Vector3(0, 0, 0);
+    //   particle.life = 5; // Medium trail length
+
+    //   this.scene.add(particle);
+    //   this.engineParticles.push(particle);
+
+    //   if (this.engineParticles.length > this.maxParticles) {
+    //     const oldParticle = this.engineParticles.shift();
+    //     this.scene.remove(oldParticle);
+    //     oldParticle.geometry.dispose();
+    //     oldParticle.material.dispose();
+    //   }
+    // }
+
+    // updateEngineParticles() {
+    //   this.engineParticles.forEach((particle, index) => {
+    //     particle.life -= 0.008; // Slower fade for longer trail
+    //     particle.material.opacity = Math.pow(particle.life / 3.0, 2);
+    //     particle.scale.setScalar(0.8 + (particle.life / 3.0) * 0.4);
+
+    //     if (particle.life <= 0) {
+    //       this.scene.remove(particle);
+    //       particle.geometry.dispose();
+    //       particle.material.dispose();
+    //       this.engineParticles.splice(index, 1);
+    //     }
+    //   });
+    // }
+
+    createWingTrail() {
+      // Left wing trail
+      const leftTrail = new THREE.Mesh(
+        new THREE.BoxGeometry(0.02, 0.08, 2),
+        new THREE.MeshStandardMaterial({
+          emissive: 0xffffff,
+          emissiveIntensity: 0.5,
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.3,
+        })
+      );
+
+      // Use the inner ship group's rotation
+      const shipGroup = this.mesh.children[0];
+      const leftOffset = new THREE.Vector3(-2, 0, 0);
+      leftOffset.applyQuaternion(shipGroup.quaternion);
+      leftOffset.applyQuaternion(this.mesh.quaternion); // Apply outer rotation too
+
+      leftTrail.position.copy(this.mesh.position).add(leftOffset);
+      leftTrail.quaternion
+        .copy(this.mesh.quaternion)
+        .multiply(shipGroup.quaternion);
+      leftTrail.life = 1.0;
+
+      this.scene.add(leftTrail);
+      this.wingTrails.left.push(leftTrail);
+
+      // Right wing trail
+      const rightTrail = new THREE.Mesh(
+        new THREE.BoxGeometry(0.02, 0.08, 2),
+        new THREE.MeshStandardMaterial({
+          emissive: 0xffffff,
+          emissiveIntensity: 0.5,
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.1,
+        })
+      );
+
+      const rightOffset = new THREE.Vector3(2, 0, 0);
+      rightOffset.applyQuaternion(shipGroup.quaternion);
+      rightOffset.applyQuaternion(this.mesh.quaternion);
+
+      rightTrail.position.copy(this.mesh.position).add(rightOffset);
+      rightTrail.quaternion
+        .copy(this.mesh.quaternion)
+        .multiply(shipGroup.quaternion);
+      rightTrail.life = 1.0;
+
+      this.scene.add(rightTrail);
+      this.wingTrails.right.push(rightTrail);
+
+      // Clean up
+      if (this.wingTrails.left.length > 20) {
+        const old = this.wingTrails.left.shift();
+        this.scene.remove(old);
+        old.geometry.dispose();
+        old.material.dispose();
+
+        const oldRight = this.wingTrails.right.shift();
+        this.scene.remove(oldRight);
+        oldRight.geometry.dispose();
+        oldRight.material.dispose();
+      }
+    }
+    updateWingTrails() {
+      [...this.wingTrails.left, ...this.wingTrails.right].forEach(
+        (trail, index) => {
+          trail.life -= 0.03;
+          trail.material.opacity = trail.life * 0.3; // Lighter fade
+
+          if (trail.life <= 0) {
+            this.scene.remove(trail);
+            trail.geometry.dispose();
+            trail.material.dispose();
+          }
+        }
+      );
+    }
 
     checkCollision(mainObj, colisionObj) {
       const laserBox = new THREE.Box3().setFromObject(mainObj);
@@ -550,17 +716,43 @@ export const spaceship = (() => {
       );
       this.moveSpaceship();
       this.handleLaserMovement(asteroidLoader, enemyLoader);
-      // this.updateVelocityRectangle(
-      //   this.forwardVelocity,
-      //   PHYSICS_CONSTANTS.maxVelocity
-      // );
+      this.updateBoosterFlame(
+        this.forwardVelocity,
+        PHYSICS_CONSTANTS.maxVelocity
+      );
       this.checkAsteroidCollisions(asteroidLoader);
       this.checkEnemyLaserCollisions(enemyLoader);
+
+      // Particle effects - spawn when moving at any speed
+      // if (this.forwardVelocity > 0.1) {
+      //   if (!this.particleCounter) this.particleCounter = 0;
+      //   this.particleCounter++;
+
+      //   if (this.particleCounter % 2 === 0) {
+      //     // Every other frame
+      //     this.createEngineParticle();
+      //   }
+      // }
+      // this.updateEngineParticles();
+
+      // Wing trails - create when moving moderately fast
+      if (this.forwardVelocity > 0.3 && Math.random() > 0.95) {
+        // Changed from 0.8 to 0.95
+        this.createWingTrail();
+      }
+      this.updateWingTrails();
+
+      // Speed lines - only at high speed
+
+      // Cockpit glow pulse
+      if (this.cockpitGlow) {
+        const time = Date.now() * 0.005;
+        this.cockpitGlow.intensity = 2 + Math.sin(time) * 0.5;
+      }
 
       this.thirdPersonCamera.Update(timeElapsed);
       audioManager.updateSpaceshipVolume(this.forwardVelocity);
     }
-
     calculateRotation() {
       if (this.forwardVelocity > 0 || this.upwardVelocity > 0) {
         const continuousRotation = -(mouseX * 0.0001);
