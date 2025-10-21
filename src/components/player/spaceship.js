@@ -217,6 +217,11 @@ export const spaceship = (() => {
     }
 
     fireLaser() {
+      if (!this.mesh || !this.mesh.children[0]) {
+        console.warn("Ship not fully loaded yet");
+        return;
+      }
+
       const direction = new THREE.Vector3();
       this.mesh.children[0].getWorldDirection(direction);
       const laserPosition = this.mesh.position.clone();
@@ -498,6 +503,30 @@ export const spaceship = (() => {
         });
       }
     }
+    // showHealthBar(meshObj) {
+    //   if (!meshObj.healthBar) {
+    //     const healthBar = document.createElement("div");
+    //     healthBar.className = "health-bar";
+    //     healthBar.style.position = "absolute";
+    //     healthBar.style.height = "5px";
+    //     healthBar.style.width = "100px";
+    //     document.body.appendChild(healthBar);
+
+    //     meshObj.healthBar = { element: healthBar };
+
+    //     // Start an interval to update the health bar position
+    //     meshObj.healthBar.interval = setInterval(() => {
+    //       this.updateHealthBarPosition(meshObj);
+    //     }, 50); // Update every 100 milliseconds
+    //   }
+
+    //   const healthPercentage = meshObj.health / 100;
+    //   meshObj.healthBar.element.style.width = `${healthPercentage * 100}px`;
+    //   meshObj.healthBar.element.style.backgroundColor = `rgb(${
+    //     255 * (1 - healthPercentage)
+    //   }, ${255 * healthPercentage}, 0)`;
+    // }
+
     showHealthBar(meshObj) {
       if (!meshObj.healthBar) {
         const healthBar = document.createElement("div");
@@ -505,21 +534,27 @@ export const spaceship = (() => {
         healthBar.style.position = "absolute";
         healthBar.style.height = "5px";
         healthBar.style.width = "100px";
+        healthBar.style.background =
+          "linear-gradient(to right, #00ff00, #ffff00, #ff0000)";
+        healthBar.style.border = "1px solid rgba(0, 255, 238, 0.6)";
+        healthBar.style.borderRadius = "3px";
+        healthBar.style.boxShadow = "0 0 8px rgba(0, 255, 238, 0.4)";
+        healthBar.style.zIndex = "1000";
         document.body.appendChild(healthBar);
 
         meshObj.healthBar = { element: healthBar };
 
-        // Start an interval to update the health bar position
         meshObj.healthBar.interval = setInterval(() => {
           this.updateHealthBarPosition(meshObj);
-        }, 50); // Update every 100 milliseconds
+        }, 50);
       }
 
-      const healthPercentage = meshObj.health / 100;
+      const healthPercentage = Math.max(0, Math.min(1, meshObj.health / 100));
       meshObj.healthBar.element.style.width = `${healthPercentage * 100}px`;
-      meshObj.healthBar.element.style.backgroundColor = `rgb(${
-        255 * (1 - healthPercentage)
-      }, ${255 * healthPercentage}, 0)`;
+
+      const red = Math.floor(255 * (1 - healthPercentage));
+      const green = Math.floor(255 * healthPercentage);
+      meshObj.healthBar.element.style.background = `rgb(${red}, ${green}, 0)`;
     }
 
     // updateHealthBarPosition(asteroid) {
