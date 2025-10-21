@@ -2,19 +2,18 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-
 let scene, camera, renderer, currentModel, controls;
 const models = {};
 
 const canvas = document.getElementById("ship-hanger");
 
 export const modelPaths = [
-  { path: "public/ships/ship_0/", rotation: { x: 0, y: 0, z: 0 } },
-  { path: "public/ships/ship_1/", rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-  { path: "public/ships/ship_2/", rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-  { path: "public/ships/ship_5/", rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-  { path: "public/ships/ship_6/", rotation: { x: 0, y: Math.PI / 2, z: 0 } },
-  { path: "public/ships/ship_7/", rotation: { x: 0, y: 2 * Math.PI, z: 0 } },
+  { path: "public/ships/ship_0/", rotation: { x: 0, y: 0, z: 0 }, isNormalized: false },
+  { path: "public/ships/ship_1/", rotation: { x: 0, y: Math.PI / 2, z: 0 }, isNormalized: false },
+  { path: "public/ships/ship_2/", rotation: { x: 0, y: Math.PI / 2, z: 0 }, isNormalized: false },
+  { path: "public/ships/ship_5/", rotation: { x: 0, y: Math.PI / 2, z: 0 }, isNormalized: false },
+  { path: "public/ships/ship_6/", rotation: { x: 0, y: Math.PI / 2, z: 0 }, isNormalized: false },
+  { path: "public/ships/ship_7/", rotation: { x: 0, y: 2 * Math.PI, z: 0 }, isNormalized: false },
 ];
 
 export function initHUD() {
@@ -25,64 +24,53 @@ export function initHUD() {
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   renderer.setSize(500, 500);
   renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.setClearColor(0x87ceeb, 0); // Make the background transparent
+  renderer.setClearColor(0x000000, 0);
 
-  const ambientLight = new THREE.AmbientLight(0xffffff);
-  // // (0, 255, 238, 0.55)
-  // const ambientLight = new THREE.AmbientLight(
-  //   new THREE.Color(0x00ffec), // RGB (0, 255, 238) as a hex value
-  //   0.55 // Intensity (brightness)
-  // );
-  new THREE.Color(0x00ffec), // RGB (0, 255, 238) as a hex value
-    0.55;
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+  scene.add(ambientLight);
 
   const light = new THREE.DirectionalLight(0xffffff, 10);
   light.position.set(5, 10, 7.5);
   scene.add(light);
-  scene.add(ambientLight);
 
-  const light2 = new THREE.DirectionalLight(new THREE.Color(0x00ffec), 0.55);
+  const light2 = new THREE.DirectionalLight(0x00ffec, 0.55);
   light2.position.set(-5, 10, -7.5);
   scene.add(light2);
 
   controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true; // Smooth orbiting
+  controls.enableDamping = true;
   controls.dampingFactor = 0.45;
   controls.screenSpacePanning = false;
-  controls.maxPolarAngle = Math.PI / 2; // Restrict vertical camera movement
+  controls.maxPolarAngle = Math.PI / 2;
   controls.autoRotate = true;
+  controls.autoRotateSpeed = 2.0;
 
   loadShipModels().then(() => {
-    switchModel("ship-1"); // Display the default model (ship_0)
+    switchModel("ship-1");
   });
 
   animate();
+  initHUDUpdates();
 }
 
 function animate() {
   requestAnimationFrame(animate);
-  controls.update(); // Update the controls for smooth orbit
+  controls.update();
   renderer.render(scene, camera);
 }
 
 async function loadShipModels() {
   const loader = new GLTFLoader();
 
-  // FACE FORWARD
-  // { path: 'public/ships/ship_0/', rotation: { x: 0, y: (0) + 1.5 * Math.PI, z: 0 } },
-  // { path: 'public/ships/ship_1/', rotation: { x: 0, y: (Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
-  // { path: 'public/ships/ship_2/', rotation: { x: 0, y:( Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
-  // { path: 'public/ships/ship_3/', rotation: { x: 0, y: (-Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
-  // { path: 'public/ships/ship_4/', rotation: { x: 0, y: (0) + 1.5 * Math.PI, z: 0 } },
-  // { path: 'public/ships/ship_5/', rotation: { x: 0, y: (Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
-  // { path: 'public/ships/ship_6/', rotation: { x: 0, y: (Math.PI / 2) + 1.5 * Math.PI, z: 0 } },
-  // { path: 'public/ships/ship_7/', rotation: { x: 0, y: (2 * Math.PI), z: 0 } },
-
   try {
     const modelPromises = modelPaths.map(async (modelData, index) => {
       const gltf = await loader.setPath(modelData.path).loadAsync("scene.gltf");
       const model = gltf.scene.clone();
-      models[`ship-${index + 1}`] = { model, rotation: modelData.rotation };
+      models[`ship-${index + 1}`] = { 
+        model, 
+        rotation: modelData.rotation,
+        isNormalized: false 
+      };
     });
 
     await Promise.all(modelPromises);
@@ -92,10 +80,14 @@ async function loadShipModels() {
 }
 
 document.getElementById("ships-bar").addEventListener("click", (e) => {
-  // console.log("Click detected on: ", e.target); // Log the clicked element
   if (e.target.classList.contains("ship-option")) {
+    // Remove active class from all ships
+    document.querySelectorAll(".ship-option").forEach(el => el.classList.remove("active"));
+    // Add active class to clicked ship
+    e.target.classList.add("active");
+    
     const shipId = e.target.id;
-    console.log("Switching to model: ", shipId); // Log the shipId being clicked
+    console.log("Switching to model: ", shipId);
     document.getElementById("select-ship").dataset.shipId = shipId;
     switchModel(shipId);
   }
@@ -106,6 +98,7 @@ let previousModelId = null;
 function switchModel(shipId) {
   if (!models[shipId]) return;
   if (previousModelId === shipId) return;
+  
   if (currentModel) {
     scene.remove(currentModel.model);
   }
@@ -115,15 +108,16 @@ function switchModel(shipId) {
   if (!currentModel.isNormalized) {
     normalizeModelSize(currentModel.model, 55);
     normalizeModelPosition(currentModel.model);
-    currentModel.isNormalized = true; // Mark this model as normalized
+    currentModel.isNormalized = true;
   }
+  
   currentModel.model.rotation.set(
     currentModel.rotation.x,
     currentModel.rotation.y,
     currentModel.rotation.z
   );
+  
   scene.add(currentModel.model);
-
   previousModelId = shipId;
 }
 
@@ -134,7 +128,6 @@ export function normalizeModelSize(model, targetSize = 1) {
   const maxDimension = Math.max(size.x, size.y, size.z);
   const scaleFactor = targetSize / maxDimension;
 
-  // Only scale if the current scale is not already the target scale
   if (
     Math.abs(model.scale.x - scaleFactor) > 0.01 ||
     Math.abs(model.scale.y - scaleFactor) > 0.01 ||
@@ -144,48 +137,107 @@ export function normalizeModelSize(model, targetSize = 1) {
   }
 }
 
-// export function normalizeModelPosition(model) {
-//   const bbox = new THREE.Box3().setFromObject(model);
-//   const center = bbox.getCenter(new THREE.Vector3());
-//   // Translate the model to ensure its center is at the origin (0, 0, 0)
-//   model.position.sub(center);
-//   model.position.y = -15;
-// }
-
 export function normalizeModelPosition(model) {
-  const box = new THREE.Box3().setFromObject(model); // Compute bounding box
+  const box = new THREE.Box3().setFromObject(model);
   const center = new THREE.Vector3();
-  box.getCenter(center); // Get the center of the bounding box
+  box.getCenter(center);
 
-  // Adjust the model's position so its center aligns with the origin
   model.position.sub(center);
 
-  // Align the model's bottom to y = 0
-  const size = new THREE.Vector3();
-  box.getSize(size);
-  // model.position.y += size.y / 2; // Move up by half the height to align the bottom
-
-
-  const offsetY = box.min.y; // Get the minimum y value of the bounding box
-  model.position.y -= offsetY; // Adjust the model's position to align the bottom with y = 0
-
+  const offsetY = box.min.y;
+  model.position.y -= offsetY;
 }
 
-function addGround() {
-  const geometry = new THREE.PlaneGeometry(500, 500);
-  const material = new THREE.MeshLambertMaterial({ color: 0x808080 });
-  const ground = new THREE.Mesh(geometry, material);
-  ground.rotation.x = -Math.PI / 2;
-  ground.position.y = -15;
-  scene.add(ground);
+// Initialize HUD dynamic updates
+function initHUDUpdates() {
+  // Update time display every second
+  setInterval(() => {
+    const now = new Date();
+    const timeDisplay = document.querySelector('.time-display');
+    if (timeDisplay) {
+      timeDisplay.textContent = now.toTimeString().slice(0, 5);
+    }
+  }, 1000);
 }
 
-function addBackground() {
-  const geometry = new THREE.BoxGeometry(1000, 1000, 1000);
-  const material = new THREE.MeshBasicMaterial({
-    color: 0x87ceeb,
-    side: THREE.BackSide,
-  });
-  const background = new THREE.Mesh(geometry, material);
-  scene.add(background);
+// Export function to update stats from game
+export function updateHUDStats(stats) {
+  const { velocity, altitude, apogee, perigee } = stats;
+  
+  // Update stat values
+  const velocityValue = document.getElementById('velocity-value');
+  const altitudeValue = document.getElementById('altitude-value');
+  const apogeeValue = document.getElementById('apogee-value');
+  const perigeeValue = document.getElementById('perigee-value');
+  
+  if (velocityValue) velocityValue.textContent = `${velocity.toFixed(2)} km/s`;
+  if (altitudeValue) altitudeValue.textContent = `${altitude.toFixed(1)} km`;
+  if (apogeeValue) apogeeValue.textContent = `${apogee.toFixed(1)} km`;
+  if (perigeeValue) perigeeValue.textContent = `${perigee.toFixed(1)} km`;
+  
+  // Update progress bars (0-100%)
+  const velocityStat = document.getElementById('velocity-stat');
+  const altitudeStat = document.getElementById('altitude-stat');
+  const apogeeStat = document.getElementById('apogee-stat');
+  const perigeeStat = document.getElementById('perigee-stat');
+  
+  if (velocityStat) velocityStat.style.width = `${Math.min(velocity * 10, 100)}%`;
+  if (altitudeStat) altitudeStat.style.width = `${Math.min(altitude / 10, 100)}%`;
+  if (apogeeStat) apogeeStat.style.width = `${Math.min(apogee / 10, 100)}%`;
+  if (perigeeStat) perigeeStat.style.width = `${Math.min(perigee / 10, 100)}%`;
+}
+
+// Update ship health status in HUD
+export function updateShipHealth(health, maxHealth) {
+  const healthPercentage = (health / maxHealth) * 100;
+  
+  // Update status items based on health
+  const statusItems = document.querySelectorAll('.status-item');
+  
+  if (healthPercentage < 30) {
+    // Critical health - show warnings
+    statusItems.forEach((item, index) => {
+      if (index === 0) { // Thermal Shield
+        item.classList.remove('status-complete');
+        item.classList.add('status-pending');
+        item.querySelector('.status-subtitle').textContent = 'Critical';
+      }
+    });
+  } else if (healthPercentage < 60) {
+    // Medium health - show caution
+    statusItems.forEach((item, index) => {
+      if (index === 0) {
+        item.querySelector('.status-subtitle').textContent = 'Damaged';
+      }
+    });
+  } else {
+    // Healthy
+    statusItems.forEach((item, index) => {
+      if (index === 0) {
+        item.classList.add('status-complete');
+        item.classList.remove('status-pending');
+        item.querySelector('.status-subtitle').textContent = 'Applied';
+      }
+    });
+  }
+}
+
+// Update location display
+export function updateLocation(locationName) {
+  const locationDisplay = document.querySelector('.location-display');
+  if (locationDisplay) {
+    locationDisplay.textContent = locationName.toUpperCase();
+  }
+}
+
+// Update ship name display
+export function updateShipName(shipName, availability = "AVAILABLE") {
+  const shipNameElem = document.querySelector('.ship-name');
+  const shipStatusElem = document.querySelector('.ship-status');
+  
+  if (shipNameElem) shipNameElem.textContent = shipName.toUpperCase();
+  if (shipStatusElem) {
+    shipStatusElem.textContent = availability.toUpperCase();
+    shipStatusElem.style.color = availability === "AVAILABLE" ? "#00ff00" : "#ff0000";
+  }
 }

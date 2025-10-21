@@ -20,102 +20,202 @@
   </head>
   <body>
     <canvas id="three-canvas"></canvas>
-    <p id="user-position"></p>
+
     <div id="control-ui">
-
       <div id="hud-container">
-        <p id="nearest-planet"></p>
-        <img
-          id="ship-shadow"
-          src="public/images/hud-elements/ship-shadow.png"
-          alt="HUD Image"
-        />
-
-        <div id="ships-stats">
-          <label>Slider Name</label>
-          <div>
-            <input type="slider" class="level" />
-            <h2 class="slider-value">ellooo</h2>
+        <!-- Top Left Section - Radar & Info -->
+        <div id="top-left-section">
+          <div id="radar-display">
+            <div class="radar-ring"></div>
+            <div class="radar-ring-2"></div>
+            <div class="radar-center"></div>
+            <div class="radar-sweep"></div>
           </div>
-          <label>Slider Name</label>
-          <div>
-            <input type="slider" class="level" />
-            <h2 class="slider-value">ellooo</h2>
-          </div>
-          <label>Slider Name</label>
-          <div>
-            <input type="slider" class="level" />
-            <h2 class="slider-value">ellooo</h2>
-          </div>
-          <label>Slider Name</label>
-          <div>
-            <input type="slider" class="level" />
-            <h2 class="slider-value">ellooo</h2>
+          
+          <div id="info-box">
+            <p class="info-text">Your mom is a very nice</p>
+            <p class="info-text">lady and has a job for you...</p>
+            <p class="info-text"></p>
+            <p class="info-text-highlight">Start by flying to planets</p>
+            <p class="info-text-highlight">to save them.</p>
+            <p class="info-text"></p>
+            <p class="info-text-highlight">Collect XP and Resources</p>
+            <p class="info-text-highlight">to upgrade your ship.</p>
           </div>
         </div>
-        <canvas id="ship-hanger"></canvas>
-        <img
-          id="top-left"
-          src="public/images/hud-elements/top-left.png"
-          alt="HUD Image"
-        />
-        <img
-          id="top-right"
-          src="public/images/hud-elements/top-right.png"
-          alt="HUD Image"
-        />
-        <img
-          id="mid-right"
-          src="public/images/hud-elements/mid-right.png"
-          alt="HUD Image"
-        />
-        <img
-          id="bottom-left"
-          src="public/images/hud-elements/bottom-left.png"
-          alt="HUD Image"
-        />
-        <!-- <img
-          id="bottom-right"
-          src="public/images/hud-elements/bottom-right.png"
-          alt="HUD Image"
-        /> -->
+
+        <!-- Top Right Section - Ship Selector -->
+        <div id="top-right-section">
+          <div id="ships-bar">
+            <div id="ship-1" class="ship-option active"></div>
+            <div id="ship-2" class="ship-option"></div>
+            <div id="ship-3" class="ship-option"></div>
+            <div id="ship-4" class="ship-option"></div>
+            <div id="ship-5" class="ship-option"></div>
+            <div id="ship-6" class="ship-option"></div>
+          </div>
+        </div>
+
+        <!-- Left Section - Ship Stats -->
+        <div id="left-stats-section">
+          <div class="stat-item">
+            <label class="stat-label">Inertial Velocity</label>
+            <div class="stat-bar-container">
+              <div class="stat-bar" id="velocity-stat" style="width: 45%"></div>
+            </div>
+            <span class="stat-value" id="velocity-value">7.68 km/s</span>
+          </div>
+
+          <div class="stat-item">
+            <label class="stat-label">Altitude</label>
+            <div class="stat-bar-container">
+              <div class="stat-bar" id="altitude-stat" style="width: 30%"></div>
+            </div>
+            <span class="stat-value" id="altitude-value">390.0 km</span>
+          </div>
+
+          <div class="stat-item">
+            <label class="stat-label">Apogee</label>
+            <div class="stat-bar-container">
+              <div class="stat-bar" id="apogee-stat" style="width: 35%"></div>
+            </div>
+            <span class="stat-value" id="apogee-value">404.4 km</span>
+          </div>
+
+          <div class="stat-item">
+            <label class="stat-label">Perigee</label>
+            <div class="stat-bar-container">
+              <div class="stat-bar" id="perigee-stat" style="width: 40%"></div>
+            </div>
+            <span class="stat-value" id="perigee-value">389.4 km</span>
+          </div>
+        </div>
+
+        <!-- Center Section - 3D Ship Display -->
+        <div id="center-display">
+          <canvas id="ship-hanger"></canvas>
+          <div id="ship-name-display">
+            <p class="ship-name">MARS SHIP</p>
+            <p class="ship-status">AVAILABLE</p>
+          </div>
+        </div>
+
+        <!-- Right Section - Status Checklist -->
+        <div id="right-status-section">
+          <div class="status-item status-complete">
+            <div class="status-icon">✓</div>
+            <div class="status-text">
+              <p class="status-title">THERMAL SHIELD</p>
+              <p class="status-subtitle">Applied</p>
+            </div>
+          </div>
+
+          <div class="status-item status-complete">
+            <div class="status-icon">✓</div>
+            <div class="status-text">
+              <p class="status-title">BURN GO/NO-GO</p>
+              <p class="status-subtitle">Normal</p>
+            </div>
+          </div>
+
+          <div class="status-item status-pending">
+            <div class="status-icon">✓</div>
+            <div class="status-text">
+              <p class="status-title">POWER COMPLETION</p>
+              <p class="status-subtitle">Awaiting</p>
+            </div>
+          </div>
+
+          <div class="status-item status-complete">
+            <div class="status-icon">✓</div>
+            <div class="status-text">
+              <p class="status-title">STATION DECK CHECK</p>
+              <p class="status-subtitle">Normal</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Right - Time/Resources -->
+        <div id="bottom-right-info">
+          <p class="time-display">22:33</p>
+          <p class="location-display">GND</p>
+          <p class="resource-display">0.00</p>
+          <p class="resource-label">TORS</p>
+          <p class="xp-display">79/1450122</p>
+        </div>
+
+        <!-- Bottom Section - Control Bar -->
+        <div id="bottom-control-bar">
+          <div class="control-icon active">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <span class="control-label">CONTROL</span>
+          </div>
+          <div class="control-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+            <span class="control-label">Overview</span>
+          </div>
+          <div class="control-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 7h-9M14 17H5M18 12H6"/>
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6"/>
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <path d="M9 3v18"/>
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+        </div>
+
+        <button id="select-ship">SELECT SHIP</button>
       </div>
-      <img
-        id="bottom-center"
-        src="public/images/hud-elements/bottom-center.png"
-        alt="HUD Image"
-      />
-
-      <div id="ships-bar">
-        <div id="ship-0" class="ship-option"></div>
-        <div id="ship-1" class="ship-option"></div>
-        <div id="ship-2" class="ship-option"></div>
-        <div id="ship-3" class="ship-option"></div>
-        <div id="ship-4" class="ship-option"></div>
-        <div id="ship-5" class="ship-option"></div>
-        <button id="select-ship">Select Ship</button>
-      </div>
-
-
     </div>
-    <div id="health-bar-background" class="hud-ui"></div>
-    <div id="health-bar" class="hud-ui"></div>
-    <div id="velocity-bar-background" class="hud-ui"></div>
-    <div id="velocity-bar" class="hud-ui"></div>
-    <!-- <div id="custom-cursor" class="hud-ui"></div> -->
 
     <div class="cursor small"></div>
     <div class="cursor big"></div>
-  
 
     <div id="progress-container">
       <h1 id="progress">LOADING 0/100</h1>
     </div>
-    <div id="ores" class="hud-ui">
-      <p>Iron 0</p>
-      <p>Gold 0</p>
-      <p>Crystal 0</p>
-    </div>
+
     <script type="module" src="./src/main.js"></script>
   </body>
 </html>
