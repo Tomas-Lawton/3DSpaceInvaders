@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { getRandomDeepColor } from "../utils/utils.js";
-import { updateCloestPlanet } from "../components/dom.js";
+import { updateCloestPlanet, updateDirectionalIndicators } from "../components/dom.js";
 import { enemy } from "../components/enemy.js";
 
 export const planets = (() => {
@@ -114,17 +114,30 @@ export const planets = (() => {
 
 
 
-    animatePlanets(playerCurrentPosition, reposition) {
+    animatePlanets(playerCurrentPosition, reposition, playerForwardDirection = null) {
       if (this.enemyLoader) {
         this.enemyLoader.animateEnemies(playerCurrentPosition);
+        // Check for enemy laser collisions with planets
+        this.checkEnemyLaserPlanetCollisions();
       }
 
       if (this.planets) {
         let clostestPlanet = null;
         let closestDistance = null
 
-        this.planets.forEach((planet) => {
+        this.planets.forEach((planet, index) => {
           planet.children[0].rotation.y += 0.0001;
+
+          // Deplete planet health over time
+          planet.health -= 0.05; // Slowly loses health
+
+          // Check if planet health is depleted
+          if (planet.health <= 0) {
+            console.log("Planet destroyed!");
+            this.scene.remove(planet);
+            this.planets.splice(index, 1);
+            return; // Skip further processing for this planet
+          }
 
           const playerDistance = playerCurrentPosition.distanceTo(
             planet.position
@@ -143,11 +156,15 @@ export const planets = (() => {
           updateCloestPlanet(clostestPlanet.position)
 
           if (playerDistance > 6000) {
+            // Clean up old enemies before repositioning planet
+            this.cleanupEnemies();
             reposition(planet.position, playerCurrentPosition);
+            // Reset enemies spawned flag so new enemies can spawn at new location
+            this.enemiesSpawned = false;
           }
 
-          if (playerDistance < 500) { //  closer than 1000: spawn enemy group
-            if (!this.enemiesSpawned) { 
+          if (playerDistance < 1500) { //  closer than 1500: spawn enemy group
+            if (!this.enemiesSpawned) {
                 this.enemiesSpawned = true;
                 const enemyCount = 5
                 const enemyLoader = new enemy.EnemyLoader(this.scene);
@@ -162,7 +179,80 @@ export const planets = (() => {
             // only damage the user and set a timeout
           }
         });
+
+        // Update directional indicators ALWAYS (outside the forEach loop)
+        // Pass all planets and all enemies to the indicator system
+        if (playerForwardDirection) {
+          const enemyArray = (this.enemyLoader && this.enemyLoader.enemies) ? this.enemyLoader.enemies : [];
+          updateDirectionalIndicators(
+            playerCurrentPosition,
+            playerForwardDirection,
+            this.planets,
+            enemyArray
+          );
+        }
       }
+    }
+
+    cleanupEnemies() {
+      if (this.enemyLoader) {
+        // Remove all enemies from scene
+        if (this.enemyLoader.enemies) {
+          this.enemyLoader.enemies.forEach((enemy) => {
+            this.scene.remove(enemy);
+            // Dispose of geometries and materials
+            enemy.traverse((child) => {
+              if (child.geometry) child.geometry.dispose();
+              if (child.material) {
+                if (Array.isArray(child.material)) {
+                  child.material.forEach((mat) => mat.dispose());
+                } else {
+                  child.material.dispose();
+                }
+              }
+            });
+          });
+        }
+
+        // Remove all lasers from scene
+        if (this.enemyLoader.activeLasers) {
+          this.enemyLoader.activeLasers.forEach((laserData) => {
+            this.scene.remove(laserData.laserBeam);
+            if (laserData.laserBeam.geometry) laserData.laserBeam.geometry.dispose();
+            if (laserData.laserBeam.material) laserData.laserBeam.material.dispose();
+          });
+        }
+
+        // Clear the enemy loader reference
+        this.enemyLoader = null;
+        console.log("Cleaned up all enemies and lasers");
+      }
+    }
+
+    checkEnemyLaserPlanetCollisions() {
+      if (!this.enemyLoader || !this.enemyLoader.activeLasers) return;
+
+      this.enemyLoader.activeLasers.forEach((laserData, laserIndex) => {
+        const { laserBeam, targetingPlanet } = laserData;
+
+        // Only check lasers that are targeting planets
+        if (!targetingPlanet) return;
+
+        this.planets.forEach((planet) => {
+          const laserBox = new THREE.Box3().setFromObject(laserBeam);
+          const planetBox = new THREE.Box3().setFromObject(planet);
+
+          if (laserBox.intersectsBox(planetBox)) {
+            // Damage the planet
+            planet.health -= 10; // Damage per laser hit
+            console.log(`Planet hit! Health: ${planet.health}`);
+
+            // Remove the laser
+            this.scene.remove(laserBeam);
+            this.enemyLoader.activeLasers.splice(laserIndex, 1);
+          }
+        });
+      });
     }
   }
 

@@ -4,7 +4,7 @@ import { third_person_camera } from "../../scene/camera.js";
 import { mapValue } from "../../utils/utils.js"; // Assuming you have a utility function for mapping values
 import { progressContainer, progressText } from "../dom.js";
 import { PHYSICS_CONSTANTS } from "../../utils/constants.js";
-import { incrementOre } from "../dom.js";
+import { incrementOre, addXP } from "../dom.js";
 import {
   modelPaths,
   normalizeModelSize,
@@ -288,51 +288,6 @@ export const spaceship = (() => {
       this.boosterFlame.material.opacity = opacity;
     }
 
-    // createEngineParticle() {
-    //   const particle = new THREE.Mesh(
-    //     new THREE.SphereGeometry(0.2, 8, 8), // Small and tight
-    //     new THREE.MeshStandardMaterial({
-    //       emissive: 0xc87dff,
-    //       emissiveIntensity: 2,
-    //       transparent: true,
-    //       opacity: 1,
-    //       color: 0xc87dff,
-    //     })
-    //   );
-
-    //   // Spawn at ship's exact current position (not offset)
-    //   particle.position.copy(this.mesh.position);
-    //   particle.position.y += .4; // Match booster height
-
-    //   particle.velocity = new THREE.Vector3(0, 0, 0);
-    //   particle.life = 5; // Medium trail length
-
-    //   this.scene.add(particle);
-    //   this.engineParticles.push(particle);
-
-    //   if (this.engineParticles.length > this.maxParticles) {
-    //     const oldParticle = this.engineParticles.shift();
-    //     this.scene.remove(oldParticle);
-    //     oldParticle.geometry.dispose();
-    //     oldParticle.material.dispose();
-    //   }
-    // }
-
-    // updateEngineParticles() {
-    //   this.engineParticles.forEach((particle, index) => {
-    //     particle.life -= 0.008; // Slower fade for longer trail
-    //     particle.material.opacity = Math.pow(particle.life / 3.0, 2);
-    //     particle.scale.setScalar(0.8 + (particle.life / 3.0) * 0.4);
-
-    //     if (particle.life <= 0) {
-    //       this.scene.remove(particle);
-    //       particle.geometry.dispose();
-    //       particle.material.dispose();
-    //       this.engineParticles.splice(index, 1);
-    //     }
-    //   });
-    // }
-
     createWingTrail() {
       // Left wing trail
       const leftTrail = new THREE.Mesh(
@@ -477,7 +432,7 @@ export const spaceship = (() => {
           // check enemy collisions
           // console.log(enemyLoader);
           if (enemyLoader && enemyLoader.enemies) {
-            enemyLoader.enemies.forEach((enemy) => {
+            enemyLoader.enemies.forEach((enemy, enemyIndex) => {
               if (this.checkCollision(laserBeam, enemy)) {
                 console.log("hit");
                 this.scene.remove(laserBeam);
@@ -493,8 +448,15 @@ export const spaceship = (() => {
 
                 if (enemy.health <= 0) {
                   this.removeHealthBar(enemy);
-                  enemy.parent.remove(enemy);
+                  this.scene.remove(enemy);
+                  enemyLoader.enemies.splice(enemyIndex, 1);
                   this.playSound();
+
+                  // Check if all enemies are dead
+                  if (enemyLoader.enemies.length === 0) {
+                    addXP(100); // Award 100 XP for clearing all enemies
+                    console.log("ALL ENEMIES DEFEATED! +100 XP");
+                  }
                 }
                 return;
               }

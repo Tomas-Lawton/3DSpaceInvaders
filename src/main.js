@@ -151,12 +151,17 @@ class Game {
     // update world
     if (this.world && this.audioManager) {
       let playerCurrentPosition;
+      let playerForwardDirection;
       if (this.playerShip === undefined) {
         playerCurrentPosition = new THREE.Vector3(0, 0, 0); // Just assign the vector itself
+        playerForwardDirection = new THREE.Vector3(0, 0, 1);
       } else {
         playerCurrentPosition = this.playerShip.mesh.position; // Access the position of the ship's mesh
+        // Get the player's forward direction
+        playerForwardDirection = new THREE.Vector3();
+        this.playerShip.mesh.getWorldDirection(playerForwardDirection);
       }
-      this.world.Update(playerCurrentPosition, this.audioManager); // depends on user and sound
+      this.world.Update(playerCurrentPosition, this.audioManager, playerForwardDirection); // depends on user and sound
     }
     this.composer.render();
   }

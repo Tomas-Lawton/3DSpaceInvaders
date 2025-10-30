@@ -172,20 +172,20 @@ export const enemy = (() => {
       enemy,
       playerCurrentPosition,
       alternateTarget = null,
-      inRangeDistance = 300,
-      maxPlanetDistance = 600
+      inRangeDistance = 800,
+      maxPlanetDistance = 1500
     ) {
       if (enemy) {
         if (this.target) {
           alternateTarget = this.target;
         }
-        const phaseSpeed = 0.014;
+        const phaseSpeed = 0.025; // Increased from 0.014 for more responsive turning
         const playerDistance = enemy.position.distanceTo(playerCurrentPosition);
         const planetDistance = alternateTarget
           ? enemy.position.distanceTo(alternateTarget)
           : Infinity;
 
-        // shoot user if in range, otherwise stay at the planet, also return to planet if enemy chases user out of range
+        // Engage player if in range, otherwise patrol around planet
         const chosenTargetPosition =
           playerDistance < inRangeDistance && planetDistance < maxPlanetDistance
             ? playerCurrentPosition
@@ -208,7 +208,7 @@ export const enemy = (() => {
 
     animateForwardMovement(enemy) {
       if (enemy) {
-        let speed = 0.9;
+        let speed = 0.6; // Increased from 0.4 for more aggressive pursuit
         let direction = new THREE.Vector3();
         enemy.getWorldDirection(direction); // Get the direction the ship is facing
         direction.multiplyScalar(speed);
@@ -244,40 +244,43 @@ export const enemy = (() => {
     //   }
     // }
 
-    checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null) {
+    checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null, inRangeDistance = 800) {
       if (this.target) {
         alternateTarget = this.target;
       }
 
       const currentTime = performance.now(); // For laser cooldown
 
-      const distanceThreshold = this.firingDistance; // Distance threshold for firing
-      const angleThreshold = Math.PI / 6; // 5 degrees in radians
+      const distanceThreshold = 200; // Increased firing range from 100 to 200
+      const angleThreshold = Math.PI / 4; // Widened from PI/6 to PI/4 for easier shooting
 
       // Get the current facing direction of the enemy
       const enemyDirection = new THREE.Vector3();
       enemy.getWorldDirection(enemyDirection);
 
-      // Check firing condition for the player
-      const directionToPlayer = new THREE.Vector3();
-      directionToPlayer
-        .subVectors(playerCurrentPosition, enemy.position)
-        .normalize();
-
       const distanceToPlayer = enemy.position.distanceTo(playerCurrentPosition);
-      const angleToPlayer = enemyDirection.angleTo(directionToPlayer);
 
-      if (
-        distanceToPlayer < distanceThreshold &&
-        angleToPlayer < angleThreshold &&
-        currentTime - enemy.lastShotTime > this.shootCooldown
-      ) {
-        this.fireLaser(enemy);
-        enemy.lastShotTime = currentTime;
-        return; // Exit after firing at the player to avoid double shots
+      // Only shoot at player if they're within engagement range
+      if (distanceToPlayer < inRangeDistance) {
+        const directionToPlayer = new THREE.Vector3();
+        directionToPlayer
+          .subVectors(playerCurrentPosition, enemy.position)
+          .normalize();
+
+        const angleToPlayer = enemyDirection.angleTo(directionToPlayer);
+
+        if (
+          distanceToPlayer < distanceThreshold &&
+          angleToPlayer < angleThreshold &&
+          currentTime - enemy.lastShotTime > this.shootCooldown
+        ) {
+          this.fireLaser(enemy);
+          enemy.lastShotTime = currentTime;
+          return; // Exit after firing at the player to avoid double shots
+        }
       }
 
-      // Check firing condition for the alternate target (if it exists)
+      // Attack the planet if player is not in range
       if (alternateTarget) {
         const directionToTarget = new THREE.Vector3();
         directionToTarget
@@ -292,13 +295,13 @@ export const enemy = (() => {
           angleToTarget < angleThreshold &&
           currentTime - enemy.lastShotTime > this.shootCooldown
         ) {
-          this.fireLaser(enemy);
+          this.fireLaser(enemy, true); // Pass true to indicate planet damage
           enemy.lastShotTime = currentTime;
         }
       }
     }
 
-    fireLaser(enemy) {
+    fireLaser(enemy, targetingPlanet = false) {
       const direction = new THREE.Vector3();
       enemy.getWorldDirection(direction);
 
@@ -317,7 +320,7 @@ export const enemy = (() => {
 
       console.log(direction);
       const velocity = direction.multiplyScalar(1); // higher is slower
-      this.activeLasers.push({ laserBeam, velocity, direction });
+      this.activeLasers.push({ laserBeam, velocity, direction, targetingPlanet });
 
       if (this.lightSound) {
         this.lightSound.currentTime = 0;

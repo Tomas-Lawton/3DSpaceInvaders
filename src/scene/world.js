@@ -31,7 +31,7 @@ export const gameworld = (() => {
         // this.createLoops();
       }
     }
-    Update(playerCurrentPosition, audioManager) {
+    Update(playerCurrentPosition, audioManager, playerForwardDirection = null) {
       if (this.asteroidLoader) {
         this.asteroidLoader.animateAsteroids(
           playerCurrentPosition,
@@ -43,6 +43,7 @@ export const gameworld = (() => {
         this.planetLoader.animatePlanets(
           playerCurrentPosition,
           this.repositionObj,
+          playerForwardDirection
         );
       }
 
