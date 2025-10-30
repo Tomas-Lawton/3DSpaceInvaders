@@ -6,7 +6,7 @@ import { gameworld } from "./scene/world.js";
 import { spaceship } from "./components/player/spaceship.js";
 // import { setupGUI } from "./components/gui.js";
 import { entity } from "./utils/entity.js";
-import { initRenderer, initComposer } from "./scene/renderer.js";
+import { initRenderer, initComposer, updateWarpEffect } from "./scene/renderer.js";
 import {
   updateVelocityBar,
   updateHealthBar,
@@ -22,11 +22,13 @@ import { initHUD } from "./hud/hud.js";
 class Game {
   constructor() {
     this.isPaused = false;
+    this.gameStarted = false; // Track if game has started (intro dismissed)
     this.initScene();
     this.initEntities();
     this.initialize();
     this.previousTime = 0; // animation loop
     this.setupPauseListener();
+    this.setupIntroListener();
   }
 
   initScene() {
@@ -81,7 +83,7 @@ class Game {
 
   setupPauseListener() {
     window.addEventListener("keydown", (event) => {
-      if (event.key === "e" || event.key === "E") {
+      if ((event.key === "e" || event.key === "E") && this.gameStarted) {
         this.isPaused = !this.isPaused; // Toggle the pause state
         if (this.isPaused) {
           console.log("Game Paused");
@@ -91,6 +93,34 @@ class Game {
         toggleHUD();
       }
     });
+  }
+
+  setupIntroListener() {
+    const startGame = () => {
+      const introScreen = document.getElementById('intro-screen');
+      if (introScreen && introScreen.style.display !== 'none') {
+        introScreen.style.display = 'none';
+        this.gameStarted = true;
+        console.log('🚀 Game started! Good luck, pilot!');
+      }
+    };
+
+    // Button click
+    const startButton = document.getElementById('start-game-btn');
+    if (startButton) {
+      startButton.addEventListener('click', startGame);
+    }
+
+    // Enter or Space key press
+    const keyHandler = (event) => {
+      if (!this.gameStarted && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault(); // Prevent default space/enter behavior
+        startGame();
+        // Remove listener after first use
+        window.removeEventListener('keydown', keyHandler);
+      }
+    };
+    window.addEventListener('keydown', keyHandler);
   }
 
   async setupAudio() {
@@ -115,8 +145,8 @@ class Game {
     this.previousTime = currentTime;
     if (this.playerShip !== undefined && this.playerShip.mesh === null) return; // wait to load
 
-    if (!this.isPaused) {
-      // Only update if the game is not paused
+    if (!this.isPaused && this.gameStarted) {
+      // Only update if the game is not paused and has started
       this.Update(timeElapsed);
     }
   }
@@ -161,8 +191,18 @@ class Game {
         playerForwardDirection = new THREE.Vector3();
         this.playerShip.mesh.getWorldDirection(playerForwardDirection);
       }
-      this.world.Update(playerCurrentPosition, this.audioManager, playerForwardDirection); // depends on user and sound
+      this.world.Update(playerCurrentPosition, this.audioManager, playerForwardDirection, this.playerShip); // depends on user and sound
     }
+
+    // Update warp effect based on ship velocity
+    if (this.playerShip && this.composer) {
+      updateWarpEffect(
+        this.composer,
+        this.playerShip.forwardVelocity,
+        PHYSICS_CONSTANTS.maxVelocity
+      );
+    }
+
     this.composer.render();
   }
 }

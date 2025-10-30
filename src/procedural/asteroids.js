@@ -45,7 +45,8 @@ export const asteroids = (() => {
             (Math.random() - 0.5) * 1000
         );
         this.scene.add(asteroidGroup);
-        const numberOfAsteroids = Math.floor(Math.random() * 90) + 10; // Ensure a minimum of 10 asteroids
+        // Reduced max asteroids from 90 to 50 for better performance
+        const numberOfAsteroids = Math.floor(Math.random() * 40) + 10; // 10-50 asteroids per system
         let entropyCoefficient = (Math.random() - 0.5);
     
         // Choose a formation type: 'circle', 'spiral', 'cluster'
@@ -100,6 +101,7 @@ export const asteroids = (() => {
             asteroidClone.healthBar = null;
             const scale = Math.random() * 4 + 1; // Scale factor between 1 and 5
             asteroidClone.scale.set(scale, scale, scale);
+            asteroidClone.frustumCulled = true; // Enable frustum culling for performance
             asteroidGroup.add(asteroidClone);
         }
 

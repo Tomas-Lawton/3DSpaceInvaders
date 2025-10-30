@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { initializeUpgradeUI, onPauseMenuOpen } from "./upgrade-ui.js";
+import { initializeMessageUI, onPauseMenuOpenMessage } from "./message-ui.js";
 
 let scene, camera, renderer, currentModel, controls;
 const models = {};
@@ -51,6 +53,8 @@ export function initHUD() {
 
   animate();
   initHUDUpdates();
+  initializeUpgradeUI(); // Initialize upgrade system UI
+  initializeMessageUI(); // Initialize message system UI
 }
 
 function animate() {

@@ -43,13 +43,13 @@ export const spaceship = (() => {
       // );
 
       this.boosterFlame = new THREE.Mesh(
-        new THREE.ConeGeometry(1.5, 10, 8),
+        new THREE.ConeGeometry(2, 5, 8),
         new THREE.MeshStandardMaterial({
           emissiveIntensity: 2.5,
           emissive: 0xc87dff,
           color: 0xc87dff,
           transparent: true,
-          opacity: 0.7,
+          opacity: 0.6,
           side: THREE.DoubleSide,
         })
       );
@@ -159,23 +159,27 @@ export const spaceship = (() => {
 
           tempObjectGroup.add(loadedModel);
 
-          const cockpitGlow = new THREE.PointLight(0x00ffff, 5, 30); // Increased intensity and distance
-          cockpitGlow.position.set(0, 2, 8); // Adjusted position
+          // Reduce light distance for better performance
+          const cockpitGlow = new THREE.PointLight(0x00ffff, 5, 20); // Reduced from 30
+          cockpitGlow.position.set(0, 2, 8);
           tempObjectGroup.add(cockpitGlow);
+          this.cockpitGlow = cockpitGlow; // Store reference for pulsing
 
-          const ambientLight = new THREE.PointLight(0x660099, 1, 50);
-          ambientLight.position.set(0, 5, 0);
-          tempObjectGroup.add(ambientLight);
+          // Remove ambient light - not needed with scene ambient light
+          // const ambientLight = new THREE.PointLight(0x660099, 1, 50);
+          // ambientLight.position.set(0, 5, 0);
+          // tempObjectGroup.add(ambientLight);
 
-          const spotLight = new THREE.SpotLight(
-            0xff6600,
-            3,
-            5,
-            Math.PI * 1.1,
-            0.2
-          );
-          spotLight.position.copy(tempObjectGroup.position);
-          tempObjectGroup.add(spotLight);
+          // Remove spotlight - emissive materials provide enough glow
+          // const spotLight = new THREE.SpotLight(
+          //   0xff6600,
+          //   3,
+          //   5,
+          //   Math.PI * 1.1,
+          //   0.2
+          // );
+          // spotLight.position.copy(tempObjectGroup.position);
+          // tempObjectGroup.add(spotLight);
           tempObjectGroup.add(this.boosterFlame);
 
           this.mesh.add(tempObjectGroup);
@@ -190,8 +194,14 @@ export const spaceship = (() => {
 
           this.updateSpaceshipPosition();
 
-          // Hide loading screen
+          // Hide loading screen and show intro
           progressContainer.style.display = "none";
+
+          // Show intro screen
+          const introScreen = document.getElementById('intro-screen');
+          if (introScreen) {
+            introScreen.style.display = 'flex';
+          }
         },
         (xhr) => {
           let progressAmount = (xhr.loaded / xhr.total) * 100;
@@ -225,8 +235,9 @@ export const spaceship = (() => {
       const direction = new THREE.Vector3();
       this.mesh.children[0].getWorldDirection(direction);
       const laserPosition = this.mesh.position.clone();
+      // Use lower-poly geometry for player lasers
       const laserBeam = new THREE.Mesh(
-        new THREE.SphereGeometry(0.2, 16, 16),
+        new THREE.SphereGeometry(0.2, 8, 8), // Reduced from 16x16
         new THREE.MeshStandardMaterial({
           emissive: 0xc87dff,
           emissiveIntensity: 3,
@@ -341,8 +352,8 @@ export const spaceship = (() => {
       this.scene.add(rightTrail);
       this.wingTrails.right.push(rightTrail);
 
-      // Clean up
-      if (this.wingTrails.left.length > 20) {
+      // Reduced max trails from 20 to 10 for better performance
+      if (this.wingTrails.left.length > 10) {
         const old = this.wingTrails.left.shift();
         this.scene.remove(old);
         old.geometry.dispose();
@@ -355,10 +366,11 @@ export const spaceship = (() => {
       }
     }
     updateWingTrails() {
+      // Faster fade rate to reduce total trail count
       [...this.wingTrails.left, ...this.wingTrails.right].forEach(
-        (trail, index) => {
-          trail.life -= 0.03;
-          trail.material.opacity = trail.life * 0.3; // Lighter fade
+        (trail) => {
+          trail.life -= 0.05; // Increased from 0.03 for faster fade
+          trail.material.opacity = trail.life * 0.3;
 
           if (trail.life <= 0) {
             this.scene.remove(trail);
@@ -381,15 +393,20 @@ export const spaceship = (() => {
 
     handleLaserMovement(asteroidLoader, enemyLoader) {
       if (this.activeLasers) {
-        this.activeLasers.forEach((beam, index) => {
+        // Iterate backwards for safe removal during iteration
+        for (let index = this.activeLasers.length - 1; index >= 0; index--) {
+          const beam = this.activeLasers[index];
           const { laserBeam, velocity } = beam;
           laserBeam.position.add(velocity.clone().multiplyScalar(0.2));
 
-          // first check distance
-          if (laserBeam.position.distanceTo(this.mesh.position) > 250) {
+          // Check distance - increased threshold for better cleanup
+          if (laserBeam.position.distanceTo(this.mesh.position) > 300) {
             this.scene.remove(laserBeam);
+            // Dispose geometry and material to free memory
+            if (laserBeam.geometry) laserBeam.geometry.dispose();
+            if (laserBeam.material) laserBeam.material.dispose();
             this.activeLasers.splice(index, 1);
-            return;
+            continue;
           }
 
           // check asteroid collisions
@@ -402,6 +419,9 @@ export const spaceship = (() => {
                   }
                   if (this.checkCollision(laserBeam, asteroid)) {
                     this.scene.remove(laserBeam);
+                    // Dispose geometry and material
+                    if (laserBeam.geometry) laserBeam.geometry.dispose();
+                    if (laserBeam.material) laserBeam.material.dispose();
                     this.activeLasers.splice(index, 1);
                     asteroid.health -= this.damageAmount;
                     if (this.softBoom) {
@@ -434,8 +454,10 @@ export const spaceship = (() => {
           if (enemyLoader && enemyLoader.enemies) {
             enemyLoader.enemies.forEach((enemy, enemyIndex) => {
               if (this.checkCollision(laserBeam, enemy)) {
-                console.log("hit");
                 this.scene.remove(laserBeam);
+                // Dispose geometry and material
+                if (laserBeam.geometry) laserBeam.geometry.dispose();
+                if (laserBeam.material) laserBeam.material.dispose();
                 this.activeLasers.splice(index, 1);
                 enemy.health -= this.damageAmount;
                 if (this.softBoom) {
@@ -462,7 +484,7 @@ export const spaceship = (() => {
               }
             });
           }
-        });
+        }
       }
     }
     // showHealthBar(meshObj) {
@@ -506,9 +528,10 @@ export const spaceship = (() => {
 
         meshObj.healthBar = { element: healthBar };
 
+        // Reduced update frequency from 50ms to 100ms for better performance
         meshObj.healthBar.interval = setInterval(() => {
           this.updateHealthBarPosition(meshObj);
-        }, 50);
+        }, 100);
       }
 
       const healthPercentage = Math.max(0, Math.min(1, meshObj.health / 100));
@@ -633,26 +656,29 @@ export const spaceship = (() => {
     checkAsteroidCollisions(asteroidLoader) {
       const currentTimestamp = performance.now();
 
-      if (this.lastCollisionCheck === undefined) {
-        this.lastCollisionCheck = currentTimestamp;
+      if (this.lastAsteroidCollisionCheck === undefined) {
+        this.lastAsteroidCollisionCheck = currentTimestamp;
       }
 
-      if (currentTimestamp - this.lastCollisionCheck < 1000) {
+      // Check less frequently (500ms instead of 1000ms) but with cooldown after hit
+      if (currentTimestamp - this.lastAsteroidCollisionCheck < 500) {
         return;
       }
-      if (asteroidLoader) {
-        if (asteroidLoader.asteroidSystem) {
-          for (const system of asteroidLoader.asteroidSystem) {
-            system.children.forEach((asteroid) => {
-              if (asteroid instanceof THREE.Light) {
-                return;
-              }
-              if (this.checkCollision(this.mesh, asteroid)) {
-                this.userHit(40);
-                this.lastCollisionCheck = currentTimestamp;
-                return;
-              }
-            });
+
+      if (asteroidLoader && asteroidLoader.asteroidSystem) {
+        for (const system of asteroidLoader.asteroidSystem) {
+          // Calculate distance to system first for early exit
+          const distanceToSystem = this.mesh.position.distanceTo(system.position);
+          if (distanceToSystem > 200) continue; // Skip distant asteroid systems
+
+          for (const asteroid of system.children) {
+            if (asteroid instanceof THREE.Light) continue;
+
+            if (this.checkCollision(this.mesh, asteroid)) {
+              this.userHit(40);
+              this.lastAsteroidCollisionCheck = currentTimestamp + 500; // Add cooldown after hit
+              return;
+            }
           }
         }
       }
@@ -677,23 +703,24 @@ export const spaceship = (() => {
     checkEnemyLaserCollisions(enemyLoader) {
       const currentTimestamp = performance.now();
 
-      if (this.lastCollisionCheck === undefined) {
-        this.lastCollisionCheck = currentTimestamp;
+      if (this.lastEnemyLaserCollisionCheck === undefined) {
+        this.lastEnemyLaserCollisionCheck = currentTimestamp;
       }
 
-      if (currentTimestamp - this.lastCollisionCheck < 300) {
+      // Check more frequently for enemy lasers (200ms) as they're fast
+      if (currentTimestamp - this.lastEnemyLaserCollisionCheck < 200) {
         return;
       }
 
       if (enemyLoader && enemyLoader.activeLasers) {
-        enemyLoader.activeLasers.forEach((laserData) => {
-          const { laserBeam, _ } = laserData;
+        for (const laserData of enemyLoader.activeLasers) {
+          const { laserBeam } = laserData;
           if (this.checkCollision(this.mesh, laserBeam)) {
             this.userHit(23);
-            this.lastCollisionCheck = currentTimestamp;
+            this.lastEnemyLaserCollisionCheck = currentTimestamp + 300; // Add cooldown after hit
             return;
           }
-        });
+        }
       }
     }
 
@@ -732,9 +759,9 @@ export const spaceship = (() => {
       // }
       // this.updateEngineParticles();
 
-      // Wing trails - create when moving moderately fast
-      if (this.forwardVelocity > 0.3 && Math.random() > 0.95) {
-        // Changed from 0.8 to 0.95
+      // Wing trails - create less frequently for better performance
+      if (this.forwardVelocity > 0.3 && Math.random() > 0.97) {
+        // Changed from 0.95 to 0.97 for less frequent spawning
         this.createWingTrail();
       }
       this.updateWingTrails();

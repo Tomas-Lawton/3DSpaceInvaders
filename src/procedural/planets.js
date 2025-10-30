@@ -11,9 +11,10 @@ export const planets = (() => {
       this.planets = [];
       this.planetLoader = new GLTFLoader();
       this.path = "public/planet/";
-      this.defaultHealth = 1000;
+      this.defaultHealth = 5000; // Increased from 1000 to 5000 for longer battles
       this.enemiesSpawned = false; // redundant can use loader only
       this.enemyLoader = null;
+      this.currentPlanet = null; // Track which planet enemies are assigned to
     }
 
     // Method to load planets asynchronously
@@ -60,7 +61,9 @@ export const planets = (() => {
 
 
       planetGroup.health = this.defaultHealth;
+      planetGroup.maxHealth = this.defaultHealth;
       planetGroup.planetSize = scale * -1;
+      planetGroup.hasEnemies = false; // Track if enemies are spawned for this planet
 
       this.scene.add(planetGroup);
       this.planets.push(planetGroup);
@@ -114,11 +117,23 @@ export const planets = (() => {
 
 
 
-    animatePlanets(playerCurrentPosition, reposition, playerForwardDirection = null) {
+    animatePlanets(playerCurrentPosition, reposition, playerForwardDirection = null, playerShip = null) {
       if (this.enemyLoader) {
         this.enemyLoader.animateEnemies(playerCurrentPosition);
         // Check for enemy laser collisions with planets
         this.checkEnemyLaserPlanetCollisions();
+
+        // Check if all enemies are cleared while planet still exists
+        if (this.currentPlanet && this.currentPlanet.hasEnemies && this.enemyLoader.enemies.length === 0) {
+          if (playerShip) {
+            playerShip.health = Math.min(playerShip.health + 50, playerShip.maxHealth);
+          }
+          // Reset the flags
+          this.currentPlanet.hasEnemies = false;
+          this.currentPlanet = null;
+          this.enemyLoader = null;
+          this.enemiesSpawned = false;
+        }
       }
 
       if (this.planets) {
@@ -128,12 +143,14 @@ export const planets = (() => {
         this.planets.forEach((planet, index) => {
           planet.children[0].rotation.y += 0.0001;
 
-          // Deplete planet health over time
-          planet.health -= 0.05; // Slowly loses health
-
           // Check if planet health is depleted
           if (planet.health <= 0) {
-            console.log("Planet destroyed!");
+            // If enemies exist for this planet, make them chase the player
+            if (planet.hasEnemies && this.enemyLoader) {
+              // Set target to null so enemies chase player
+              this.enemyLoader.target = null;
+            }
+
             this.scene.remove(planet);
             this.planets.splice(index, 1);
             return; // Skip further processing for this planet
@@ -161,17 +178,20 @@ export const planets = (() => {
             reposition(planet.position, playerCurrentPosition);
             // Reset enemies spawned flag so new enemies can spawn at new location
             this.enemiesSpawned = false;
+            planet.hasEnemies = false;
           }
 
           if (playerDistance < 1500) { //  closer than 1500: spawn enemy group
-            if (!this.enemiesSpawned) {
+            if (!planet.hasEnemies) {
+                planet.hasEnemies = true;
                 this.enemiesSpawned = true;
-                const enemyCount = 5
-                const enemyLoader = new enemy.EnemyLoader(this.scene);
-                enemyLoader.initaliseEnemies(enemyCount, planet.position);
-                this.enemyLoader = enemyLoader;
-
-                console.log("DOGFIGHT")
+                this.currentPlanet = planet;
+                const enemyCount = 5; // Max 5 enemies per planet
+                // Only create new loader if we don't have one already
+                if (!this.enemyLoader) {
+                  this.enemyLoader = new enemy.EnemyLoader(this.scene);
+                }
+                this.enemyLoader.initaliseEnemies(enemyCount, planet.position);
             }
           }
           if (playerDistance <= planet.planetSize) {
@@ -225,7 +245,6 @@ export const planets = (() => {
 
         // Clear the enemy loader reference
         this.enemyLoader = null;
-        console.log("Cleaned up all enemies and lasers");
       }
     }
 
@@ -244,11 +263,12 @@ export const planets = (() => {
 
           if (laserBox.intersectsBox(planetBox)) {
             // Damage the planet
-            planet.health -= 10; // Damage per laser hit
-            console.log(`Planet hit! Health: ${planet.health}`);
+            planet.health -= 5; // Reduced from 10 to 5 since planet health is now 5000
 
-            // Remove the laser
+            // Remove the laser and dispose resources
             this.scene.remove(laserBeam);
+            if (laserBeam.geometry) laserBeam.geometry.dispose();
+            if (laserBeam.material) laserBeam.material.dispose();
             this.enemyLoader.activeLasers.splice(laserIndex, 1);
           }
         });

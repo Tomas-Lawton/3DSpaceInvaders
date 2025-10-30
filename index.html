@@ -33,6 +33,16 @@
     <p id="user-position" class="hud-ui"></p>
     <p id="nearest-planet" class="hud-ui"></p>
 
+    <!-- Message Alert Notification (In-Game) -->
+    <div id="message-alert" class="hud-ui" style="display: none;">
+      <div class="alert-icon">📬</div>
+      <div class="alert-content">
+        <span class="alert-text">NEW MESSAGE</span>
+        <span class="alert-subtitle">Press ESC to view</span>
+      </div>
+      <div class="alert-badge">1</div>
+    </div>
+
     <!-- Directional Indicators -->
     <div id="direction-indicators" class="hud-ui">
       <!-- Visual circle guide -->
@@ -53,27 +63,66 @@
           </div>
 
           <div id="info-box">
-            <p class="info-text">Your mom is a very nice</p>
-            <p class="info-text">lady and has a job for you...</p>
-            <p class="info-text"></p>
-            <p class="info-text-highlight">Start by flying to planets</p>
-            <p class="info-text-highlight">to save them.</p>
-            <p class="info-text"></p>
-            <p class="info-text-highlight">Collect XP and Resources</p>
-            <p class="info-text-highlight">to upgrade your ship.</p>
+            <div class="message-header">
+              <span class="message-icon">🚀</span>
+              <span class="message-title">Welcome, Pilot</span>
+            </div>
+            <div class="message-body" id="message-body">
+              <p class="info-text">Loading mission data...</p>
+            </div>
+            <div class="message-footer">
+              <button class="message-nav-btn" id="prev-message">◀ Prev</button>
+              <span class="message-counter" id="message-counter">1 / 1</span>
+              <button class="message-nav-btn" id="next-message">Next ▶</button>
+            </div>
+          </div>
+
+          <!-- Quest Tracker (Below info box) -->
+          <div id="quest-tracker" style="display: none;">
+            <div class="quest-header">
+              <span class="quest-icon">📋</span>
+              <span class="quest-title">Active Quests</span>
+            </div>
+            <div class="quest-list" id="quest-list">
+              <!-- Dynamically populated -->
+            </div>
           </div>
         </div>
 
         <!-- Top Right Section - Ship Selector -->
         <div id="top-right-section">
           <div id="ships-bar">
-            <div id="ship-1" class="ship-option active"></div>
-            <div id="ship-2" class="ship-option"></div>
-            <div id="ship-3" class="ship-option"></div>
-            <div id="ship-4" class="ship-option"></div>
-            <div id="ship-5" class="ship-option"></div>
-            <div id="ship-6" class="ship-option"></div>
+            <div id="ship-1" class="ship-option active unlocked" data-ship="ship-1">
+              <span class="ship-lock-icon">✓</span>
+              <span class="ship-name-label">STARTER</span>
+            </div>
+            <div id="ship-2" class="ship-option locked" data-ship="ship-2">
+              <span class="ship-lock-icon">🔒</span>
+              <span class="ship-name-label">SCOUT</span>
+              <span class="ship-cost-label">50🔩 20🏆 5💎</span>
+            </div>
+            <div id="ship-3" class="ship-option locked" data-ship="ship-3">
+              <span class="ship-lock-icon">🔒</span>
+              <span class="ship-name-label">FIGHTER</span>
+              <span class="ship-cost-label">100🔩 50🏆 15💎</span>
+            </div>
+            <div id="ship-4" class="ship-option locked" data-ship="ship-4">
+              <span class="ship-lock-icon">🔒</span>
+              <span class="ship-name-label">HEAVY</span>
+              <span class="ship-cost-label">150🔩 80🏆 30💎</span>
+            </div>
+            <div id="ship-5" class="ship-option locked" data-ship="ship-5">
+              <span class="ship-lock-icon">🔒</span>
+              <span class="ship-name-label">INTER</span>
+              <span class="ship-cost-label">200🔩 120🏆 50💎</span>
+            </div>
+            <div id="ship-6" class="ship-option locked" data-ship="ship-6">
+              <span class="ship-lock-icon">🔒</span>
+              <span class="ship-name-label">CAPITAL</span>
+              <span class="ship-cost-label">300🔩 200🏆 100💎</span>
+            </div>
           </div>
+          <button id="unlock-ship" style="display: none;">UNLOCK SHIP</button>
         </div>
 
         <!-- Left Section - Ship Stats -->
@@ -120,38 +169,104 @@
           </div>
         </div>
 
-        <!-- Right Section - Status Checklist -->
-        <div id="right-status-section">
-          <div class="status-item status-complete">
-            <div class="status-icon">✓</div>
-            <div class="status-text">
-              <p class="status-title">THERMAL SHIELD</p>
-              <p class="status-subtitle">Applied</p>
+        <!-- Right Section - Upgrades Panel -->
+        <div id="right-upgrades-section">
+          <h3 class="upgrades-header">SHIP UPGRADES</h3>
+
+          <div class="upgrade-item" data-upgrade="speed">
+            <div class="upgrade-header">
+              <span class="upgrade-icon">⚡</span>
+              <div class="upgrade-info">
+                <p class="upgrade-name">Engine Boost</p>
+                <p class="upgrade-desc">+15% max velocity</p>
+              </div>
             </div>
+            <div class="upgrade-level">
+              <span class="level-display">Lv <span class="current-level">0</span>/5</span>
+              <div class="level-bar">
+                <div class="level-progress" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="upgrade-button" data-upgrade="speed">
+              <span class="cost-display">
+                <span class="cost-item">🔩<span class="iron-cost">20</span></span>
+                <span class="cost-item">🏆<span class="gold-cost">10</span></span>
+                <span class="cost-item">💎<span class="crystal-cost">5</span></span>
+              </span>
+              <span class="xp-cost">XP: 200</span>
+            </button>
           </div>
 
-          <div class="status-item status-complete">
-            <div class="status-icon">✓</div>
-            <div class="status-text">
-              <p class="status-title">BURN GO/NO-GO</p>
-              <p class="status-subtitle">Normal</p>
+          <div class="upgrade-item" data-upgrade="health">
+            <div class="upgrade-header">
+              <span class="upgrade-icon">🛡️</span>
+              <div class="upgrade-info">
+                <p class="upgrade-name">Hull Reinforcement</p>
+                <p class="upgrade-desc">+20 max health</p>
+              </div>
             </div>
+            <div class="upgrade-level">
+              <span class="level-display">Lv <span class="current-level">0</span>/5</span>
+              <div class="level-bar">
+                <div class="level-progress" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="upgrade-button" data-upgrade="health">
+              <span class="cost-display">
+                <span class="cost-item">🔩<span class="iron-cost">30</span></span>
+                <span class="cost-item">🏆<span class="gold-cost">15</span></span>
+                <span class="cost-item">💎<span class="crystal-cost">5</span></span>
+              </span>
+              <span class="xp-cost">XP: 300</span>
+            </button>
           </div>
 
-          <div class="status-item status-pending">
-            <div class="status-icon">✓</div>
-            <div class="status-text">
-              <p class="status-title">POWER COMPLETION</p>
-              <p class="status-subtitle">Awaiting</p>
+          <div class="upgrade-item" data-upgrade="fireRate">
+            <div class="upgrade-header">
+              <span class="upgrade-icon">🔫</span>
+              <div class="upgrade-info">
+                <p class="upgrade-name">Weapon System</p>
+                <p class="upgrade-desc">+10% fire rate</p>
+              </div>
             </div>
+            <div class="upgrade-level">
+              <span class="level-display">Lv <span class="current-level">0</span>/5</span>
+              <div class="level-bar">
+                <div class="level-progress" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="upgrade-button" data-upgrade="fireRate">
+              <span class="cost-display">
+                <span class="cost-item">🔩<span class="iron-cost">15</span></span>
+                <span class="cost-item">🏆<span class="gold-cost">20</span></span>
+                <span class="cost-item">💎<span class="crystal-cost">10</span></span>
+              </span>
+              <span class="xp-cost">XP: 250</span>
+            </button>
           </div>
 
-          <div class="status-item status-complete">
-            <div class="status-icon">✓</div>
-            <div class="status-text">
-              <p class="status-title">STATION DECK CHECK</p>
-              <p class="status-subtitle">Normal</p>
+          <div class="upgrade-item" data-upgrade="shields">
+            <div class="upgrade-header">
+              <span class="upgrade-icon">⚔️</span>
+              <div class="upgrade-info">
+                <p class="upgrade-name">Shield Generator</p>
+                <p class="upgrade-desc">15% damage reduction</p>
+              </div>
             </div>
+            <div class="upgrade-level">
+              <span class="level-display">Lv <span class="current-level">0</span>/3</span>
+              <div class="level-bar">
+                <div class="level-progress" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="upgrade-button" data-upgrade="shields">
+              <span class="cost-display">
+                <span class="cost-item">🔩<span class="iron-cost">50</span></span>
+                <span class="cost-item">🏆<span class="gold-cost">50</span></span>
+                <span class="cost-item">💎<span class="crystal-cost">25</span></span>
+              </span>
+              <span class="xp-cost">XP: 800</span>
+            </button>
           </div>
         </div>
 
@@ -309,6 +424,57 @@
 
     <div id="progress-container">
       <h1 id="progress">LOADING 0/100</h1>
+    </div>
+
+    <!-- Intro Screen (After Loading) -->
+    <div id="intro-screen" style="display: none;">
+      <div class="intro-container">
+        <div class="intro-header">
+          <h1 class="intro-title">🚀 3D SPACE INVADERS</h1>
+          <p class="intro-subtitle">Defend Planets • Collect Resources • Upgrade Ships</p>
+        </div>
+
+        <div class="intro-content">
+          <div class="intro-section">
+            <h2 class="intro-section-title">🎮 CONTROLS</h2>
+            <div class="intro-controls-grid">
+              <div class="intro-control">
+                <span class="intro-key">WASD</span>
+                <span class="intro-label">Fly</span>
+              </div>
+              <div class="intro-control">
+                <span class="intro-key">MOUSE</span>
+                <span class="intro-label">Aim</span>
+              </div>
+              <div class="intro-control">
+                <span class="intro-key">SPACE</span>
+                <span class="intro-label">Fire</span>
+              </div>
+              <div class="intro-control">
+                <span class="intro-key">ESC</span>
+                <span class="intro-label">Menu</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="intro-section">
+            <h2 class="intro-section-title">⚔️ QUICK TIPS</h2>
+            <div class="intro-tips">
+              <p class="intro-tip">▸ Defend planets from enemy waves (< 1500km)</p>
+              <p class="intro-tip">▸ Follow <strong>cyan arrows</strong> to planets, <strong>red arrows</strong> to enemies</p>
+              <p class="intro-tip">▸ Destroy asteroids for resources 🔩 🏆 💎</p>
+              <p class="intro-tip">▸ Press <strong>ESC</strong> to upgrade your ship</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="intro-footer">
+          <button id="start-game-btn" class="intro-start-button">
+            <span class="button-text">START MISSION</span>
+            <span class="button-subtitle">Press ENTER, SPACE, or click</span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <script type="module" src="./src/main.js"></script>

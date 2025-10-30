@@ -48,8 +48,19 @@ export function addXP(amount) {
   console.log(`+${amount} XP! Total: ${xp}`);
 }
 
+export function deductXP(amount) {
+  xp = Math.max(0, xp - amount);
+  updateResourceDisplay();
+  console.log(`-${amount} XP. Remaining: ${xp}`);
+}
+
 export function getXP() {
   return xp;
+}
+
+// Make addXP globally available for testing
+if (typeof window !== 'undefined') {
+  window.addXP = addXP;
 }
 
 export function toggleHUD() {
@@ -57,6 +68,14 @@ export function toggleHUD() {
   if (hud.style.display === 'none' || hud.style.display === '') {
     hud.style.display = 'flex';
     canvas.style.filter = 'blur(10px)';
+    // Update upgrade UI when opening pause menu
+    import('../hud/upgrade-ui.js').then(module => {
+      module.onPauseMenuOpen();
+    }).catch(err => console.error('Failed to load upgrade UI:', err));
+    // Update message UI when opening pause menu
+    import('../hud/message-ui.js').then(module => {
+      module.onPauseMenuOpenMessage();
+    }).catch(err => console.error('Failed to load message UI:', err));
   } else {
     hud.style.display = 'none';
     canvas.style.filter = 'none';
@@ -157,19 +176,20 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     };
 
     // Player's forward direction (already normalized from getWorldDirection)
+    // In Three.js, the default forward is -Z axis
     const forward = {
       x: playerForwardDirection.x,
       y: playerForwardDirection.y,
       z: playerForwardDirection.z
     };
 
-    // Calculate right vector (perpendicular to forward, in the horizontal plane)
-    // Using world up (0, 1, 0) to keep right vector horizontal
+    // Calculate right vector using cross product: right = forward × up
+    // World up vector
     const worldUp = { x: 0, y: 1, z: 0 };
     let right = {
-      x: worldUp.y * forward.z - worldUp.z * forward.y,
-      y: worldUp.z * forward.x - worldUp.x * forward.z,
-      z: worldUp.x * forward.y - worldUp.y * forward.x
+      x: forward.y * worldUp.z - forward.z * worldUp.y,
+      y: forward.z * worldUp.x - forward.x * worldUp.z,
+      z: forward.x * worldUp.y - forward.y * worldUp.x
     };
 
     // Normalize right vector
@@ -183,35 +203,38 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
       right = { x: 1, y: 0, z: 0 };
     }
 
-    // Calculate up vector (perpendicular to both forward and right)
+    // Calculate up vector using cross product: up = right × forward
     const up = {
-      x: forward.y * right.z - forward.z * right.y,
-      y: forward.z * right.x - forward.x * right.z,
-      z: forward.x * right.y - forward.y * right.x
+      x: right.y * forward.z - right.z * forward.y,
+      y: right.z * forward.x - right.x * forward.z,
+      z: right.x * forward.y - right.y * forward.x
     };
 
-    // Project target direction onto player's local coordinate system using dot product
-    const localRight = normalizedDir.x * right.x + normalizedDir.y * right.y + normalizedDir.z * right.z; // right/left
-    const localUp = normalizedDir.x * up.x + normalizedDir.y * up.y + normalizedDir.z * up.z; // up/down
-    const localForward = normalizedDir.x * forward.x + normalizedDir.y * forward.y + normalizedDir.z * forward.z; // front/back
+    // Project target direction onto player's local coordinate system
+    const localRight = normalizedDir.x * right.x + normalizedDir.y * right.y + normalizedDir.z * right.z;
+    const localUp = normalizedDir.x * up.x + normalizedDir.y * up.y + normalizedDir.z * up.z;
+    const localForward = normalizedDir.x * forward.x + normalizedDir.y * forward.y + normalizedDir.z * forward.z;
 
-    // HORIZONTAL PLANE: Use only forward and right for the circle position
-    // This shows "where to turn" on a compass
-    let horizontalX = localRight;
-    let horizontalZ = localForward;
+    // Calculate angle in the horizontal plane
+    // atan2(x, z) gives us the angle where:
+    // - 0° is straight ahead
+    // - 90° is to the right
+    // - -90° is to the left
+    // - 180° is behind
+    const horizontalAngle = Math.atan2(localRight, localForward);
 
-    // Calculate angle on horizontal plane
-    let horizontalAngle = Math.atan2(horizontalX, horizontalZ); // atan2(right, forward)
-
-    // Position on circle based on horizontal angle
-    let screenX = Math.sin(horizontalAngle) * circleRadius;
-    let screenY = -Math.cos(horizontalAngle) * circleRadius; // Negative because screen Y is inverted
+    // Position indicator on the circle
+    // We need to rotate by 90° to align with screen coordinates
+    // where positive X is right and positive Y is down
+    const screenX = Math.sin(horizontalAngle) * circleRadius;
+    const screenY = -Math.cos(horizontalAngle) * circleRadius; // Negative because screen Y goes down
 
     // Calculate final screen position
     const indicatorX = centerX + screenX;
     const indicatorY = centerY + screenY;
 
-    // Calculate arrow rotation - tangent to the circle, pointing along the bearing
+    // Calculate arrow rotation to point toward the target
+    // Convert to degrees and adjust for screen coordinates
     const arrowAngle = (horizontalAngle * 180 / Math.PI);
 
     // Determine arrow symbol based on vertical position

@@ -2,6 +2,11 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 export const enemy = (() => {
+  // Shared model cache to avoid loading the same model multiple times
+  let cachedEnemyModel = null;
+  let isLoadingModel = false;
+  const loadingCallbacks = [];
+
   class EnemyLoader {
     constructor(scene, camera, health = 80) {
       this.scene = scene;
@@ -16,6 +21,7 @@ export const enemy = (() => {
       this.shootCooldown = 200;
       this.lightSound = new Audio("public/audio/enemy_pew.mp3");
       this.firingDistance = 100;
+      this.updateCounter = 0; // For LOD optimization
     }
 
     // Initialise enemies without promises, using callback in the loader
@@ -28,81 +34,116 @@ export const enemy = (() => {
           this.enemies.push(enemyObject);
         });
       }
-      console.log("Created enmies: ", numEnemies);
     }
 
     createEnemy(aroundPoint, callback) {
-      this.loader.load(
-        "scene.gltf",
-        (gltf) => {
-          const enemyObject = new THREE.Group();
+      // Function to create enemy from cached or newly loaded model
+      const createEnemyFromModel = (gltf) => {
+        const enemyObject = new THREE.Group();
 
-          const angle = Math.random() * Math.PI * 2;
-          const distance = 200;
-          const x = aroundPoint.x + Math.cos(angle) * distance;
-          const z = aroundPoint.z + Math.sin(angle) * distance;
-          const y = aroundPoint.y;
-          console.log(x, y, z);
-          enemyObject.position.set(x, y, z);
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 200;
+        const x = aroundPoint.x + Math.cos(angle) * distance;
+        const z = aroundPoint.z + Math.sin(angle) * distance;
+        const y = aroundPoint.y;
+        enemyObject.position.set(x, y, z);
 
-          // Add position variation within the group itself for smaller offsets
-          enemyObject.position.add(
-            new THREE.Vector3(
-              (Math.random() - 0.5) * 50,
-              (Math.random() - 0.5) * 50,
-              (Math.random() - 0.5) * 50
-            )
-          );
+        // Add position variation within the group itself for smaller offsets
+        enemyObject.position.add(
+          new THREE.Vector3(
+            (Math.random() - 0.5) * 50,
+            (Math.random() - 0.5) * 50,
+            (Math.random() - 0.5) * 50
+          )
+        );
 
-          const loadedModel = gltf.scene;
-          loadedModel.traverse(
-            (child) =>
-              child.isMesh && (child.castShadow = child.receiveShadow = true)
-          );
-          // loadedModel.rotation.y = 1.5 * Math.PI;
-          loadedModel.rotation.y = 2 * (Math.PI / 2) + Math.PI;
-          loadedModel.scale.set(0.5, 0.5, 0.5);
-          enemyObject.add(loadedModel);
+        const loadedModel = gltf.scene.clone(); // Clone the cached model
+        loadedModel.traverse(
+          (child) =>
+            child.isMesh && (child.castShadow = child.receiveShadow = true)
+        );
+        loadedModel.rotation.y = 2 * (Math.PI / 2) + Math.PI;
+        loadedModel.scale.set(0.5, 0.5, 0.5);
+        enemyObject.add(loadedModel);
 
-          const glowGeometry = new THREE.SphereGeometry(0.3, 8, 8);
-          const glowMaterial = new THREE.MeshStandardMaterial({
-            emissive: 0xff4500,
-            emissiveIntensity: 10,
-            color: 0xff4500,
-          });
+        // Use lower-poly geometry for glow effect
+        const glowGeometry = new THREE.SphereGeometry(0.3, 6, 6); // Reduced from 8x8
+        const glowMaterial = new THREE.MeshStandardMaterial({
+          emissive: 0xff4500,
+          emissiveIntensity: 10,
+          color: 0xff4500,
+        });
 
-          const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
-          glowPoint.position.set(0, 0, -5);
-          enemyObject.add(glowPoint);
+        const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
+        glowPoint.position.set(0, 0, -5);
+        enemyObject.add(glowPoint);
 
-          const redLight = new THREE.PointLight(0xff0000, 15, 200);
-          redLight.intensity = 50;
-          redLight.position.set(0, 1, 0);
-          enemyObject.add(redLight);
+        // Reduce light intensity and distance for better performance
+        const redLight = new THREE.PointLight(0xff0000, 30, 100); // Reduced distance from 200 to 100
+        redLight.position.set(0, 1, 0);
+        enemyObject.add(redLight);
 
-          enemyObject.rotation.y = Math.PI;
-          enemyObject.health = this.health;
+        enemyObject.rotation.y = Math.PI;
+        enemyObject.health = this.health;
 
-          if (callback) {
-            callback(enemyObject);
-          }
-        },
-        undefined,
-        (error) => {
-          console.error("Error loading enemy model:", error);
+        if (callback) {
+          callback(enemyObject);
         }
-      );
+      };
+
+      // Use cached model if available
+      if (cachedEnemyModel) {
+        createEnemyFromModel(cachedEnemyModel);
+      } else if (isLoadingModel) {
+        // Model is being loaded, queue this callback
+        loadingCallbacks.push(() => createEnemyFromModel(cachedEnemyModel));
+      } else {
+        // Load model for the first time
+        isLoadingModel = true;
+        this.loader.load(
+          "scene.gltf",
+          (gltf) => {
+            cachedEnemyModel = gltf;
+            isLoadingModel = false;
+            createEnemyFromModel(gltf);
+
+            // Process queued callbacks
+            while (loadingCallbacks.length > 0) {
+              const queuedCallback = loadingCallbacks.shift();
+              queuedCallback();
+            }
+          },
+          undefined,
+          (error) => {
+            console.error("Error loading enemy model:", error);
+            isLoadingModel = false;
+          }
+        );
+      }
     }
 
     animateEnemies(playerCurrentPosition) {
-      this.enemies.forEach((enemy) => {
-        this.animateForwardMovement(enemy);
-        // this.phaseTowardsPlayer(enemy, playerCurrentPosition);
-        this.phaseTowardsTarget(enemy, playerCurrentPosition);
+      this.updateCounter++;
+      const LOD_UPDATE_INTERVAL = 3; // Update distant enemies every 3 frames
 
-        this.checkFiringPosition(enemy, playerCurrentPosition);
-        this.updateLasers(playerCurrentPosition);
+      this.enemies.forEach((enemy, index) => {
+        const distanceToPlayer = enemy.position.distanceTo(playerCurrentPosition);
+
+        // Always move enemies
+        this.animateForwardMovement(enemy);
+
+        // LOD: Only update distant enemy AI every few frames
+        const isDistant = distanceToPlayer > 300;
+        const shouldUpdate = !isDistant || (this.updateCounter % LOD_UPDATE_INTERVAL === index % LOD_UPDATE_INTERVAL);
+
+        if (shouldUpdate) {
+          this.phaseTowardsTarget(enemy, playerCurrentPosition);
+          this.checkFiringPosition(enemy, playerCurrentPosition);
+        }
       });
+
+      // Update lasers every frame
+      this.updateLasers(playerCurrentPosition);
     }
 
     // phaseTowardsPlayer(enemy, playerCurrentPosition) {
@@ -172,7 +213,7 @@ export const enemy = (() => {
       enemy,
       playerCurrentPosition,
       alternateTarget = null,
-      inRangeDistance = 800,
+      inRangeDistance = 300, // Reduced from 800 to 300 - enemies only engage when player is close
       maxPlanetDistance = 1500
     ) {
       if (enemy) {
@@ -185,9 +226,10 @@ export const enemy = (() => {
           ? enemy.position.distanceTo(alternateTarget)
           : Infinity;
 
-        // Engage player if in range, otherwise patrol around planet
+        // PRIORITIZE PLANET: Only engage player if very close AND planet still exists
+        // If no planet (alternateTarget is null), always chase player
         const chosenTargetPosition =
-          playerDistance < inRangeDistance && planetDistance < maxPlanetDistance
+          !alternateTarget || (playerDistance < inRangeDistance && planetDistance < maxPlanetDistance)
             ? playerCurrentPosition
             : alternateTarget;
 
@@ -244,7 +286,7 @@ export const enemy = (() => {
     //   }
     // }
 
-    checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null, inRangeDistance = 800) {
+    checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null, inRangeDistance = 300) {
       if (this.target) {
         alternateTarget = this.target;
       }
@@ -260,28 +302,9 @@ export const enemy = (() => {
 
       const distanceToPlayer = enemy.position.distanceTo(playerCurrentPosition);
 
-      // Only shoot at player if they're within engagement range
-      if (distanceToPlayer < inRangeDistance) {
-        const directionToPlayer = new THREE.Vector3();
-        directionToPlayer
-          .subVectors(playerCurrentPosition, enemy.position)
-          .normalize();
-
-        const angleToPlayer = enemyDirection.angleTo(directionToPlayer);
-
-        if (
-          distanceToPlayer < distanceThreshold &&
-          angleToPlayer < angleThreshold &&
-          currentTime - enemy.lastShotTime > this.shootCooldown
-        ) {
-          this.fireLaser(enemy);
-          enemy.lastShotTime = currentTime;
-          return; // Exit after firing at the player to avoid double shots
-        }
-      }
-
-      // Attack the planet if player is not in range
+      // PRIORITIZE PLANET ATTACK: Only shoot player if very close AND planet exists
       if (alternateTarget) {
+        // Planet exists - attack it primarily
         const directionToTarget = new THREE.Vector3();
         directionToTarget
           .subVectors(alternateTarget, enemy.position)
@@ -297,6 +320,26 @@ export const enemy = (() => {
         ) {
           this.fireLaser(enemy, true); // Pass true to indicate planet damage
           enemy.lastShotTime = currentTime;
+          return; // Planet attack takes priority
+        }
+      }
+
+      // Only shoot at player if planet doesn't exist OR player is very close
+      if (!alternateTarget || distanceToPlayer < inRangeDistance) {
+        const directionToPlayer = new THREE.Vector3();
+        directionToPlayer
+          .subVectors(playerCurrentPosition, enemy.position)
+          .normalize();
+
+        const angleToPlayer = enemyDirection.angleTo(directionToPlayer);
+
+        if (
+          distanceToPlayer < distanceThreshold &&
+          angleToPlayer < angleThreshold &&
+          currentTime - enemy.lastShotTime > this.shootCooldown
+        ) {
+          this.fireLaser(enemy);
+          enemy.lastShotTime = currentTime;
         }
       }
     }
@@ -305,8 +348,9 @@ export const enemy = (() => {
       const direction = new THREE.Vector3();
       enemy.getWorldDirection(direction);
 
+      // Use lower-poly geometry for laser projectiles
       const laserBeam = new THREE.Mesh(
-        new THREE.SphereGeometry(0.3, 20, 20),
+        new THREE.SphereGeometry(0.3, 8, 8), // Reduced from 20x20
         new THREE.MeshStandardMaterial({
           emissive: 0xff0000,
           emissiveIntensity: 18,
@@ -318,7 +362,6 @@ export const enemy = (() => {
       laserBeam.lookAt(laserBeam.position.clone().add(direction));
       this.scene.add(laserBeam);
 
-      console.log(direction);
       const velocity = direction.multiplyScalar(1); // higher is slower
       this.activeLasers.push({ laserBeam, velocity, direction, targetingPlanet });
 
@@ -330,19 +373,24 @@ export const enemy = (() => {
     }
 
     updateLasers(playerCurrentPosition) {
-      this.activeLasers.forEach((laserData, index) => {
+      // Iterate backwards to safely remove items during iteration
+      for (let i = this.activeLasers.length - 1; i >= 0; i--) {
+        const laserData = this.activeLasers[i];
         const { laserBeam, velocity } = laserData;
 
         laserBeam.position.add(velocity);
 
-        const distanceToPlayer = laserBeam.position.distanceTo(
-          playerCurrentPosition
-        );
-        if (distanceToPlayer > this.firingDistance) {
+        const distanceToPlayer = laserBeam.position.distanceTo(playerCurrentPosition);
+
+        // Increased distance threshold for better cleanup
+        if (distanceToPlayer > 500) {
           this.scene.remove(laserBeam);
-          this.activeLasers.splice(index, 1);
+          // Dispose geometry and material to free memory
+          if (laserBeam.geometry) laserBeam.geometry.dispose();
+          if (laserBeam.material) laserBeam.material.dispose();
+          this.activeLasers.splice(i, 1);
         }
-      });
+      }
     }
   }
   return {
