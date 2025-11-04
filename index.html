@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Space Invaders 2063</title>
+    <link rel="stylesheet" href="public/index.css" />
+    <script
+      async
+      src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"
+    ></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@v0.169.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@v0.153.0/examples/jsm/",
+          "dat.gui": "https://unpkg.com/dat.gui@0.7.7/build/dat.gui.module.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <canvas id="three-canvas"></canvas>
+
+    <div id="health-bar-background" class="hud-ui"></div>
+    <div id="health-bar" class="hud-ui"></div>
+    <div id="velocity-bar-background" class="hud-ui"></div>
+    <div id="velocity-bar" class="hud-ui"></div>
+    <div id="ores" class="hud-ui">
+      <p>Iron 0</p>
+      <p>Gold 0</p>
+      <p>Crystal 0</p>
+    </div>
+    <p id="user-position" class="hud-ui"></p>
+    <p id="nearest-planet" class="hud-ui"></p>
+
+    <!-- Planet Defense Status -->
+    <div id="planet-defense-status" class="hud-ui" style="display: none;">
+      <div class="defense-header">🌍 PLANET DEFENSE</div>
+      <div class="defense-health-bar">
+        <div id="planet-health-fill"></div>
+      </div>
+      <div class="defense-info">
+        <span id="planet-health-text">5000 / 5000</span>
+        <span id="enemies-remaining">Enemies: 5</span>
+      </div>
+    </div>
+
+    <!-- Message Alert Notification (In-Game) -->
+    <div id="message-alert" class="hud-ui" style="display: none;">
+      <div class="alert-icon">📬</div>
+      <div class="alert-content">
+        <span class="alert-text">NEW MESSAGE</span>
+        <span class="alert-subtitle">Press ESC to view</span>
+      </div>
+      <div class="alert-badge">1</div>
+    </div>
+
+    <!-- Directional Indicators -->
+    <div id="direction-indicators" class="hud-ui">
+      <!-- Visual circle guide -->
+      <div id="indicator-circle"></div>
+      <!-- Container for dynamic indicators -->
+      <div id="indicators-container"></div>
+    </div>
+
+    <div id="control-ui">
+      <div id="hud-container">
+        <!-- Top Left Section - Radar & Info -->
+        <div id="top-left-section">
+          <div id="radar-display">
+            <div class="radar-ring"></div>
+            <div class="radar-ring-2"></div>
+            <div class="radar-center"></div>
+            <div class="radar-sweep"></div>
+          </div>
+
+          <div id="info-box">
+            <div class="message-header">
+              <span class="message-icon">🚀</span>
+              <span class="message-title">Welcome, Pilot</span>
+            </div>
+            <div class="message-body" id="message-body">
+              <p class="info-text">Loading mission data...</p>
+            </div>
+            <div class="message-footer">
+              <button class="message-nav-btn" id="prev-message">◀ Prev</button>
+              <span class="message-counter" id="message-counter">1 / 1</span>
+              <button class="message-nav-btn" id="next-message">Next ▶</button>
+            </div>
+          </div>
+
+          <!-- Quest Tracker (Below info box) -->
+          <div id="quest-tracker" style="display: none;">
+            <div class="quest-header">
+              <span class="quest-icon">📋</span>
+              <span class="quest-title">Active Quests</span>
+            </div>
+            <div class="quest-list" id="quest-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Right Section - Ship Selector -->
+        <div id="top-right-section">
+          <div id="ships-bar">
+            <div id="ship-1" class="ship-option active unlocked" data-ship="ship-1">
+              <span class="ship-lock-icon">✓</span>
+              <span class="ship-name-label">STARTER</span>
+            </div>
+            <div id="ship-2" class="ship-option locked" data-ship="ship-2">
+              <span class="ship-lock-icon">🔒</span>
+              <span class="ship-name-label">SCOUT</span>
+              <span class="ship-cost-label">50🔩 20🏆 5💎</span>
+            </div>
+            <div id="ship-3" class="ship-option locked" data-ship="ship-3">
+              <span class="ship-lock-icon">🔒</span>
+              <span class="ship-name-label">FIGHTER</span>
+              <span class="ship-cost-label">100🔩 50🏆 15💎</span>
+            </div>
+            <div id="ship-4" class="ship-option locked" data-ship="ship-4">
+              <span class="ship-lock-icon">🔒</span>
+              <span class="ship-name-label">HEAVY</span>
+              <span class="ship-cost-label">150🔩 80🏆 30💎</span>
+            </div>
+            <div id="ship-5" class="ship-option locked" data-ship="ship-5">
+              <span class="ship-lock-icon">🔒</span>
+              <span class="ship-name-label">INTER</span>
+              <span class="ship-cost-label">200🔩 120🏆 50💎</span>
+            </div>
+            <div id="ship-6" class="ship-option locked" data-ship="ship-6">
+              <span class="ship-lock-icon">🔒</span>
+              <span class="ship-name-label">CAPITAL</span>
+              <span class="ship-cost-label">300🔩 200🏆 100💎</span>
+            </div>
+          </div>
+          <button id="unlock-ship" style="display: none;">UNLOCK SHIP</button>
+        </div>
+
+        <!-- Left Section - Ship Stats -->
+        <div id="left-stats-section">
+          <div class="stat-item">
+            <label class="stat-label">Inertial Velocity</label>
+            <div class="stat-bar-container">
+              <div class="stat-bar" id="velocity-stat" style="width: 45%"></div>
+            </div>
+            <span class="stat-value" id="velocity-value">7.68 km/s</span>
+          </div>
+
+          <div class="stat-item">
+            <label class="stat-label">Altitude</label>
+            <div class="stat-bar-container">
+              <div class="stat-bar" id="altitude-stat" style="width: 30%"></div>
+            </div>
+            <span class="stat-value" id="altitude-value">390.0 km</span>
+          </div>
+
+          <div class="stat-item">
+            <label class="stat-label">Apogee</label>
+            <div class="stat-bar-container">
+              <div class="stat-bar" id="apogee-stat" style="width: 35%"></div>
+            </div>
+            <span class="stat-value" id="apogee-value">404.4 km</span>
+          </div>
+
+          <div class="stat-item">
+            <label class="stat-label">Perigee</label>
+            <div class="stat-bar-container">
+              <div class="stat-bar" id="perigee-stat" style="width: 40%"></div>
+            </div>
+            <span class="stat-value" id="perigee-value">389.4 km</span>
+          </div>
+        </div>
+
+        <!-- Center Section - 3D Ship Display -->
+        <div id="center-display">
+          <canvas id="ship-hanger"></canvas>
+          <div id="ship-name-display">
+            <p class="ship-name">MARS SHIP</p>
+            <p class="ship-status">AVAILABLE</p>
+          </div>
+        </div>
+
+        <!-- Right Section - Upgrades Panel -->
+        <div id="right-upgrades-section">
+          <h3 class="upgrades-header">SHIP UPGRADES</h3>
+
+          <div class="upgrade-item" data-upgrade="speed">
+            <div class="upgrade-header">
+              <span class="upgrade-icon">⚡</span>
+              <div class="upgrade-info">
+                <p class="upgrade-name">Engine Boost</p>
+                <p class="upgrade-desc">+15% max velocity</p>
+              </div>
+            </div>
+            <div class="upgrade-level">
+              <span class="level-display">Lv <span class="current-level">0</span>/5</span>
+              <div class="level-bar">
+                <div class="level-progress" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="upgrade-button" data-upgrade="speed">
+              <span class="cost-display">
+                <span class="cost-item">🔩<span class="iron-cost">20</span></span>
+                <span class="cost-item">🏆<span class="gold-cost">10</span></span>
+                <span class="cost-item">💎<span class="crystal-cost">5</span></span>
+              </span>
+              <span class="xp-cost">XP: 200</span>
+            </button>
+          </div>
+
+          <div class="upgrade-item" data-upgrade="health">
+            <div class="upgrade-header">
+              <span class="upgrade-icon">🛡️</span>
+              <div class="upgrade-info">
+                <p class="upgrade-name">Hull Reinforcement</p>
+                <p class="upgrade-desc">+20 max health</p>
+              </div>
+            </div>
+            <div class="upgrade-level">
+              <span class="level-display">Lv <span class="current-level">0</span>/5</span>
+              <div class="level-bar">
+                <div class="level-progress" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="upgrade-button" data-upgrade="health">
+              <span class="cost-display">
+                <span class="cost-item">🔩<span class="iron-cost">30</span></span>
+                <span class="cost-item">🏆<span class="gold-cost">15</span></span>
+                <span class="cost-item">💎<span class="crystal-cost">5</span></span>
+              </span>
+              <span class="xp-cost">XP: 300</span>
+            </button>
+          </div>
+
+          <div class="upgrade-item" data-upgrade="fireRate">
+            <div class="upgrade-header">
+              <span class="upgrade-icon">🔫</span>
+              <div class="upgrade-info">
+                <p class="upgrade-name">Weapon System</p>
+                <p class="upgrade-desc">+10% fire rate</p>
+              </div>
+            </div>
+            <div class="upgrade-level">
+              <span class="level-display">Lv <span class="current-level">0</span>/5</span>
+              <div class="level-bar">
+                <div class="level-progress" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="upgrade-button" data-upgrade="fireRate">
+              <span class="cost-display">
+                <span class="cost-item">🔩<span class="iron-cost">15</span></span>
+                <span class="cost-item">🏆<span class="gold-cost">20</span></span>
+                <span class="cost-item">💎<span class="crystal-cost">10</span></span>
+              </span>
+              <span class="xp-cost">XP: 250</span>
+            </button>
+          </div>
+
+          <div class="upgrade-item" data-upgrade="shields">
+            <div class="upgrade-header">
+              <span class="upgrade-icon">⚔️</span>
+              <div class="upgrade-info">
+                <p class="upgrade-name">Shield Generator</p>
+                <p class="upgrade-desc">15% damage reduction</p>
+              </div>
+            </div>
+            <div class="upgrade-level">
+              <span class="level-display">Lv <span class="current-level">0</span>/3</span>
+              <div class="level-bar">
+                <div class="level-progress" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="upgrade-button" data-upgrade="shields">
+              <span class="cost-display">
+                <span class="cost-item">🔩<span class="iron-cost">50</span></span>
+                <span class="cost-item">🏆<span class="gold-cost">50</span></span>
+                <span class="cost-item">💎<span class="crystal-cost">25</span></span>
+              </span>
+              <span class="xp-cost">XP: 800</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bottom Right - Time/Resources -->
+        <div id="bottom-right-info">
+          <p class="time-display">22:33</p>
+          <p class="location-display">GND</p>
+          <p class="resource-display">0.00</p>
+          <p class="resource-label">TORS</p>
+          <p class="xp-display">79/1450122</p>
+        </div>
+
+        <!-- Bottom Section - Control Bar -->
+        <div id="bottom-control-bar">
+          <div class="control-icon active">
+            <svg
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            <span class="control-label">CONTROL</span>
+          </div>
+          <div class="control-icon">
+            <svg
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+            <span class="control-label">Overview</span>
+          </div>
+          <div class="control-icon">
+            <svg
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M20 7h-9M14 17H5M18 12H6" />
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 1v6m0 6v6" />
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M9 3v18" />
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+          </div>
+          <div class="control-icon">
+            <svg
+              width="30"
+              height="30"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+          </div>
+        </div>
+
+        <button id="select-ship">SELECT SHIP</button>
+      </div>
+    </div>
+
+    <div class="cursor small"></div>
+    <div class="cursor big"></div>
+
+    <div id="progress-container">
+      <h1 id="progress">LOADING 0/100</h1>
+    </div>
+
+    <!-- Intro Screen (After Loading) -->
+    <div id="intro-screen" style="display: none;">
+      <div class="intro-container">
+        <div class="intro-header">
+          <h1 class="intro-title">🚀 3D SPACE INVADERS</h1>
+          <p class="intro-subtitle">Defend Planets • Collect Resources • Upgrade Ships</p>
+        </div>
+
+        <div class="intro-content">
+          <div class="intro-section">
+            <h2 class="intro-section-title">🎮 CONTROLS</h2>
+            <div class="intro-controls-grid">
+              <div class="intro-control">
+                <span class="intro-key">WASD</span>
+                <span class="intro-label">Fly</span>
+              </div>
+              <div class="intro-control">
+                <span class="intro-key">MOUSE</span>
+                <span class="intro-label">Aim</span>
+              </div>
+              <div class="intro-control">
+                <span class="intro-key">SPACE</span>
+                <span class="intro-label">Fire</span>
+              </div>
+              <div class="intro-control">
+                <span class="intro-key">ESC</span>
+                <span class="intro-label">Menu</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="intro-section">
+            <h2 class="intro-section-title">⚔️ QUICK TIPS</h2>
+            <div class="intro-tips">
+              <p class="intro-tip">▸ Defend planets from enemy waves (< 1500km)</p>
+              <p class="intro-tip">▸ Follow <strong>cyan arrows</strong> to planets, <strong>red arrows</strong> to enemies</p>
+              <p class="intro-tip">▸ Destroy asteroids for resources 🔩 🏆 💎</p>
+              <p class="intro-tip">▸ Press <strong>ESC</strong> to upgrade your ship</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="intro-footer">
+          <button id="start-game-btn" class="intro-start-button">
+            <span class="button-text">START MISSION</span>
+            <span class="button-subtitle">Press ENTER, SPACE, or click</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
