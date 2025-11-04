@@ -45,7 +45,15 @@ function updateResourceDisplay() {
 export function addXP(amount) {
   xp += amount;
   updateResourceDisplay();
+  updatePauseMenuXP();
   console.log(`+${amount} XP! Total: ${xp}`);
+}
+
+function updatePauseMenuXP() {
+  const headerXP = document.getElementById('header-xp');
+  if (headerXP) {
+    headerXP.textContent = xp;
+  }
 }
 
 export function deductXP(amount) {
@@ -178,6 +186,59 @@ export function hidePlanetDefenseStatus() {
   const statusElement = document.getElementById('planet-defense-status');
   if (statusElement) {
     statusElement.style.display = 'none';
+  }
+}
+
+export function updateMiniMap(playerPosition, planets, enemies) {
+  const miniMapTargets = document.getElementById('mini-map-targets');
+  if (!miniMapTargets) return;
+
+  // Clear existing targets
+  miniMapTargets.innerHTML = '';
+
+  const mapSize = 140; // Size of the mini-map content area
+  const maxDistance = 3000; // Max distance to show on map (in game units)
+  const center = mapSize / 2;
+
+  // Add planets to mini-map
+  if (planets && planets.length > 0) {
+    planets.forEach(planet => {
+      const dx = planet.position.x - playerPosition.x;
+      const dz = planet.position.z - playerPosition.z;
+      const distance = Math.sqrt(dx * dx + dz * dz);
+
+      if (distance < maxDistance) {
+        const scale = Math.min(distance / maxDistance, 1);
+        const x = center + (dx / maxDistance) * (mapSize / 2);
+        const y = center + (dz / maxDistance) * (mapSize / 2);
+
+        const planetDot = document.createElement('div');
+        planetDot.className = 'mini-map-planet';
+        planetDot.style.left = `${x}px`;
+        planetDot.style.top = `${y}px`;
+        miniMapTargets.appendChild(planetDot);
+      }
+    });
+  }
+
+  // Add enemies to mini-map
+  if (enemies && enemies.length > 0) {
+    enemies.forEach(enemy => {
+      const dx = enemy.position.x - playerPosition.x;
+      const dz = enemy.position.z - playerPosition.z;
+      const distance = Math.sqrt(dx * dx + dz * dz);
+
+      if (distance < maxDistance) {
+        const x = center + (dx / maxDistance) * (mapSize / 2);
+        const y = center + (dz / maxDistance) * (mapSize / 2);
+
+        const enemyDot = document.createElement('div');
+        enemyDot.className = 'mini-map-enemy';
+        enemyDot.style.left = `${x}px`;
+        enemyDot.style.top = `${y}px`;
+        miniMapTargets.appendChild(enemyDot);
+      }
+    });
   }
 }
 

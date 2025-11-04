@@ -40,8 +40,28 @@
         <div id="planet-health-fill"></div>
       </div>
       <div class="defense-info">
-        <span id="planet-health-text">5000 / 5000</span>
+        <span id="planet-health-text">2000 / 2000</span>
         <span id="enemies-remaining">Enemies: 5</span>
+      </div>
+    </div>
+
+    <!-- Combo Counter -->
+    <div id="combo-counter" class="hud-ui" style="display: none;">
+      <div class="combo-content">
+        <span class="combo-multiplier" id="combo-multiplier">2</span>
+        <span class="combo-text">COMBO!</span>
+      </div>
+      <div class="combo-bar">
+        <div id="combo-timer-fill"></div>
+      </div>
+    </div>
+
+    <!-- Mini-Map Display -->
+    <div id="mini-map" class="hud-ui">
+      <div class="mini-map-header">SECTOR MAP</div>
+      <div class="mini-map-content">
+        <div class="mini-map-player">◆</div>
+        <div id="mini-map-targets"></div>
       </div>
     </div>
 
@@ -65,6 +85,44 @@
 
     <div id="control-ui">
       <div id="hud-container">
+        <!-- Player Stats Summary Header -->
+        <div id="player-stats-header">
+          <div class="stats-title">
+            <h2 class="pilot-name">PILOT STATUS</h2>
+            <span class="mission-time" id="mission-time">00:00</span>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-icon">💚</span>
+              <div class="stat-info">
+                <span class="stat-label">HEALTH</span>
+                <span class="stat-value-large" id="header-health">100</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">⭐</span>
+              <div class="stat-info">
+                <span class="stat-label">XP</span>
+                <span class="stat-value-large" id="header-xp">0</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">🌍</span>
+              <div class="stat-info">
+                <span class="stat-label">SAVED</span>
+                <span class="stat-value-large" id="planets-saved">0</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">💀</span>
+              <div class="stat-info">
+                <span class="stat-label">KILLS</span>
+                <span class="stat-value-large" id="enemies-killed">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Top Left Section - Radar & Info -->
         <div id="top-left-section">
           <div id="radar-display">

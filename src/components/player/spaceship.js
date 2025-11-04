@@ -75,6 +75,16 @@ export const spaceship = (() => {
       this.setHealth(health, true);
       this.damageAmount = 26;
 
+      // Combo system
+      this.comboCount = 0;
+      this.comboTimer = null;
+      this.comboTimeout = 3000; // 3 seconds to continue combo
+      this.lastKillTime = 0;
+
+      // Stats tracking
+      this.totalKills = 0;
+      this.planetsSaved = 0;
+
       let selectShip = document.getElementById("select-ship");
       selectShip.addEventListener("click", () => {
         const updatedShipId =
@@ -474,9 +484,21 @@ export const spaceship = (() => {
                   enemyLoader.enemies.splice(enemyIndex, 1);
                   this.playSound();
 
-                  // Award XP for each enemy destroyed
-                  addXP(20);
-                  this.showNotification(`Enemy Destroyed! +20 XP`, 'success');
+                  // Track kill and combo
+                  this.addKill();
+
+                  // Award XP with combo bonus
+                  const baseXP = 20;
+                  const comboBonus = this.getComboBonus();
+                  const totalXP = Math.floor(baseXP * comboBonus);
+                  addXP(totalXP);
+
+                  // Show notification with combo info
+                  if (this.comboCount >= 2) {
+                    this.showNotification(`${this.comboCount}X COMBO! +${totalXP} XP`, 'success');
+                  } else {
+                    this.showNotification(`Enemy Destroyed! +${totalXP} XP`, 'success');
+                  }
                 }
                 return;
               }
@@ -656,6 +678,91 @@ export const spaceship = (() => {
       }, 3000);
     }
 
+    addKill() {
+      const currentTime = performance.now();
+      this.totalKills++;
+
+      // Update combo
+      if (currentTime - this.lastKillTime < this.comboTimeout) {
+        this.comboCount++;
+      } else {
+        this.comboCount = 1;
+      }
+
+      this.lastKillTime = currentTime;
+
+      // Clear existing timer
+      if (this.comboTimer) {
+        clearTimeout(this.comboTimer);
+      }
+
+      // Show combo if 2 or more
+      if (this.comboCount >= 2) {
+        this.showCombo();
+
+        // Set timer to hide combo
+        this.comboTimer = setTimeout(() => {
+          this.hideCombo();
+          this.comboCount = 0;
+        }, this.comboTimeout);
+      }
+
+      // Update stats in pause menu
+      this.updatePauseStats();
+    }
+
+    showCombo() {
+      const comboElement = document.getElementById('combo-counter');
+      const multiplierElement = document.getElementById('combo-multiplier');
+
+      if (comboElement && multiplierElement) {
+        multiplierElement.textContent = `${this.comboCount}X`;
+        comboElement.style.display = 'block';
+
+        // Trigger animation
+        comboElement.style.animation = 'none';
+        setTimeout(() => {
+          comboElement.style.animation = 'comboPopIn 0.3s ease-out';
+        }, 10);
+      }
+    }
+
+    hideCombo() {
+      const comboElement = document.getElementById('combo-counter');
+      if (comboElement) {
+        comboElement.style.display = 'none';
+      }
+    }
+
+    getComboBonus() {
+      // Bonus XP multiplier based on combo
+      if (this.comboCount >= 5) return 3;
+      if (this.comboCount >= 3) return 2;
+      if (this.comboCount >= 2) return 1.5;
+      return 1;
+    }
+
+    screenShake(duration = 500) {
+      const canvas = document.getElementById('three-canvas');
+      if (canvas) {
+        canvas.classList.add('screen-shake');
+        setTimeout(() => {
+          canvas.classList.remove('screen-shake');
+        }, duration);
+      }
+    }
+
+    updatePauseStats() {
+      // Update stats in pause menu
+      const healthElement = document.getElementById('header-health');
+      const killsElement = document.getElementById('enemies-killed');
+      const savedElement = document.getElementById('planets-saved');
+
+      if (healthElement) healthElement.textContent = Math.floor(this.health);
+      if (killsElement) killsElement.textContent = this.totalKills;
+      if (savedElement) savedElement.textContent = this.planetsSaved;
+    }
+
     startRumbleEffect(obj) {
       const shakeDuration = 1000; // Duration of the shake in milliseconds
       const shakeIntensity = 0.2; // Maximum shake offset
@@ -715,6 +822,10 @@ export const spaceship = (() => {
     userHit(damage) {
       console.log("HIT USER");
       this.damageShip(damage);
+
+      // Screen shake based on damage
+      this.screenShake(damage > 40 ? 800 : 500);
+
       if (this.boomSound) {
         this.boomSound.currentTime = 0;
         this.boomSound.volume = 0.5;
@@ -726,6 +837,7 @@ export const spaceship = (() => {
         this.alarmSound.play();
       }
       this.startRumbleEffect(this.mesh);
+      this.updatePauseStats(); // Update health display
     }
 
     checkEnemyLaserCollisions(enemyLoader) {

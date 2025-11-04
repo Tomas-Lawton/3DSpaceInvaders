@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { getRandomDeepColor } from "../utils/utils.js";
-import { updateCloestPlanet, updateDirectionalIndicators, updatePlanetDefenseStatus, hidePlanetDefenseStatus } from "../components/dom.js";
+import { updateCloestPlanet, updateDirectionalIndicators, updatePlanetDefenseStatus, hidePlanetDefenseStatus, updateMiniMap } from "../components/dom.js";
 import { enemy } from "../components/enemy.js";
 
 export const planets = (() => {
@@ -11,7 +11,7 @@ export const planets = (() => {
       this.planets = [];
       this.planetLoader = new GLTFLoader();
       this.path = "public/planet/";
-      this.defaultHealth = 5000; // Increased from 1000 to 5000 for longer battles
+      this.defaultHealth = 2000; // Balanced from 5000 to 2000 for better gameplay
       this.enemiesSpawned = false; // redundant can use loader only
       this.enemyLoader = null;
       this.currentPlanet = null; // Track which planet enemies are assigned to
@@ -132,10 +132,15 @@ export const planets = (() => {
         if (this.currentPlanet && this.currentPlanet.hasEnemies && this.enemyLoader.enemies.length === 0) {
           if (playerShip) {
             playerShip.health = Math.min(playerShip.health + 50, playerShip.maxHealth);
+
+            // Track planets saved
+            playerShip.planetsSaved++;
+
             // Award bonus XP for saving the planet
             const { addXP } = await import("../components/dom.js");
             addXP(100);
             playerShip.showNotification('🌍 Planet Saved! +100 XP +50 HP', 'success');
+            playerShip.updatePauseStats();
           }
           // Reset the flags
           this.currentPlanet.hasEnemies = false;
@@ -239,6 +244,13 @@ export const planets = (() => {
           updateDirectionalIndicators(
             playerCurrentPosition,
             playerForwardDirection,
+            this.planets,
+            enemyArray
+          );
+
+          // Update mini-map
+          updateMiniMap(
+            playerCurrentPosition,
             this.planets,
             enemyArray
           );
