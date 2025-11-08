@@ -235,7 +235,7 @@ export const enemy = (() => {
       enemy,
       playerCurrentPosition,
       alternateTarget = null,
-      inRangeDistance = 300, // Reduced from 800 to 300 - enemies only engage when player is close
+      inRangeDistance = 600, // Increased to 600 - enemies engage from further distance
       maxPlanetDistance = 1500
     ) {
       if (enemy) {
@@ -308,7 +308,7 @@ export const enemy = (() => {
     //   }
     // }
 
-    checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null, inRangeDistance = 300) {
+    checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null, inRangeDistance = 600) {
       if (this.target) {
         alternateTarget = this.target;
       }

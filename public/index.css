@@ -562,7 +562,7 @@ body {
 #left-stats-section {
   position: absolute;
   left: 30px;
-  top: 422px;
+  top: 470px;
   width: 280px;
   pointer-events: none;
 }
@@ -609,7 +609,7 @@ body {
 
 #center-display {
   position: absolute;
-  top: 40%;
+  top: 45%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;

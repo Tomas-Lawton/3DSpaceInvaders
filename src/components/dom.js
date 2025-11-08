@@ -73,9 +73,18 @@ if (typeof window !== 'undefined') {
 
 export function toggleHUD() {
   const hud = document.getElementById("control-ui");
+  const inGameHudElements = document.querySelectorAll('.hud-ui');
+
   if (hud.style.display === 'none' || hud.style.display === '') {
+    // Opening pause menu
     hud.style.display = 'flex';
     canvas.style.filter = 'blur(10px)';
+
+    // Hide in-game HUD elements
+    inGameHudElements.forEach(element => {
+      element.style.display = 'none';
+    });
+
     // Update upgrade UI when opening pause menu
     import('../hud/upgrade-ui.js').then(module => {
       module.onPauseMenuOpen();
@@ -85,8 +94,14 @@ export function toggleHUD() {
       module.onPauseMenuOpenMessage();
     }).catch(err => console.error('Failed to load message UI:', err));
   } else {
+    // Closing pause menu
     hud.style.display = 'none';
     canvas.style.filter = 'none';
+
+    // Show in-game HUD elements
+    inGameHudElements.forEach(element => {
+      element.style.display = '';
+    });
   }
 }
 
