@@ -329,12 +329,7 @@ export const planets = (() => {
             } else {
               // Log why spawn was blocked (only once per second to avoid spam)
               if (!this._lastBlockLog || Date.now() - this._lastBlockLog > 1000) {
-                const cooldownRemaining = onCooldown ? Math.ceil((planet.saveCooldown - (currentTime - planet.lastSaveTime)) / 1000) : 0;
-                if (onCooldown) {
-                  console.log(`[PLANET] ⏱️ Spawn BLOCKED - Planet on cooldown (${cooldownRemaining}s remaining)`);
-                } else {
-                  console.log(`[PLANET] ⛔ Spawn BLOCKED - hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning}`);
-                }
+                console.log(`[PLANET] ⛔ Spawn BLOCKED - hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning}`);
                 this._lastBlockLog = Date.now();
               }
             }
