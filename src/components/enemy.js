@@ -26,12 +26,37 @@ export const enemy = (() => {
 
     // Initialise enemies without promises, using callback in the loader
     initaliseEnemies(numEnemies, aroundPoint) {
+      // HARD CAP: Never allow more than 5 enemies total
+      const maxEnemies = 5;
+      const currentEnemyCount = this.enemies.length;
+
+      console.log(`[ENEMY SPAWN] Called with ${numEnemies} requested. Current count: ${currentEnemyCount}`);
+
+      if (currentEnemyCount >= maxEnemies) {
+        console.error(`[ENEMY SPAWN] ❌ BLOCKED! Already at cap: ${currentEnemyCount}/${maxEnemies}`);
+        return; // Don't spawn any more enemies
+      }
+
+      // Calculate how many we can actually spawn
+      const enemiesToSpawn = Math.min(numEnemies, maxEnemies - currentEnemyCount);
+      console.log(`[ENEMY SPAWN] ✅ Spawning ${enemiesToSpawn} enemies (Current: ${currentEnemyCount}, Requested: ${numEnemies})`);
+
       this.target = aroundPoint;
-      for (let i = 0; i < numEnemies; i++) {
+      for (let i = 0; i < enemiesToSpawn; i++) {
         this.createEnemy(aroundPoint, (enemyObject) => {
-          enemyObject.lastShotTime = 0;
-          this.scene.add(enemyObject);
-          this.enemies.push(enemyObject);
+          // CRITICAL: Double-check cap before adding (async callback protection)
+          if (this.enemies.length < maxEnemies) {
+            enemyObject.lastShotTime = 0;
+            this.scene.add(enemyObject);
+            this.enemies.push(enemyObject);
+            console.log(`[ENEMY SPAWN] Enemy ${this.enemies.length}/${maxEnemies} added to scene`);
+          } else {
+            console.error(`[ENEMY SPAWN] ❌ ASYNC CAP BLOCK! Tried to add enemy when at ${this.enemies.length}/${maxEnemies}`);
+            this.scene.remove(enemyObject);
+            // Dispose of the excess enemy
+            if (enemyObject.geometry) enemyObject.geometry.dispose();
+            if (enemyObject.material) enemyObject.material.dispose();
+          }
         });
       }
     }
@@ -42,7 +67,7 @@ export const enemy = (() => {
         const enemyObject = new THREE.Group();
 
         const angle = Math.random() * Math.PI * 2;
-        const distance = 200;
+        const distance = 120; // Reduced from 200 to 120 for easier catching
         const x = aroundPoint.x + Math.cos(angle) * distance;
         const z = aroundPoint.z + Math.sin(angle) * distance;
         const y = aroundPoint.y;
@@ -51,9 +76,9 @@ export const enemy = (() => {
         // Add position variation within the group itself for smaller offsets
         enemyObject.position.add(
           new THREE.Vector3(
-            (Math.random() - 0.5) * 50,
-            (Math.random() - 0.5) * 50,
-            (Math.random() - 0.5) * 50
+            (Math.random() - 0.5) * 30, // Reduced from 50 to 30
+            (Math.random() - 0.5) * 30,
+            (Math.random() - 0.5) * 30
           )
         );
 
@@ -63,11 +88,11 @@ export const enemy = (() => {
             child.isMesh && (child.castShadow = child.receiveShadow = true)
         );
         loadedModel.rotation.y = 2 * (Math.PI / 2) + Math.PI;
-        loadedModel.scale.set(0.5, 0.5, 0.5);
+        loadedModel.scale.set(0.3, 0.3, 0.3); // Reduced from 0.5 for smaller enemies
         enemyObject.add(loadedModel);
 
         // Use lower-poly geometry for glow effect
-        const glowGeometry = new THREE.SphereGeometry(0.3, 6, 6); // Reduced from 8x8
+        const glowGeometry = new THREE.SphereGeometry(0.2, 6, 6); // Reduced size
         const glowMaterial = new THREE.MeshStandardMaterial({
           emissive: 0xff4500,
           emissiveIntensity: 10,
@@ -79,12 +104,55 @@ export const enemy = (() => {
         enemyObject.add(glowPoint);
 
         // Reduce light intensity and distance for better performance
-        const redLight = new THREE.PointLight(0xff0000, 30, 100); // Reduced distance from 200 to 100
+        const redLight = new THREE.PointLight(0xff0000, 15, 50); // Further reduced for performance
         redLight.position.set(0, 1, 0);
         enemyObject.add(redLight);
 
-        enemyObject.rotation.y = Math.PI;
+        // Add variance to enemy properties
+        enemyObject.speedMultiplier = 0.8 + Math.random() * 0.6; // 0.8 to 1.4x speed variance
+        enemyObject.turnSpeed = 0.015 + Math.random() * 0.01; // 0.015 to 0.025 turn speed
+
+        // Store planet center for collision avoidance
+        enemyObject.planetCenter = aroundPoint.clone();
+        enemyObject.minSafeDistance = 380; // Planet radius + safety margin
+
+        // Assign random behavior pattern
+        const behaviors = ['patrol', 'chase', 'orbit'];
+        enemyObject.behavior = behaviors[Math.floor(Math.random() * behaviors.length)];
+
+        // SAFETY: Minimum distance from planet center (planets can be up to ~300 radius)
+        const minSafeDistance = 380; // Planet radius + safety margin
+
+        // Set initial patrol target for patrol behavior
+        if (enemyObject.behavior === 'patrol') {
+          const patrolAngle = Math.random() * Math.PI * 2;
+          const patrolDistance = minSafeDistance + Math.random() * 150; // 380-530 units from planet
+          enemyObject.patrolTarget = new THREE.Vector3(
+            aroundPoint.x + Math.cos(patrolAngle) * patrolDistance,
+            aroundPoint.y + (Math.random() - 0.5) * 50,
+            aroundPoint.z + Math.sin(patrolAngle) * patrolDistance
+          );
+        }
+
+        // For orbit behavior, store orbit center and angle
+        if (enemyObject.behavior === 'orbit') {
+          enemyObject.orbitCenter = aroundPoint.clone();
+          enemyObject.orbitAngle = Math.random() * Math.PI * 2;
+          enemyObject.orbitRadius = minSafeDistance + Math.random() * 100; // 380-480 units from planet
+          enemyObject.orbitSpeed = 0.01 + Math.random() * 0.015;
+        }
+
+        // Make enemy face a random direction initially (not always at planet)
+        const randomAngle = Math.random() * Math.PI * 2;
+        const randomTarget = new THREE.Vector3(
+          enemyObject.position.x + Math.cos(randomAngle) * 100,
+          enemyObject.position.y,
+          enemyObject.position.z + Math.sin(randomAngle) * 100
+        );
+        enemyObject.lookAt(randomTarget);
+
         enemyObject.health = this.health;
+        enemyObject.lastShotTime = 0; // Initialize firing timer
 
         if (callback) {
           callback(enemyObject);
@@ -124,22 +192,17 @@ export const enemy = (() => {
 
     animateEnemies(playerCurrentPosition) {
       this.updateCounter++;
-      const LOD_UPDATE_INTERVAL = 3; // Update distant enemies every 3 frames
+
+      // Log enemy count every 60 frames (once per second at 60fps)
+      if (this.updateCounter % 60 === 0) {
+        console.log(`[ENEMY ANIMATE] Currently animating ${this.enemies.length} enemies`);
+      }
 
       this.enemies.forEach((enemy, index) => {
-        const distanceToPlayer = enemy.position.distanceTo(playerCurrentPosition);
-
-        // Always move enemies
+        // Always update and move all enemies (removed LOD for better movement)
+        this.phaseTowardsTarget(enemy, playerCurrentPosition);
         this.animateForwardMovement(enemy);
-
-        // LOD: Only update distant enemy AI every few frames
-        const isDistant = distanceToPlayer > 300;
-        const shouldUpdate = !isDistant || (this.updateCounter % LOD_UPDATE_INTERVAL === index % LOD_UPDATE_INTERVAL);
-
-        if (shouldUpdate) {
-          this.phaseTowardsTarget(enemy, playerCurrentPosition);
-          this.checkFiringPosition(enemy, playerCurrentPosition);
-        }
+        this.checkFiringPosition(enemy, playerCurrentPosition);
       });
 
       // Update lasers every frame
@@ -213,25 +276,65 @@ export const enemy = (() => {
       enemy,
       playerCurrentPosition,
       alternateTarget = null,
-      inRangeDistance = 300, // Reduced from 800 to 300 - enemies only engage when player is close
+      inRangeDistance = 600, // Increased to 600 - enemies engage from further distance
       maxPlanetDistance = 1500
     ) {
       if (enemy) {
         if (this.target) {
           alternateTarget = this.target;
         }
-        const phaseSpeed = 0.025; // Increased from 0.014 for more responsive turning
+
+        const phaseSpeed = enemy.turnSpeed || 0.018; // Use individual turn speed
         const playerDistance = enemy.position.distanceTo(playerCurrentPosition);
         const planetDistance = alternateTarget
           ? enemy.position.distanceTo(alternateTarget)
           : Infinity;
 
-        // PRIORITIZE PLANET: Only engage player if very close AND planet still exists
-        // If no planet (alternateTarget is null), always chase player
-        const chosenTargetPosition =
-          !alternateTarget || (playerDistance < inRangeDistance && planetDistance < maxPlanetDistance)
-            ? playerCurrentPosition
-            : alternateTarget;
+        let chosenTargetPosition;
+
+        // Behavior-based target selection
+        if (enemy.behavior === 'patrol') {
+          // Patrol between points, only chase if player very close
+          if (playerDistance < 200) {
+            chosenTargetPosition = playerCurrentPosition;
+          } else {
+            // Check if reached patrol target
+            if (enemy.patrolTarget && enemy.position.distanceTo(enemy.patrolTarget) < 50) {
+              // Set new patrol target with safe distance from planet
+              const minSafeDistance = 380; // Planet radius + safety margin
+              const patrolAngle = Math.random() * Math.PI * 2;
+              const patrolDistance = minSafeDistance + Math.random() * 150;
+              const center = alternateTarget || enemy.position;
+              enemy.patrolTarget = new THREE.Vector3(
+                center.x + Math.cos(patrolAngle) * patrolDistance,
+                center.y + (Math.random() - 0.5) * 50,
+                center.z + Math.sin(patrolAngle) * patrolDistance
+              );
+            }
+            chosenTargetPosition = enemy.patrolTarget;
+          }
+        } else if (enemy.behavior === 'orbit') {
+          // Orbit around planet, engage player if close
+          if (playerDistance < 300) {
+            chosenTargetPosition = playerCurrentPosition;
+          } else if (alternateTarget) {
+            // Calculate orbit position
+            enemy.orbitAngle += enemy.orbitSpeed;
+            chosenTargetPosition = new THREE.Vector3(
+              enemy.orbitCenter.x + Math.cos(enemy.orbitAngle) * enemy.orbitRadius,
+              enemy.orbitCenter.y + Math.sin(enemy.orbitAngle * 0.5) * 30,
+              enemy.orbitCenter.z + Math.sin(enemy.orbitAngle) * enemy.orbitRadius
+            );
+          } else {
+            chosenTargetPosition = playerCurrentPosition;
+          }
+        } else {
+          // Chase behavior - original logic
+          chosenTargetPosition =
+            !alternateTarget || (playerDistance < inRangeDistance && planetDistance < maxPlanetDistance)
+              ? playerCurrentPosition
+              : alternateTarget;
+        }
 
         const directionToTarget = new THREE.Vector3();
         directionToTarget
@@ -250,10 +353,30 @@ export const enemy = (() => {
 
     animateForwardMovement(enemy) {
       if (enemy) {
-        let speed = 0.6; // Increased from 0.4 for more aggressive pursuit
+        const baseSpeed = 0.35;
+        const speedMultiplier = enemy.speedMultiplier || 1.0;
+        let speed = baseSpeed * speedMultiplier; // Apply individual speed variance
         let direction = new THREE.Vector3();
         enemy.getWorldDirection(direction); // Get the direction the ship is facing
         direction.multiplyScalar(speed);
+
+        // PLANET COLLISION AVOIDANCE
+        if (enemy.planetCenter && enemy.minSafeDistance) {
+          const newPosition = enemy.position.clone().add(direction);
+          const distanceToPlanet = newPosition.distanceTo(enemy.planetCenter);
+
+          // If moving would take us too close to planet, don't move
+          if (distanceToPlanet < enemy.minSafeDistance) {
+            // Push away from planet instead
+            const awayFromPlanet = new THREE.Vector3()
+              .subVectors(enemy.position, enemy.planetCenter)
+              .normalize()
+              .multiplyScalar(speed);
+            enemy.position.add(awayFromPlanet);
+            return;
+          }
+        }
+
         enemy.position.add(direction);
       }
     }
@@ -286,14 +409,14 @@ export const enemy = (() => {
     //   }
     // }
 
-    checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null, inRangeDistance = 300) {
+    checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null, inRangeDistance = 600) {
       if (this.target) {
         alternateTarget = this.target;
       }
 
       const currentTime = performance.now(); // For laser cooldown
 
-      const distanceThreshold = 200; // Increased firing range from 100 to 200
+      const distanceThreshold = 150; // Enemies only fire when close (within 150 units)
       const angleThreshold = Math.PI / 4; // Widened from PI/6 to PI/4 for easier shooting
 
       // Get the current facing direction of the enemy
@@ -362,8 +485,9 @@ export const enemy = (() => {
       laserBeam.lookAt(laserBeam.position.clone().add(direction));
       this.scene.add(laserBeam);
 
-      const velocity = direction.multiplyScalar(1); // higher is slower
-      this.activeLasers.push({ laserBeam, velocity, direction, targetingPlanet });
+      const velocity = direction.normalize().multiplyScalar(20); // Proper laser speed
+      const spawnTime = performance.now(); // Track creation time
+      this.activeLasers.push({ laserBeam, velocity, direction, targetingPlanet, spawnTime });
 
       if (this.lightSound) {
         this.lightSound.currentTime = 0;
@@ -373,17 +497,21 @@ export const enemy = (() => {
     }
 
     updateLasers(playerCurrentPosition) {
+      const currentTime = performance.now();
+      const maxLaserLifetime = 5000; // 5 seconds max lifetime
+
       // Iterate backwards to safely remove items during iteration
       for (let i = this.activeLasers.length - 1; i >= 0; i--) {
         const laserData = this.activeLasers[i];
-        const { laserBeam, velocity } = laserData;
+        const { laserBeam, velocity, spawnTime } = laserData;
 
         laserBeam.position.add(velocity);
 
         const distanceToPlayer = laserBeam.position.distanceTo(playerCurrentPosition);
+        const age = currentTime - (spawnTime || 0);
 
-        // Increased distance threshold for better cleanup
-        if (distanceToPlayer > 500) {
+        // Remove lasers that are too far OR too old
+        if (distanceToPlayer > 400 || age > maxLaserLifetime) {
           this.scene.remove(laserBeam);
           // Dispose geometry and material to free memory
           if (laserBeam.geometry) laserBeam.geometry.dispose();

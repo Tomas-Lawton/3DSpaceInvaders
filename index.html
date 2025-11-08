@@ -159,40 +159,11 @@
           </div>
         </div>
 
-        <!-- Top Right Section - Ship Selector -->
-        <div id="top-right-section">
-          <div id="ships-bar">
-            <div id="ship-1" class="ship-option active unlocked" data-ship="ship-1">
-              <span class="ship-lock-icon">✓</span>
-              <span class="ship-name-label">STARTER</span>
-            </div>
-            <div id="ship-2" class="ship-option locked" data-ship="ship-2">
-              <span class="ship-lock-icon">🔒</span>
-              <span class="ship-name-label">SCOUT</span>
-              <span class="ship-cost-label">50🔩 20🏆 5💎</span>
-            </div>
-            <div id="ship-3" class="ship-option locked" data-ship="ship-3">
-              <span class="ship-lock-icon">🔒</span>
-              <span class="ship-name-label">FIGHTER</span>
-              <span class="ship-cost-label">100🔩 50🏆 15💎</span>
-            </div>
-            <div id="ship-4" class="ship-option locked" data-ship="ship-4">
-              <span class="ship-lock-icon">🔒</span>
-              <span class="ship-name-label">HEAVY</span>
-              <span class="ship-cost-label">150🔩 80🏆 30💎</span>
-            </div>
-            <div id="ship-5" class="ship-option locked" data-ship="ship-5">
-              <span class="ship-lock-icon">🔒</span>
-              <span class="ship-name-label">INTER</span>
-              <span class="ship-cost-label">200🔩 120🏆 50💎</span>
-            </div>
-            <div id="ship-6" class="ship-option locked" data-ship="ship-6">
-              <span class="ship-lock-icon">🔒</span>
-              <span class="ship-name-label">CAPITAL</span>
-              <span class="ship-cost-label">300🔩 200🏆 100💎</span>
-            </div>
-          </div>
-          <button id="unlock-ship" style="display: none;">UNLOCK SHIP</button>
+        <!-- Messages Badge - Orange indicator (Top Right) -->
+        <div id="messages-badge">
+          <div class="message-badge-icon">📬</div>
+          <div class="message-badge-text">MESSAGES</div>
+          <div class="message-badge-subtitle">View below</div>
         </div>
 
         <!-- Left Section - Ship Stats -->
@@ -349,141 +320,64 @@
           <p class="xp-display">79/1450122</p>
         </div>
 
-        <!-- Bottom Section - Control Bar -->
-        <div id="bottom-control-bar">
-          <div class="control-icon active">
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            <span class="control-label">CONTROL</span>
+        <!-- Bottom Section - Ship Selector Bar -->
+        <div id="bottom-ships-bar">
+          <div id="ship-1" class="ship-option active unlocked" data-ship="ship-1">
+            <span class="ship-lock-icon">🚀</span>
+            <span class="ship-name-label">STARTER</span>
           </div>
-          <div class="control-icon">
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M12 2L2 7l10 5 10-5-10-5z" />
-              <path d="M2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
-            <span class="control-label">Overview</span>
+          <div id="ship-2" class="ship-option locked" data-ship="ship-2">
+            <span class="ship-lock-icon">🔒</span>
+            <span class="ship-name-label">SCOUT</span>
+            <div class="ship-cost-detail">
+              <span>🔩 50</span>
+              <span>🏆 20</span>
+              <span>💎 5</span>
+            </div>
+            <div class="ship-xp-detail">⭐ XP: 100</div>
           </div>
-          <div class="control-icon">
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M20 7h-9M14 17H5M18 12H6" />
-            </svg>
+          <div id="ship-3" class="ship-option locked" data-ship="ship-3">
+            <span class="ship-lock-icon">🔒</span>
+            <span class="ship-name-label">FIGHTER</span>
+            <div class="ship-cost-detail">
+              <span>🔩 100</span>
+              <span>🏆 50</span>
+              <span>💎 15</span>
+            </div>
+            <div class="ship-xp-detail">⭐ XP: 300</div>
           </div>
-          <div class="control-icon">
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 1v6m0 6v6" />
-            </svg>
+          <div id="ship-4" class="ship-option locked" data-ship="ship-4">
+            <span class="ship-lock-icon">🔒</span>
+            <span class="ship-name-label">HEAVY</span>
+            <div class="ship-cost-detail">
+              <span>🔩 150</span>
+              <span>🏆 80</span>
+              <span>💎 30</span>
+            </div>
+            <div class="ship-xp-detail">⭐ XP: 600</div>
           </div>
-          <div class="control-icon">
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
+          <div id="ship-5" class="ship-option locked" data-ship="ship-5">
+            <span class="ship-lock-icon">🔒</span>
+            <span class="ship-name-label">INTER</span>
+            <div class="ship-cost-detail">
+              <span>🔩 200</span>
+              <span>🏆 120</span>
+              <span>💎 50</span>
+            </div>
+            <div class="ship-xp-detail">⭐ XP: 1000</div>
           </div>
-          <div class="control-icon">
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="M21 21l-4.35-4.35" />
-            </svg>
-          </div>
-          <div class="control-icon">
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-          </div>
-          <div class="control-icon">
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <path d="M9 3v18" />
-            </svg>
-          </div>
-          <div class="control-icon">
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-            </svg>
-          </div>
-          <div class="control-icon">
-            <svg
-              width="30"
-              height="30"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-              />
-              <polyline points="14 2 14 8 20 8" />
-            </svg>
+          <div id="ship-6" class="ship-option locked" data-ship="ship-6">
+            <span class="ship-lock-icon">🔒</span>
+            <span class="ship-name-label">CAPITAL</span>
+            <div class="ship-cost-detail">
+              <span>🔩 300</span>
+              <span>🏆 200</span>
+              <span>💎 100</span>
+            </div>
+            <div class="ship-xp-detail">⭐ XP: 2000</div>
           </div>
         </div>
+        <button id="unlock-ship" style="display: none;">UNLOCK SHIP</button>
 
         <button id="select-ship">SELECT SHIP</button>
       </div>

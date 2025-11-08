@@ -68,30 +68,32 @@ const RadialBlurShader = {
 export function initRenderer() {
     const renderer = new THREE.WebGLRenderer({
       canvas: canvas,
-      antialias: true,
+      antialias: false, // Disable antialiasing for better performance
       powerPreference: "high-performance" // Use dedicated GPU if available
     });
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000);
-    // Cap pixel ratio at 2 to avoid rendering too many pixels on high-DPI displays
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap; // Faster than PCFSoftShadowMap
+    // Cap pixel ratio at 1.5 to avoid rendering too many pixels on high-DPI displays
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.shadowMap.enabled = false; // Disable shadows for major performance boost
     return renderer;
   }
 
   export function initComposer(renderer, scene, camera) {
     const renderScene = new RenderPass(scene, camera);
-    // Reduce bloom resolution by 25% for better performance
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth * 0.75, window.innerHeight * 0.75),
-      1.5, 1, 1 // Reduced intensity from 1.8
-    );
 
-    // Create radial blur pass for warp effect
+    // Radial blur for warp effect
     const radialBlurPass = new ShaderPass(RadialBlurShader);
     radialBlurPass.renderToScreen = false;
+
+    // Bloom pass with increased intensity
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      1.8, // Increased intensity from 1.2 to 1.8
+      0.9, // Increased radius from 0.8 to 0.9
+      0.85 // Increased threshold from 0.8 to 0.85
+    );
 
     const composer = new EffectComposer(renderer);
     composer.addPass(renderScene);
@@ -111,8 +113,8 @@ export function initRenderer() {
     // Calculate warp strength based on velocity (0 to 1)
     const velocityRatio = Math.min(velocity / maxVelocity, 1.0);
 
-    // Only activate warp at high speeds (above 70% max velocity)
-    const threshold = 0.7;
+    // Activate warp at medium-high speeds (above 50% max velocity)
+    const threshold = 0.5;
     let warpStrength = 0;
 
     if (velocityRatio > threshold) {
@@ -120,8 +122,8 @@ export function initRenderer() {
       warpStrength = (velocityRatio - threshold) / (1.0 - threshold);
       // Apply easing for smoother effect
       warpStrength = Math.pow(warpStrength, 2.0);
-      // Scale to desired blur amount (0.0 to 0.015) - reduced from 0.03
-      warpStrength *= 0.015;
+      // Scale to desired blur amount (0.0 to 0.03)
+      warpStrength *= 0.03;
     }
 
     composer.warpPass.uniforms.strength.value = warpStrength;

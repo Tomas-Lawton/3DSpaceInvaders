@@ -9,6 +9,7 @@ export const asteroids = (() => {
       this.loader = new GLTFLoader();
       this.loadedModels = [];
       this.asteroidSystem = [];
+      this.asteroidFrameCounter = 0; // For throttling animations
     }
 
     async initialiseSystem(systems) {
@@ -148,8 +149,8 @@ export const asteroids = (() => {
         // }
 
 
-        // LIGHT THE GROUP
-        const pointLight = new THREE.PointLight(0xCC5500, 800, 400);
+        // LIGHT THE GROUP - reduced intensity and range for better performance
+        const pointLight = new THREE.PointLight(0xCC5500, 400, 200);
         pointLight.position.set(0, 0, 0);
         asteroidGroup.add(pointLight); 
 
@@ -165,26 +166,32 @@ export const asteroids = (() => {
     // }
 
     animateAsteroids(playerCurrentPosition, reposition) {
+      this.asteroidFrameCounter++;
+
+      // Only animate asteroids every 2 frames for better performance
+      const shouldAnimate = this.asteroidFrameCounter % 2 === 0;
 
       if (this.asteroidSystem) {
         this.asteroidSystem.forEach(system => {
 
-          //animate individual asteroid
-          system.children.forEach((asteroid) => {
-            if (asteroid instanceof THREE.Light) {
-              return
-            }
-            asteroid.position.add(asteroid.velocity);
-          }); 
+          //animate individual asteroid (throttled)
+          if (shouldAnimate) {
+            system.children.forEach((asteroid) => {
+              if (asteroid instanceof THREE.Light) {
+                return
+              }
+              asteroid.position.add(asteroid.velocity);
+            });
+          }
 
           // check group distance
           const distance = playerCurrentPosition.distanceTo(system.position);
           if (distance > 1000) {
-            reposition(system.position, playerCurrentPosition); 
+            reposition(system.position, playerCurrentPosition);
           }
         })
       }
-    
+
     }
   }
 

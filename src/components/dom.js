@@ -73,20 +73,35 @@ if (typeof window !== 'undefined') {
 
 export function toggleHUD() {
   const hud = document.getElementById("control-ui");
+  const inGameHudElements = document.querySelectorAll('.hud-ui');
+
   if (hud.style.display === 'none' || hud.style.display === '') {
+    // Opening pause menu
     hud.style.display = 'flex';
     canvas.style.filter = 'blur(10px)';
+
+    // Hide in-game HUD elements
+    inGameHudElements.forEach(element => {
+      element.style.display = 'none';
+    });
+
     // Update upgrade UI when opening pause menu
     import('../hud/upgrade-ui.js').then(module => {
       module.onPauseMenuOpen();
     }).catch(err => console.error('Failed to load upgrade UI:', err));
-    // Update message UI when opening pause menu
-    import('../hud/message-ui.js').then(module => {
-      module.onPauseMenuOpenMessage();
-    }).catch(err => console.error('Failed to load message UI:', err));
+    // Message UI disabled - was causing layout issues
+    // import('../hud/message-ui.js').then(module => {
+    //   module.onPauseMenuOpenMessage();
+    // }).catch(err => console.error('Failed to load message UI:', err));
   } else {
+    // Closing pause menu
     hud.style.display = 'none';
     canvas.style.filter = 'none';
+
+    // Show in-game HUD elements
+    inGameHudElements.forEach(element => {
+      element.style.display = '';
+    });
   }
 }
 
@@ -108,19 +123,35 @@ export function setOres(ironCount, goldCount, crystalCount) {
   updateResourceDisplay();
 }
 
+// Throttle player position UI updates
+let playerPosFrameCounter = 0;
+const PLAYER_POS_UPDATE_INTERVAL = 10; // Update every 10 frames
+
 export function updatePlayerPositionUI(xyz) {
+  playerPosFrameCounter++;
+  if (playerPosFrameCounter < PLAYER_POS_UPDATE_INTERVAL) return; // Skip this frame
+  playerPosFrameCounter = 0;
+
   const userPosition = document.getElementById('user-position');
   if (userPosition) {
     userPosition.textContent = `POS:\nX:${xyz.x.toFixed(1)}\nY:${xyz.y.toFixed(1)}\nZ:${xyz.z.toFixed(1)}`;
   }
 }
 
+// Throttle closest planet UI updates
+let closestPlanetFrameCounter = 0;
+const CLOSEST_PLANET_UPDATE_INTERVAL = 10; // Update every 10 frames
+
 export function updateCloestPlanet(xyz) {
+  closestPlanetFrameCounter++;
+  if (closestPlanetFrameCounter < CLOSEST_PLANET_UPDATE_INTERVAL) return; // Skip this frame
+  closestPlanetFrameCounter = 0;
+
   const nearestPlanet = document.getElementById('nearest-planet');
   if (nearestPlanet) {
     nearestPlanet.textContent = `NEAREST PLANET:\n------------\nX:${xyz.x.toFixed(1)}\nY:${xyz.y.toFixed(1)}\nZ:${xyz.z.toFixed(1)}`;
   }
-  
+
   const locationDisplay = document.querySelector('.location-display');
   if (locationDisplay) {
     const distance = Math.sqrt(xyz.x ** 2 + xyz.y ** 2 + xyz.z ** 2);
@@ -146,7 +177,15 @@ export function updateHealthBar(health, maxHealth) {
   }
 }
 
+// Throttle planet defense status updates
+let planetDefenseFrameCounter = 0;
+const PLANET_DEFENSE_UPDATE_INTERVAL = 5; // Update every 5 frames
+
 export function updatePlanetDefenseStatus(planet, enemyCount) {
+  planetDefenseFrameCounter++;
+  if (planetDefenseFrameCounter < PLANET_DEFENSE_UPDATE_INTERVAL) return; // Skip this frame
+  planetDefenseFrameCounter = 0;
+
   const statusElement = document.getElementById('planet-defense-status');
   const healthFill = document.getElementById('planet-health-fill');
   const healthText = document.getElementById('planet-health-text');
@@ -189,7 +228,15 @@ export function hidePlanetDefenseStatus() {
   }
 }
 
+// Throttle mini-map updates (only update every N frames)
+let miniMapFrameCounter = 0;
+const MINI_MAP_UPDATE_INTERVAL = 5; // Update every 5 frames (~12 times per second)
+
 export function updateMiniMap(playerPosition, planets, enemies) {
+  miniMapFrameCounter++;
+  if (miniMapFrameCounter < MINI_MAP_UPDATE_INTERVAL) return; // Skip this frame
+  miniMapFrameCounter = 0;
+
   const miniMapTargets = document.getElementById('mini-map-targets');
   if (!miniMapTargets) return;
 
@@ -208,7 +255,6 @@ export function updateMiniMap(playerPosition, planets, enemies) {
       const distance = Math.sqrt(dx * dx + dz * dz);
 
       if (distance < maxDistance) {
-        const scale = Math.min(distance / maxDistance, 1);
         const x = center + (dx / maxDistance) * (mapSize / 2);
         const y = center + (dz / maxDistance) * (mapSize / 2);
 
@@ -242,7 +288,15 @@ export function updateMiniMap(playerPosition, planets, enemies) {
   }
 }
 
+// Throttle directional indicators updates
+let indicatorFrameCounter = 0;
+const INDICATOR_UPDATE_INTERVAL = 3; // Update every 3 frames (~20 times per second)
+
 export function updateDirectionalIndicators(playerPosition, playerForwardDirection, planets, enemies) {
+  indicatorFrameCounter++;
+  if (indicatorFrameCounter < INDICATOR_UPDATE_INTERVAL) return; // Skip this frame
+  indicatorFrameCounter = 0;
+
   const container = document.getElementById('indicators-container');
   if (!container || !playerForwardDirection) return;
 

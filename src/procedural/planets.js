@@ -26,6 +26,9 @@ export const planets = (() => {
         throw new Error(`Failed to load model from path: ${this.path}`);
       }
 
+      // Store GLTF for future use
+      this.gltfModel = gltf;
+
       for (let i = 0; i < count; i++) {
         const planetGroup = this.createPlanetGroup(gltf);
         this.scene.add(planetGroup);
@@ -34,7 +37,7 @@ export const planets = (() => {
     }
 
     // Creates a group of planet objects, including model and fog sphere
-    createPlanetGroup(gltf) {
+    createPlanetGroup(gltf, playerPosition = null) {
       const planetGroup = new THREE.Group();
       const scale = (Math.random() - 0.5) * 600;
       const model = this.createPlanetModel(gltf, scale);
@@ -45,30 +48,62 @@ export const planets = (() => {
       planetGroup.add(model);
       planetGroup.add(fogSphere);
 
+      // If player position provided, spawn planet away from player
+      if (playerPosition) {
+        // Random direction away from player
+        const angle1 = Math.random() * Math.PI * 2;
+        const angle2 = Math.acos(2 * Math.random() - 1);
+        const direction = new THREE.Vector3(
+          Math.sin(angle2) * Math.cos(angle1),
+          Math.sin(angle2) * Math.sin(angle1),
+          Math.cos(angle2)
+        );
 
-      planetGroup.position.set(
-        (Math.random() - 0.5) * 1000,  // X-axis
-        (Math.random() - 0.5) * 100,  // Y-axis smol
-        (Math.random() - 0.5) * 1000   // Z-axis
-      );
-      
-      // Ensure the distance from the origin (0, 0, 0) is at least 3000
-      const distance = planetGroup.position.length();
-      if (distance < 500) {
-        const factor = 1000 / distance;
-        planetGroup.position.multiplyScalar(factor);
+        // Spawn 2500-3500 units away from player
+        const spawnDistance = 2500 + Math.random() * 1000;
+        planetGroup.position.set(
+          playerPosition.x + direction.x * spawnDistance,
+          playerPosition.y + direction.y * spawnDistance * 0.2, // Less vertical spread
+          playerPosition.z + direction.z * spawnDistance
+        );
+      } else {
+        // Initial spawn (no player position yet)
+        planetGroup.position.set(
+          (Math.random() - 0.5) * 2000,  // X-axis - increased range
+          (Math.random() - 0.5) * 200,  // Y-axis - increased range
+          (Math.random() - 0.5) * 2000   // Z-axis - increased range
+        );
+
+        // Ensure the first planet spawns far from player (at least 2000 units away)
+        const distance = planetGroup.position.length();
+        if (distance < 2000) {
+          const factor = 2000 / distance;
+          planetGroup.position.multiplyScalar(factor);
+        }
       }
-
 
       planetGroup.health = this.defaultHealth;
       planetGroup.maxHealth = this.defaultHealth;
       planetGroup.planetSize = scale * -1;
       planetGroup.hasEnemies = false; // Track if enemies are spawned for this planet
+      planetGroup.enemiesDefeatedOnce = false; // Permanent flag - never respawn enemies once defeated
 
       this.scene.add(planetGroup);
       this.planets.push(planetGroup);
 
       return planetGroup;
+    }
+
+    // Spawn a new planet procedurally near the player
+    spawnNewPlanet(playerPosition) {
+      if (!this.gltfModel) {
+        console.warn('Cannot spawn new planet - GLTF model not loaded');
+        return;
+      }
+
+      console.log('🌍 Spawning new planet procedurally...');
+      const newPlanet = this.createPlanetGroup(this.gltfModel, playerPosition);
+      return newPlanet;
     }
 
     createPlanetModel(gltf, scale) {
@@ -117,7 +152,7 @@ export const planets = (() => {
 
 
 
-    animatePlanets(playerCurrentPosition, reposition, playerForwardDirection = null, playerShip = null) {
+    animatePlanets(playerCurrentPosition, reposition, playerForwardDirection = null, playerShip = null, audioManager = null) {
       if (this.enemyLoader) {
         this.enemyLoader.animateEnemies(playerCurrentPosition);
         // Check for enemy laser collisions with planets
@@ -129,7 +164,24 @@ export const planets = (() => {
         }
 
         // Check if all enemies are cleared while planet still exists
-        if (this.currentPlanet && this.currentPlanet.hasEnemies && this.enemyLoader.enemies.length === 0) {
+        // CRITICAL: Don't check if currently spawning (async callbacks haven't completed yet!)
+        const canCheckPlanetSaved = this.currentPlanet && this.currentPlanet.hasEnemies &&
+                                    this.enemyLoader && this.enemyLoader.enemies.length === 0;
+
+        if (canCheckPlanetSaved && this.currentlySpawning) {
+          // Prevent premature "planet saved" during async enemy spawn
+          if (!this._lastSpawnBlockLog || Date.now() - this._lastSpawnBlockLog > 1000) {
+            console.log(`[PLANET] ⚠️ Skipping planet saved check - enemies still spawning (async callbacks pending)`);
+            this._lastSpawnBlockLog = Date.now();
+          }
+        } else if (canCheckPlanetSaved) {
+          console.log(`[PLANET] 🌍 All enemies defeated! Planet saved!`);
+
+          // Stop dogfight music
+          if (audioManager) {
+            audioManager.stopDogfightMusic();
+          }
+
           if (playerShip) {
             playerShip.health = Math.min(playerShip.health + 50, playerShip.maxHealth);
 
@@ -141,11 +193,19 @@ export const planets = (() => {
             playerShip.showNotification('🌍 Planet Saved! +100 XP +50 HP', 'success');
             playerShip.updatePauseStats();
           }
-          // Reset the flags
+
+          // PERMANENT: Mark this planet as having defeated enemies (never respawn)
+          this.currentPlanet.enemiesDefeatedOnce = true;
+
+          // Reset ALL flags (but keep enemyLoader for reuse)
           this.currentPlanet.hasEnemies = false;
+          this.currentPlanet.spawnTriggeredThisSession = false;
           this.currentPlanet = null;
-          this.enemyLoader = null;
+          // DO NOT null enemyLoader - reuse it for next planet
           this.enemiesSpawned = false;
+          this.currentlySpawning = false; // Reset spawn lock
+
+          console.log(`[PLANET] 🛡️ Planet permanently safe - enemies will never respawn here`);
 
           // Hide planet defense status
           hidePlanetDefenseStatus();
@@ -160,7 +220,10 @@ export const planets = (() => {
         let closestDistance = null
 
         this.planets.forEach((planet, index) => {
-          planet.children[0].rotation.y += 0.0001;
+          // Throttle planet rotation - only update every 3rd frame
+          if (Math.random() < 0.33) {
+            planet.children[0].rotation.y += 0.0003; // Compensate with 3x rotation speed
+          }
 
           // Check if planet health is depleted
           if (planet.health <= 0) {
@@ -168,6 +231,11 @@ export const planets = (() => {
             if (planet.hasEnemies && this.enemyLoader) {
               // Set target to null so enemies chase player
               this.enemyLoader.target = null;
+
+              // Stop dogfight music since planet is gone (enemies still chase player)
+              if (audioManager) {
+                audioManager.stopDogfightMusic();
+              }
             }
 
             // Show planet destroyed notification
@@ -194,33 +262,81 @@ export const planets = (() => {
                 clostestPlanet = planet
             }
           }
-          updateCloestPlanet(clostestPlanet.position)
 
           if (playerDistance > 6000) {
-            // Clean up old enemies before repositioning planet
-            this.cleanupEnemies();
-            reposition(planet.position, playerCurrentPosition);
-            // Reset enemies spawned flag so new enemies can spawn at new location
-            this.enemiesSpawned = false;
-            planet.hasEnemies = false;
+            // Mark planet for removal (too far away)
+            planet.markedForRemoval = true;
           }
 
           if (playerDistance < 1500) { //  closer than 1500: spawn enemy group
-            if (!planet.hasEnemies) {
+            // PERMANENT CHECK: Never spawn enemies on a planet that has been saved
+            if (planet.enemiesDefeatedOnce) {
+              // This planet is permanently safe - skip spawn logic
+              return;
+            }
+
+            // ROBUST CHECK: Only spawn if no enemies exist AND not currently spawning
+            const hasActiveEnemies = this.enemyLoader && this.enemyLoader.enemies && this.enemyLoader.enemies.length > 0;
+
+            // CRITICAL: Check if this EXACT planet already triggered a spawn this frame
+            if (!planet.spawnTriggeredThisSession) {
+              planet.spawnTriggeredThisSession = false; // Initialize flag
+            }
+
+            if (!planet.hasEnemies && !hasActiveEnemies && !this.currentlySpawning && !planet.spawnTriggeredThisSession) {
+                console.log(`[PLANET] ✅ Player within 1500. Spawning enemies... (hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning})`);
+
+                // Set ALL flags IMMEDIATELY to prevent ANY re-entry
                 planet.hasEnemies = true;
+                planet.spawnTriggeredThisSession = true; // Mark this planet as having spawned
                 this.enemiesSpawned = true;
                 this.currentPlanet = planet;
+                this.currentlySpawning = true; // Spawn lock
+
                 const enemyCount = 5; // Max 5 enemies per planet
-                // Only create new loader if we don't have one already
+
+                // Create loader if it doesn't exist
                 if (!this.enemyLoader) {
+                  console.log(`[PLANET] Creating NEW enemy loader`);
                   this.enemyLoader = new enemy.EnemyLoader(this.scene);
+                } else {
+                  console.log(`[PLANET] Reusing existing enemy loader`);
                 }
+
+                // ALWAYS cleanup before spawning to ensure clean state
+                this.cleanupEnemies();
+
+                // Now spawn exactly 5 enemies
+                console.log(`[PLANET] Calling initaliseEnemies(${enemyCount})`);
                 this.enemyLoader.initaliseEnemies(enemyCount, planet.position);
+
+                // Start dogfight music
+                if (audioManager) {
+                  audioManager.playDogfightMusic();
+                }
 
                 // Show warning notification
                 if (playerShip) {
                   playerShip.showNotification('⚠️ Planet Under Attack! Destroy All Enemies!', 'danger');
                 }
+
+                // Release spawn lock after async callbacks complete
+                // Increased to 2000ms to ensure GLTF loading callbacks have time to fire
+                setTimeout(() => {
+                  this.currentlySpawning = false;
+                  console.log(`[PLANET] Spawn lock released (enemies should be in scene now)`);
+                }, 2000);
+            } else {
+              // Log why spawn was blocked (only once per second to avoid spam)
+              if (!this._lastBlockLog || Date.now() - this._lastBlockLog > 1000) {
+                const cooldownRemaining = onCooldown ? Math.ceil((planet.saveCooldown - (currentTime - planet.lastSaveTime)) / 1000) : 0;
+                if (onCooldown) {
+                  console.log(`[PLANET] ⏱️ Spawn BLOCKED - Planet on cooldown (${cooldownRemaining}s remaining)`);
+                } else {
+                  console.log(`[PLANET] ⛔ Spawn BLOCKED - hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning}`);
+                }
+                this._lastBlockLog = Date.now();
+              }
             }
           }
           if (playerDistance <= planet.planetSize) {
@@ -235,6 +351,46 @@ export const planets = (() => {
             }
           }
         });
+
+        // Remove planets that are too far away
+        const planetsToRemove = this.planets.filter(p => p.markedForRemoval);
+        planetsToRemove.forEach(planet => {
+          console.log(`[PLANET] Removing planet that's too far away`);
+
+          // Clean up enemies if this was the current planet
+          if (this.currentPlanet === planet) {
+            this.cleanupEnemies();
+            this.currentPlanet = null;
+            this.enemiesSpawned = false;
+            this.currentlySpawning = false;
+
+            // Stop dogfight music
+            if (audioManager) {
+              audioManager.stopDogfightMusic();
+            }
+          }
+
+          this.scene.remove(planet);
+          const index = this.planets.indexOf(planet);
+          if (index > -1) {
+            this.planets.splice(index, 1);
+          }
+        });
+
+        // Spawn new planet if all planets are far away (max 3 planets at a time)
+        const MAX_PLANETS = 3;
+        if (this.planets.length < MAX_PLANETS) {
+          // Check if closest planet is far away
+          if (!clostestPlanet || closestDistance > 4000) {
+            console.log(`[PLANET] All planets far away (${closestDistance?.toFixed(0)} units) - spawning new planet`);
+            this.spawnNewPlanet(playerCurrentPosition);
+          }
+        }
+
+        // Update closest planet UI (only once per frame, after checking all planets)
+        if (clostestPlanet) {
+          updateCloestPlanet(clostestPlanet.position);
+        }
 
         // Update directional indicators ALWAYS (outside the forEach loop)
         // Pass all planets and all enemies to the indicator system
@@ -259,9 +415,12 @@ export const planets = (() => {
 
     cleanupEnemies() {
       if (this.enemyLoader) {
+        console.log(`[CLEANUP] Starting cleanup. Current enemies: ${this.enemyLoader.enemies ? this.enemyLoader.enemies.length : 0}`);
+
         // Remove all enemies from scene
-        if (this.enemyLoader.enemies) {
-          this.enemyLoader.enemies.forEach((enemy) => {
+        if (this.enemyLoader.enemies && this.enemyLoader.enemies.length > 0) {
+          this.enemyLoader.enemies.forEach((enemy, index) => {
+            console.log(`[CLEANUP] Removing enemy ${index + 1}/${this.enemyLoader.enemies.length}`);
             this.scene.remove(enemy);
             // Dispose of geometries and materials
             enemy.traverse((child) => {
@@ -275,19 +434,25 @@ export const planets = (() => {
               }
             });
           });
+          // CRITICAL: Clear the enemies array!
+          this.enemyLoader.enemies = [];
+          console.log(`[CLEANUP] ✅ Enemies array cleared. New length: ${this.enemyLoader.enemies.length}`);
         }
 
         // Remove all lasers from scene
-        if (this.enemyLoader.activeLasers) {
+        if (this.enemyLoader.activeLasers && this.enemyLoader.activeLasers.length > 0) {
+          console.log(`[CLEANUP] Removing ${this.enemyLoader.activeLasers.length} lasers`);
           this.enemyLoader.activeLasers.forEach((laserData) => {
             this.scene.remove(laserData.laserBeam);
             if (laserData.laserBeam.geometry) laserData.laserBeam.geometry.dispose();
             if (laserData.laserBeam.material) laserData.laserBeam.material.dispose();
           });
+          // CRITICAL: Clear the lasers array!
+          this.enemyLoader.activeLasers = [];
         }
 
-        // Clear the enemy loader reference
-        this.enemyLoader = null;
+        // DO NOT null out enemyLoader - we reuse it!
+        console.log(`[CLEANUP] ✅ Cleanup complete`);
       }
     }
 

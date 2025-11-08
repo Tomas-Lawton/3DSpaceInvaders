@@ -19,15 +19,13 @@ export const gameworld = (() => {
         this.scene.add(softLight);
 
         this.createSky();
-        this.createStarfield(2000); //procedural
-        this.createAsteroidSystems(2); //procedural
+        this.createStarfield(500); //procedural - increased to 500 for richer starfield
+        this.createAsteroidSystems(1); //procedural - reduced to 1 system for performance
         this.createPlanets(1); //procedural
         // this.createStar();
-        this.addGround();
+        // this.addGround(); // Removed ground for performance - not needed in space
 
-
-        const axesHelper = new THREE.AxesHelper(10);
-        this.scene.add(axesHelper);
+        // Removed axes helper for performance
         // this.createLoops();
       }
     }
@@ -44,7 +42,8 @@ export const gameworld = (() => {
           playerCurrentPosition,
           this.repositionObj,
           playerForwardDirection,
-          playerShip
+          playerShip,
+          audioManager
         );
       }
 
@@ -60,7 +59,8 @@ export const gameworld = (() => {
         // }
       });
 
-      this.scene.backgroundRotation.y += 0.0001;
+      // Removed background rotation for better performance
+      // this.scene.backgroundRotation.y += 0.0001;
     }
 
 

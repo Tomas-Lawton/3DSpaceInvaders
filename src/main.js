@@ -91,8 +91,16 @@ class Game {
         this.isPaused = !this.isPaused; // Toggle the pause state
         if (this.isPaused) {
           console.log("Game Paused");
+          // Pause rocket booster audio
+          if (this.audioManager) {
+            this.audioManager.pauseSpaceshipSound();
+          }
         } else {
           console.log("Game Resumed");
+          // Resume rocket booster audio
+          if (this.audioManager) {
+            this.audioManager.resumeSpaceshipSound();
+          }
         }
         toggleHUD();
       }
@@ -136,6 +144,7 @@ class Game {
         this.audioManager.loadSounds("./public/audio/sounds"),
         this.audioManager.loadSoundtrack("./public/audio/soundtrack.wav"),
         this.audioManager.loadSpaceshipSound("./public/audio/ship_rumble.wav"),
+        this.audioManager.loadDogfightMusic("./public/audio/dogfight.mp3"),
       ]);
       this.audioManager.playSpaceshipSound();
     } catch (error) {
