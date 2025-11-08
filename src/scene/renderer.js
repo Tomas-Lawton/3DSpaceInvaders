@@ -122,8 +122,8 @@ export function initRenderer() {
       warpStrength = (velocityRatio - threshold) / (1.0 - threshold);
       // Apply easing for smoother effect
       warpStrength = Math.pow(warpStrength, 2.0);
-      // Scale to much stronger blur amount (0.0 to 0.1) for dramatic warp effect
-      warpStrength *= 0.1;
+      // Scale to desired blur amount (0.0 to 0.06)
+      warpStrength *= 0.06;
     }
 
     composer.warpPass.uniforms.strength.value = warpStrength;

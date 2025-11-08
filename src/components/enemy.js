@@ -108,8 +108,10 @@ export const enemy = (() => {
         redLight.position.set(0, 1, 0);
         enemyObject.add(redLight);
 
-        enemyObject.rotation.y = Math.PI;
+        // Make enemy face toward the planet initially
+        enemyObject.lookAt(aroundPoint);
         enemyObject.health = this.health;
+        enemyObject.lastShotTime = 0; // Initialize firing timer
 
         if (callback) {
           callback(enemyObject);
@@ -382,7 +384,7 @@ export const enemy = (() => {
       laserBeam.lookAt(laserBeam.position.clone().add(direction));
       this.scene.add(laserBeam);
 
-      const velocity = direction.multiplyScalar(1); // higher is slower
+      const velocity = direction.normalize().multiplyScalar(20); // Proper laser speed
       const spawnTime = performance.now(); // Track creation time
       this.activeLasers.push({ laserBeam, velocity, direction, targetingPlanet, spawnTime });
 

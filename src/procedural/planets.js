@@ -157,11 +157,11 @@ export const planets = (() => {
           this.currentPlanet.lastSaveTime = performance.now();
           this.currentPlanet.saveCooldown = 10000; // 10 second cooldown before enemies can spawn again
 
-          // Reset ALL flags
+          // Reset ALL flags (but keep enemyLoader for reuse)
           this.currentPlanet.hasEnemies = false;
           this.currentPlanet.spawnTriggeredThisSession = false; // Allow future spawns after cooldown
           this.currentPlanet = null;
-          this.enemyLoader = null;
+          // DO NOT null enemyLoader - reuse it for next planet
           this.enemiesSpawned = false;
           this.currentlySpawning = false; // Reset spawn lock
 
@@ -276,11 +276,11 @@ export const planets = (() => {
                 }
 
                 // Release spawn lock after async callbacks complete
-                // Increased to 500ms to ensure GLTF loading callbacks have time to fire
+                // Increased to 2000ms to ensure GLTF loading callbacks have time to fire
                 setTimeout(() => {
                   this.currentlySpawning = false;
                   console.log(`[PLANET] Spawn lock released (enemies should be in scene now)`);
-                }, 500);
+                }, 2000);
             } else {
               // Log why spawn was blocked (only once per second to avoid spam)
               if (!this._lastBlockLog || Date.now() - this._lastBlockLog > 1000) {

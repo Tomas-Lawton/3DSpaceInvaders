@@ -26,6 +26,7 @@ body {
 #hud-container {
   position: fixed;
   width: min(1600px, 95vw);
+  height: 95vh;
   max-height: 95vh;
   top: 50%;
   left: 50%;
