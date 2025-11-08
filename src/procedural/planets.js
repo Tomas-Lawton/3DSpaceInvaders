@@ -26,6 +26,9 @@ export const planets = (() => {
         throw new Error(`Failed to load model from path: ${this.path}`);
       }
 
+      // Store GLTF for future use
+      this.gltfModel = gltf;
+
       for (let i = 0; i < count; i++) {
         const planetGroup = this.createPlanetGroup(gltf);
         this.scene.add(planetGroup);
@@ -34,7 +37,7 @@ export const planets = (() => {
     }
 
     // Creates a group of planet objects, including model and fog sphere
-    createPlanetGroup(gltf) {
+    createPlanetGroup(gltf, playerPosition = null) {
       const planetGroup = new THREE.Group();
       const scale = (Math.random() - 0.5) * 600;
       const model = this.createPlanetModel(gltf, scale);
@@ -45,30 +48,62 @@ export const planets = (() => {
       planetGroup.add(model);
       planetGroup.add(fogSphere);
 
+      // If player position provided, spawn planet away from player
+      if (playerPosition) {
+        // Random direction away from player
+        const angle1 = Math.random() * Math.PI * 2;
+        const angle2 = Math.acos(2 * Math.random() - 1);
+        const direction = new THREE.Vector3(
+          Math.sin(angle2) * Math.cos(angle1),
+          Math.sin(angle2) * Math.sin(angle1),
+          Math.cos(angle2)
+        );
 
-      planetGroup.position.set(
-        (Math.random() - 0.5) * 1000,  // X-axis
-        (Math.random() - 0.5) * 100,  // Y-axis smol
-        (Math.random() - 0.5) * 1000   // Z-axis
-      );
-      
-      // Ensure the distance from the origin (0, 0, 0) is at least 3000
-      const distance = planetGroup.position.length();
-      if (distance < 500) {
-        const factor = 1000 / distance;
-        planetGroup.position.multiplyScalar(factor);
+        // Spawn 2500-3500 units away from player
+        const spawnDistance = 2500 + Math.random() * 1000;
+        planetGroup.position.set(
+          playerPosition.x + direction.x * spawnDistance,
+          playerPosition.y + direction.y * spawnDistance * 0.2, // Less vertical spread
+          playerPosition.z + direction.z * spawnDistance
+        );
+      } else {
+        // Initial spawn (no player position yet)
+        planetGroup.position.set(
+          (Math.random() - 0.5) * 2000,  // X-axis - increased range
+          (Math.random() - 0.5) * 200,  // Y-axis - increased range
+          (Math.random() - 0.5) * 2000   // Z-axis - increased range
+        );
+
+        // Ensure the first planet spawns far from player (at least 2000 units away)
+        const distance = planetGroup.position.length();
+        if (distance < 2000) {
+          const factor = 2000 / distance;
+          planetGroup.position.multiplyScalar(factor);
+        }
       }
-
 
       planetGroup.health = this.defaultHealth;
       planetGroup.maxHealth = this.defaultHealth;
       planetGroup.planetSize = scale * -1;
       planetGroup.hasEnemies = false; // Track if enemies are spawned for this planet
+      planetGroup.enemiesDefeatedOnce = false; // Permanent flag - never respawn enemies once defeated
 
       this.scene.add(planetGroup);
       this.planets.push(planetGroup);
 
       return planetGroup;
+    }
+
+    // Spawn a new planet procedurally near the player
+    spawnNewPlanet(playerPosition) {
+      if (!this.gltfModel) {
+        console.warn('Cannot spawn new planet - GLTF model not loaded');
+        return;
+      }
+
+      console.log('🌍 Spawning new planet procedurally...');
+      const newPlanet = this.createPlanetGroup(this.gltfModel, playerPosition);
+      return newPlanet;
     }
 
     createPlanetModel(gltf, scale) {
@@ -159,19 +194,18 @@ export const planets = (() => {
             playerShip.updatePauseStats();
           }
 
-          // CRITICAL: Set cooldown timestamp to prevent immediate respawn
-          this.currentPlanet.lastSaveTime = performance.now();
-          this.currentPlanet.saveCooldown = 10000; // 10 second cooldown before enemies can spawn again
+          // PERMANENT: Mark this planet as having defeated enemies (never respawn)
+          this.currentPlanet.enemiesDefeatedOnce = true;
 
           // Reset ALL flags (but keep enemyLoader for reuse)
           this.currentPlanet.hasEnemies = false;
-          this.currentPlanet.spawnTriggeredThisSession = false; // Allow future spawns after cooldown
+          this.currentPlanet.spawnTriggeredThisSession = false;
           this.currentPlanet = null;
           // DO NOT null enemyLoader - reuse it for next planet
           this.enemiesSpawned = false;
           this.currentlySpawning = false; // Reset spawn lock
 
-          console.log(`[PLANET] 🛡️ Planet on cooldown for 10 seconds - no new spawns`);
+          console.log(`[PLANET] 🛡️ Planet permanently safe - enemies will never respawn here`);
 
           // Hide planet defense status
           hidePlanetDefenseStatus();
@@ -230,29 +264,18 @@ export const planets = (() => {
           }
 
           if (playerDistance > 6000) {
-            // Clean up old enemies before repositioning planet
-            this.cleanupEnemies();
-
-            // Stop dogfight music when repositioning
-            if (audioManager) {
-              audioManager.stopDogfightMusic();
-            }
-
-            reposition(planet.position, playerCurrentPosition);
-            // Reset ALL spawn flags so new enemies can spawn at new location
-            this.enemiesSpawned = false;
-            planet.hasEnemies = false;
-            planet.spawnTriggeredThisSession = false; // Reset session flag
-            this.currentlySpawning = false; // Reset spawn lock
-            console.log(`[PLANET] Planet repositioned - all spawn flags reset`);
+            // Mark planet for removal (too far away)
+            planet.markedForRemoval = true;
           }
 
           if (playerDistance < 1500) { //  closer than 1500: spawn enemy group
-            // Check if planet is on cooldown after being saved
-            const currentTime = performance.now();
-            const onCooldown = planet.lastSaveTime && (currentTime - planet.lastSaveTime < planet.saveCooldown);
+            // PERMANENT CHECK: Never spawn enemies on a planet that has been saved
+            if (planet.enemiesDefeatedOnce) {
+              // This planet is permanently safe - skip spawn logic
+              return;
+            }
 
-            // ROBUST CHECK: Only spawn if no enemies exist AND not currently spawning AND not on cooldown
+            // ROBUST CHECK: Only spawn if no enemies exist AND not currently spawning
             const hasActiveEnemies = this.enemyLoader && this.enemyLoader.enemies && this.enemyLoader.enemies.length > 0;
 
             // CRITICAL: Check if this EXACT planet already triggered a spawn this frame
@@ -260,7 +283,7 @@ export const planets = (() => {
               planet.spawnTriggeredThisSession = false; // Initialize flag
             }
 
-            if (!planet.hasEnemies && !hasActiveEnemies && !this.currentlySpawning && !onCooldown && !planet.spawnTriggeredThisSession) {
+            if (!planet.hasEnemies && !hasActiveEnemies && !this.currentlySpawning && !planet.spawnTriggeredThisSession) {
                 console.log(`[PLANET] ✅ Player within 1500. Spawning enemies... (hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning})`);
 
                 // Set ALL flags IMMEDIATELY to prevent ANY re-entry
@@ -328,6 +351,41 @@ export const planets = (() => {
             }
           }
         });
+
+        // Remove planets that are too far away
+        const planetsToRemove = this.planets.filter(p => p.markedForRemoval);
+        planetsToRemove.forEach(planet => {
+          console.log(`[PLANET] Removing planet that's too far away`);
+
+          // Clean up enemies if this was the current planet
+          if (this.currentPlanet === planet) {
+            this.cleanupEnemies();
+            this.currentPlanet = null;
+            this.enemiesSpawned = false;
+            this.currentlySpawning = false;
+
+            // Stop dogfight music
+            if (audioManager) {
+              audioManager.stopDogfightMusic();
+            }
+          }
+
+          this.scene.remove(planet);
+          const index = this.planets.indexOf(planet);
+          if (index > -1) {
+            this.planets.splice(index, 1);
+          }
+        });
+
+        // Spawn new planet if all planets are far away (max 3 planets at a time)
+        const MAX_PLANETS = 3;
+        if (this.planets.length < MAX_PLANETS) {
+          // Check if closest planet is far away
+          if (!clostestPlanet || closestDistance > 4000) {
+            console.log(`[PLANET] All planets far away (${closestDistance?.toFixed(0)} units) - spawning new planet`);
+            this.spawnNewPlanet(playerCurrentPosition);
+          }
+        }
 
         // Update closest planet UI (only once per frame, after checking all planets)
         if (clostestPlanet) {

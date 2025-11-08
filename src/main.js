@@ -91,8 +91,16 @@ class Game {
         this.isPaused = !this.isPaused; // Toggle the pause state
         if (this.isPaused) {
           console.log("Game Paused");
+          // Pause rocket booster audio
+          if (this.audioManager) {
+            this.audioManager.pauseSpaceshipSound();
+          }
         } else {
           console.log("Game Resumed");
+          // Resume rocket booster audio
+          if (this.audioManager) {
+            this.audioManager.resumeSpaceshipSound();
+          }
         }
         toggleHUD();
       }

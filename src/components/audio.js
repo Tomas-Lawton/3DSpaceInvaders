@@ -77,12 +77,24 @@ export class Audio_Manager {
     if (newVolume >= 0 && newVolume <= 1.0) {
       this.shipVolume = newVolume;
       // console.log(`Spaceship volume set to: ${newVolume}`);
-      
+
       if (this.spaceshipSound) {
         this.spaceshipSound.volume = newVolume;
       }
     } else {
       console.error('Invalid volume value. Please provide a value between 0 and 1.0');
+    }
+  }
+
+  pauseSpaceshipSound() {
+    if (this.spaceshipSound && !this.spaceshipSound.paused) {
+      this.spaceshipSound.pause();
+    }
+  }
+
+  resumeSpaceshipSound() {
+    if (this.spaceshipSound && this.spaceshipSound.paused) {
+      this.spaceshipSound.play();
     }
   }
 
@@ -140,9 +152,29 @@ export class Audio_Manager {
         this.dogfightSource.connect(this.audioContext.destination);
       }
 
+      // Start with volume at 0 for fade-in
+      this.dogfightMusic.volume = 0;
       await this.dogfightMusic.play();
       this.isDogfightPlaying = true;
-      console.log('🎵 Dogfight music started');
+
+      // Fade in over 2 seconds
+      const fadeInDuration = 2000; // 2 seconds
+      const targetVolume = 0.4;
+      const fadeSteps = 40;
+      const stepDuration = fadeInDuration / fadeSteps;
+      const volumeIncrement = targetVolume / fadeSteps;
+
+      let currentStep = 0;
+      const fadeInterval = setInterval(() => {
+        if (currentStep < fadeSteps && this.dogfightMusic) {
+          this.dogfightMusic.volume = Math.min(volumeIncrement * currentStep, targetVolume);
+          currentStep++;
+        } else {
+          clearInterval(fadeInterval);
+        }
+      }, stepDuration);
+
+      console.log('🎵 Dogfight music started (fading in)');
     } catch (error) {
       console.warn('Failed to play dogfight music:', error);
     }
