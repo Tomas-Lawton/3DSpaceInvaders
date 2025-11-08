@@ -26,12 +26,31 @@ export const enemy = (() => {
 
     // Initialise enemies without promises, using callback in the loader
     initaliseEnemies(numEnemies, aroundPoint) {
+      // HARD CAP: Never allow more than 5 enemies total
+      const maxEnemies = 5;
+      const currentEnemyCount = this.enemies.length;
+
+      if (currentEnemyCount >= maxEnemies) {
+        console.warn(`Enemy cap reached! Current: ${currentEnemyCount}, Max: ${maxEnemies}`);
+        return; // Don't spawn any more enemies
+      }
+
+      // Calculate how many we can actually spawn
+      const enemiesToSpawn = Math.min(numEnemies, maxEnemies - currentEnemyCount);
+      console.log(`Spawning ${enemiesToSpawn} enemies (Current: ${currentEnemyCount}, Requested: ${numEnemies})`);
+
       this.target = aroundPoint;
-      for (let i = 0; i < numEnemies; i++) {
+      for (let i = 0; i < enemiesToSpawn; i++) {
         this.createEnemy(aroundPoint, (enemyObject) => {
-          enemyObject.lastShotTime = 0;
-          this.scene.add(enemyObject);
-          this.enemies.push(enemyObject);
+          // Double-check cap before adding
+          if (this.enemies.length < maxEnemies) {
+            enemyObject.lastShotTime = 0;
+            this.scene.add(enemyObject);
+            this.enemies.push(enemyObject);
+          } else {
+            console.warn('Enemy cap reached during spawn, removing excess enemy');
+            this.scene.remove(enemyObject);
+          }
         });
       }
     }

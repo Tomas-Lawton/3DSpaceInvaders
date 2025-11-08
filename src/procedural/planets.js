@@ -213,13 +213,16 @@ export const planets = (() => {
                 this.enemiesSpawned = true;
                 this.currentPlanet = planet;
                 const enemyCount = 5; // Max 5 enemies per planet
-                // Only create new loader if we don't have one already
+
+                // Create loader if it doesn't exist
                 if (!this.enemyLoader) {
                   this.enemyLoader = new enemy.EnemyLoader(this.scene);
-                } else {
-                  // Clear existing enemies before spawning new ones
-                  this.cleanupEnemies();
                 }
+
+                // ALWAYS cleanup before spawning to ensure clean state
+                this.cleanupEnemies();
+
+                // Now spawn exactly 5 enemies
                 this.enemyLoader.initaliseEnemies(enemyCount, planet.position);
 
                 // Show warning notification
@@ -285,6 +288,8 @@ export const planets = (() => {
               }
             });
           });
+          // CRITICAL: Clear the enemies array!
+          this.enemyLoader.enemies = [];
         }
 
         // Remove all lasers from scene
@@ -294,10 +299,11 @@ export const planets = (() => {
             if (laserData.laserBeam.geometry) laserData.laserBeam.geometry.dispose();
             if (laserData.laserBeam.material) laserData.laserBeam.material.dispose();
           });
+          // CRITICAL: Clear the lasers array!
+          this.enemyLoader.activeLasers = [];
         }
 
-        // Clear the enemy loader reference
-        this.enemyLoader = null;
+        // DO NOT null out enemyLoader - we reuse it!
       }
     }
 
