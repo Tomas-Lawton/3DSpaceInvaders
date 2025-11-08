@@ -159,6 +159,7 @@ export const planets = (() => {
 
           // Reset ALL flags
           this.currentPlanet.hasEnemies = false;
+          this.currentPlanet.spawnTriggeredThisSession = false; // Allow future spawns after cooldown
           this.currentPlanet = null;
           this.enemyLoader = null;
           this.enemiesSpawned = false;
@@ -224,6 +225,7 @@ export const planets = (() => {
             // Reset ALL spawn flags so new enemies can spawn at new location
             this.enemiesSpawned = false;
             planet.hasEnemies = false;
+            planet.spawnTriggeredThisSession = false; // Reset session flag
             this.currentlySpawning = false; // Reset spawn lock
             console.log(`[PLANET] Planet repositioned - all spawn flags reset`);
           }
@@ -236,11 +238,17 @@ export const planets = (() => {
             // ROBUST CHECK: Only spawn if no enemies exist AND not currently spawning AND not on cooldown
             const hasActiveEnemies = this.enemyLoader && this.enemyLoader.enemies && this.enemyLoader.enemies.length > 0;
 
-            if (!planet.hasEnemies && !hasActiveEnemies && !this.currentlySpawning && !onCooldown) {
+            // CRITICAL: Check if this EXACT planet already triggered a spawn this frame
+            if (!planet.spawnTriggeredThisSession) {
+              planet.spawnTriggeredThisSession = false; // Initialize flag
+            }
+
+            if (!planet.hasEnemies && !hasActiveEnemies && !this.currentlySpawning && !onCooldown && !planet.spawnTriggeredThisSession) {
                 console.log(`[PLANET] ✅ Player within 1500. Spawning enemies... (hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning})`);
 
-                // Set ALL flags IMMEDIATELY to prevent re-entry
+                // Set ALL flags IMMEDIATELY to prevent ANY re-entry
                 planet.hasEnemies = true;
+                planet.spawnTriggeredThisSession = true; // Mark this planet as having spawned
                 this.enemiesSpawned = true;
                 this.currentPlanet = planet;
                 this.currentlySpawning = true; // Spawn lock
