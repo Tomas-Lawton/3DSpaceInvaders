@@ -59,8 +59,8 @@ export const planets = (() => {
           Math.cos(angle2)
         );
 
-        // Spawn 2500-3500 units away from player
-        const spawnDistance = 2500 + Math.random() * 1000;
+        // Spawn 1800-2800 units away from player (reduced for faster exploration)
+        const spawnDistance = 1800 + Math.random() * 1000;
         planetGroup.position.set(
           playerPosition.x + direction.x * spawnDistance,
           playerPosition.y + direction.y * spawnDistance * 0.2, // Less vertical spread
