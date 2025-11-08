@@ -264,8 +264,8 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
 
   // Rotate the map based on player's facing direction
   // Objects rotate around the player to show relative positions
-  // CSS rotation: positive = clockwise, negative = counter-clockwise
-  const rotationDegrees = -(playerRotation * 180 / Math.PI);
+  // Add 180 degrees so forward actually appears at top
+  const rotationDegrees = (playerRotation * 180 / Math.PI) + 180;
   miniMapContent.style.transform = `rotate(${rotationDegrees}deg)`;
 
   // Counter-rotate player icon so it ALWAYS points up (forward)
@@ -290,9 +290,9 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
 
       if (distance < maxDistance) {
         // Direct world-space mapping (map rotation handles orientation)
-        // Flip X for correct left/right, flip Z so forward appears up
-        const x = center - (dx / maxDistance) * (mapSize / 2);
-        const y = center - (dz / maxDistance) * (mapSize / 2);
+        // X is normal, Y inverted (CSS Y goes down, we want +Z at top)
+        const x = center + (dx / maxDistance) * (mapSize / 2);
+        const y = center + (dz / maxDistance) * (mapSize / 2);
 
         const planetDot = document.createElement('div');
         planetDot.className = 'mini-map-planet';
@@ -312,9 +312,9 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
       const distance = Math.sqrt(dx * dx + dz * dz);
 
       if (distance < maxDistance) {
-        // Direct mapping - flip both X and Z for correct orientation
-        const x = center - (dx / maxDistance) * (mapSize / 2);
-        const y = center - (dz / maxDistance) * (mapSize / 2);
+        // Direct mapping - no flips, rotation handles orientation
+        const x = center + (dx / maxDistance) * (mapSize / 2);
+        const y = center + (dz / maxDistance) * (mapSize / 2);
 
         const enemyDot = document.createElement('div');
         enemyDot.className = 'mini-map-enemy';
@@ -333,9 +333,9 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
       const distance = Math.sqrt(dx * dx + dz * dz);
 
       if (distance < maxDistance) {
-        // Direct mapping - flip both X and Z for correct orientation
-        const x = center - (dx / maxDistance) * (mapSize / 2);
-        const y = center - (dz / maxDistance) * (mapSize / 2);
+        // Direct mapping - no flips, rotation handles orientation
+        const x = center + (dx / maxDistance) * (mapSize / 2);
+        const y = center + (dz / maxDistance) * (mapSize / 2);
 
         const asteroidDot = document.createElement('div');
         asteroidDot.className = 'mini-map-asteroid';

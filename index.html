@@ -146,7 +146,7 @@
           </div>
         </div>
 
-        <!-- Top Left Section - Radar & Info -->
+        <!-- Top Left Section - Radar & Info (HIDDEN - not used in grid) -->
         <div id="top-left-section">
           <div id="radar-display">
             <div class="radar-ring"></div>
@@ -180,48 +180,48 @@
               <!-- Dynamically populated -->
             </div>
           </div>
-
-          <!-- Ship Stats (part of left column) -->
-          <div id="left-stats-section">
-            <div class="stat-item">
-              <label class="stat-label">Inertial Velocity</label>
-              <div class="stat-bar-container">
-                <div class="stat-bar" id="velocity-stat" style="width: 45%"></div>
-              </div>
-              <span class="stat-value" id="velocity-value">7.68 km/s</span>
-            </div>
-
-            <div class="stat-item">
-              <label class="stat-label">Altitude</label>
-              <div class="stat-bar-container">
-                <div class="stat-bar" id="altitude-stat" style="width: 30%"></div>
-              </div>
-              <span class="stat-value" id="altitude-value">390.0 km</span>
-            </div>
-
-            <div class="stat-item">
-              <label class="stat-label">Apogee</label>
-              <div class="stat-bar-container">
-                <div class="stat-bar" id="apogee-stat" style="width: 35%"></div>
-              </div>
-              <span class="stat-value" id="apogee-value">404.4 km</span>
-            </div>
-
-            <div class="stat-item">
-              <label class="stat-label">Perigee</label>
-              <div class="stat-bar-container">
-                <div class="stat-bar" id="perigee-stat" style="width: 40%"></div>
-              </div>
-              <span class="stat-value" id="perigee-value">389.4 km</span>
-            </div>
-          </div>
         </div>
 
-        <!-- Messages Badge - Orange indicator (Top Right) -->
+        <!-- Messages Badge - Orange indicator (HIDDEN - not used in grid) -->
         <div id="messages-badge">
           <div class="message-badge-icon">📬</div>
           <div class="message-badge-text">MESSAGES</div>
           <div class="message-badge-subtitle">View below</div>
+        </div>
+
+        <!-- Left Section - Ship Stats (GRID ITEM) -->
+        <div id="left-stats-section">
+          <div class="stat-item">
+            <label class="stat-label">Inertial Velocity</label>
+            <div class="stat-bar-container">
+              <div class="stat-bar" id="velocity-stat" style="width: 45%"></div>
+            </div>
+            <span class="stat-value" id="velocity-value">7.68 km/s</span>
+          </div>
+
+          <div class="stat-item">
+            <label class="stat-label">Altitude</label>
+            <div class="stat-bar-container">
+              <div class="stat-bar" id="altitude-stat" style="width: 30%"></div>
+            </div>
+            <span class="stat-value" id="altitude-value">390.0 km</span>
+          </div>
+
+          <div class="stat-item">
+            <label class="stat-label">Apogee</label>
+            <div class="stat-bar-container">
+              <div class="stat-bar" id="apogee-stat" style="width: 35%"></div>
+            </div>
+            <span class="stat-value" id="apogee-value">404.4 km</span>
+          </div>
+
+          <div class="stat-item">
+            <label class="stat-label">Perigee</label>
+            <div class="stat-bar-container">
+              <div class="stat-bar" id="perigee-stat" style="width: 40%"></div>
+            </div>
+            <span class="stat-value" id="perigee-value">389.4 km</span>
+          </div>
         </div>
 
         <!-- Center Section - 3D Ship Display -->
