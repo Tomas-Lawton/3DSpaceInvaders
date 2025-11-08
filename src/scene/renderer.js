@@ -88,17 +88,17 @@ export function initRenderer() {
       1.2, 0.8, 0.8 // Reduced intensity and thresholds
     );
 
-    // Create radial blur pass for warp effect
-    const radialBlurPass = new ShaderPass(RadialBlurShader);
-    radialBlurPass.renderToScreen = false;
+    // Radial blur disabled for performance
+    // const radialBlurPass = new ShaderPass(RadialBlurShader);
+    // radialBlurPass.renderToScreen = false;
 
     const composer = new EffectComposer(renderer);
     composer.addPass(renderScene);
-    composer.addPass(radialBlurPass);
+    // composer.addPass(radialBlurPass); // Disabled for performance
     composer.addPass(bloomPass);
 
-    // Store reference to the warp pass for external control
-    composer.warpPass = radialBlurPass;
+    // Store reference to the warp pass for external control (disabled)
+    // composer.warpPass = radialBlurPass;
 
     return composer;
   }

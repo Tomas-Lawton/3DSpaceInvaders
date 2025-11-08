@@ -216,6 +216,9 @@ export const planets = (() => {
                 // Only create new loader if we don't have one already
                 if (!this.enemyLoader) {
                   this.enemyLoader = new enemy.EnemyLoader(this.scene);
+                } else {
+                  // Clear existing enemies before spawning new ones
+                  this.cleanupEnemies();
                 }
                 this.enemyLoader.initaliseEnemies(enemyCount, planet.position);
 
