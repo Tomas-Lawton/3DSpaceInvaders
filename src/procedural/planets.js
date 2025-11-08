@@ -194,7 +194,6 @@ export const planets = (() => {
                 clostestPlanet = planet
             }
           }
-          updateCloestPlanet(clostestPlanet.position)
 
           if (playerDistance > 6000) {
             // Clean up old enemies before repositioning planet
@@ -235,6 +234,11 @@ export const planets = (() => {
             }
           }
         });
+
+        // Update closest planet UI (only once per frame, after checking all planets)
+        if (clostestPlanet) {
+          updateCloestPlanet(clostestPlanet.position);
+        }
 
         // Update directional indicators ALWAYS (outside the forEach loop)
         // Pass all planets and all enemies to the indicator system
