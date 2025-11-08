@@ -712,48 +712,34 @@ export const spaceship = (() => {
       const notification = document.createElement("div");
       notification.className = `game-notification ${type}`;
       notification.textContent = message;
+
+      const color = type === 'success' ? '#00ff00' : type === 'danger' ? '#ff0000' : '#00ffee';
+      const shadowColor = type === 'success' ? 'rgba(0,255,0,0.5)' : type === 'danger' ? 'rgba(255,0,0,0.5)' : 'rgba(0,255,238,0.5)';
+
       notification.style.cssText = `
         position: fixed;
-        top: 50%;
+        bottom: 100px;
         left: 50%;
-        transform: translate(-50%, -50%);
-        padding: 20px 40px;
-        background: rgba(0, 0, 0, 0.9);
-        border: 2px solid ${
-          type === "success"
-            ? "#00ff00"
-            : type === "danger"
-            ? "#ff0000"
-            : "#00ffee"
-        };
-        border-radius: 10px;
-        color: ${
-          type === "success"
-            ? "#00ff00"
-            : type === "danger"
-            ? "#ff0000"
-            : "#00ffee"
-        };
-        font-size: 24px;
+        transform: translateX(-50%) translateY(100px);
+        padding: 12px 30px;
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%);
+        border: 2px solid ${color};
+        border-radius: 8px;
+        color: ${color};
+        font-size: 18px;
         font-weight: bold;
         text-align: center;
         z-index: 10000;
-        box-shadow: 0 0 20px ${
-          type === "success"
-            ? "rgba(0,255,0,0.5)"
-            : type === "danger"
-            ? "rgba(255,0,0,0.5)"
-            : "rgba(0,255,238,0.5)"
-        };
+        box-shadow: 0 0 30px ${shadowColor}, 0 5px 15px rgba(0,0,0,0.5);
         pointer-events: none;
-        animation: fadeInOut 1.2s ease-in-out forwards;
+        animation: slideUpFade 2s ease-out forwards;
       `;
 
       document.body.appendChild(notification);
 
       setTimeout(() => {
         notification.remove();
-      }, 1200);
+      }, 2000);
     }
 
     addKill() {

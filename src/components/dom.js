@@ -262,21 +262,16 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
   const maxDistance = 3000; // Max distance to show on map (in game units)
   const center = mapSize / 2;
 
-  // Don't rotate the container - keep "N" pointing north
-  // Instead, rotate object positions so player's forward is always up
+  // Compass mode: North always points north, don't rotate the map
+  // Objects are shown in their real relative positions to player
+  // Player icon rotates to show which direction they're facing
 
-  // Helper function to rotate point around center based on player rotation
-  // This makes player's forward direction always point up on the map
-  // Add 90 degree offset to correct orientation (forward was appearing left)
-  const rotatePoint = (dx, dz, angle) => {
-    const correctedAngle = -angle - Math.PI / 2; // Add 90° offset
-    const cos = Math.cos(correctedAngle);
-    const sin = Math.sin(correctedAngle);
-    return {
-      x: dx * cos - dz * sin,
-      z: dx * sin + dz * cos
-    };
-  };
+  // Update player icon rotation to show heading
+  const playerIcon = document.querySelector('.player-ship-icon');
+  if (playerIcon) {
+    const rotationDegrees = (playerRotation * 180 / Math.PI);
+    playerIcon.style.transform = `translate(-50%, -50%) rotate(${rotationDegrees}deg)`;
+  }
 
   // Add planets to mini-map
   if (planets && planets.length > 0) {
@@ -286,9 +281,9 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
       const distance = Math.sqrt(dx * dx + dz * dz);
 
       if (distance < maxDistance) {
-        const rotated = rotatePoint(dx, dz, playerRotation);
-        const x = center + (rotated.x / maxDistance) * (mapSize / 2);
-        const y = center + (rotated.z / maxDistance) * (mapSize / 2);
+        // Direct mapping without rotation (compass mode)
+        const x = center + (dx / maxDistance) * (mapSize / 2);
+        const y = center + (dz / maxDistance) * (mapSize / 2);
 
         const planetDot = document.createElement('div');
         planetDot.className = 'mini-map-planet';
@@ -308,9 +303,9 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
       const distance = Math.sqrt(dx * dx + dz * dz);
 
       if (distance < maxDistance) {
-        const rotated = rotatePoint(dx, dz, playerRotation);
-        const x = center + (rotated.x / maxDistance) * (mapSize / 2);
-        const y = center + (rotated.z / maxDistance) * (mapSize / 2);
+        // Direct mapping without rotation (compass mode)
+        const x = center + (dx / maxDistance) * (mapSize / 2);
+        const y = center + (dz / maxDistance) * (mapSize / 2);
 
         const enemyDot = document.createElement('div');
         enemyDot.className = 'mini-map-enemy';
@@ -329,9 +324,9 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
       const distance = Math.sqrt(dx * dx + dz * dz);
 
       if (distance < maxDistance) {
-        const rotated = rotatePoint(dx, dz, playerRotation);
-        const x = center + (rotated.x / maxDistance) * (mapSize / 2);
-        const y = center + (rotated.z / maxDistance) * (mapSize / 2);
+        // Direct mapping without rotation (compass mode)
+        const x = center + (dx / maxDistance) * (mapSize / 2);
+        const y = center + (dz / maxDistance) * (mapSize / 2);
 
         const asteroidDot = document.createElement('div');
         asteroidDot.className = 'mini-map-asteroid';

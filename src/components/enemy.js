@@ -87,12 +87,12 @@ export const enemy = (() => {
           if (child.isMesh) {
             child.castShadow = child.receiveShadow = true;
 
-            // Scary red emissive glow
+            // Subtle red tint with natural ship colors
             if (child.material) {
               child.material = child.material.clone();
-              child.material.emissive = new THREE.Color(0xff0000);
-              child.material.emissiveIntensity = 0.2; // Subtle red glow
-              child.material.color = new THREE.Color(0x888888); // Dark gray base
+              child.material.emissive = new THREE.Color(0x330000); // Very dark red emissive
+              child.material.emissiveIntensity = 0.08; // Reduced from 0.2 for subtlety
+              child.material.color = new THREE.Color(0xaaaaaa); // Lighter gray base (less dark)
               child.material.metalness = 0.7;
               child.material.roughness = 0.4;
             }
@@ -102,8 +102,8 @@ export const enemy = (() => {
         loadedModel.scale.set(0.3, 0.3, 0.3); // Reduced from 0.5 for smaller enemies
         enemyObject.add(loadedModel);
 
-        // Single scary red light - simple and menacing
-        const enemyLight = new THREE.PointLight(0xff0000, 25, 50);
+        // Softer red-orange light - menacing but not overpowering
+        const enemyLight = new THREE.PointLight(0xff3300, 12, 45); // Orange-red, lower intensity
         enemyLight.position.set(0, 2, 0);
         enemyLight.castShadow = false;
         enemyObject.add(enemyLight);

@@ -347,6 +347,22 @@ export const planets = (() => {
           }
         });
 
+        // Check if player is far from combat - stop dogfight music if so
+        if (audioManager && this.enemyLoader && this.enemyLoader.enemies.length > 0) {
+          const combatDistance = 2500; // Distance threshold to end combat music
+          const nearestEnemyDistance = Math.min(...this.enemyLoader.enemies.map(enemy => {
+            const dx = enemy.position.x - playerCurrentPosition.x;
+            const dy = enemy.position.y - playerCurrentPosition.y;
+            const dz = enemy.position.z - playerCurrentPosition.z;
+            return Math.sqrt(dx * dx + dy * dy + dz * dz);
+          }));
+
+          if (nearestEnemyDistance > combatDistance) {
+            console.log(`[COMBAT] Player fled combat (${nearestEnemyDistance.toFixed(0)}u away) - stopping music`);
+            audioManager.stopDogfightMusic();
+          }
+        }
+
         // Remove planets that are too far away
         const planetsToRemove = this.planets.filter(p => p.markedForRemoval);
         planetsToRemove.forEach(planet => {
