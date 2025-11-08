@@ -83,19 +83,24 @@ async function loadShipModels() {
   }
 }
 
-document.getElementById("ships-bar").addEventListener("click", (e) => {
-  if (e.target.classList.contains("ship-option")) {
-    // Remove active class from all ships
-    document.querySelectorAll(".ship-option").forEach(el => el.classList.remove("active"));
-    // Add active class to clicked ship
-    e.target.classList.add("active");
-    
-    const shipId = e.target.id;
-    console.log("Switching to model: ", shipId);
-    document.getElementById("select-ship").dataset.shipId = shipId;
-    switchModel(shipId);
-  }
-});
+const shipsBar = document.getElementById("bottom-ships-bar");
+if (shipsBar) {
+  shipsBar.addEventListener("click", (e) => {
+    if (e.target.classList.contains("ship-option")) {
+      // Remove active class from all ships
+      document.querySelectorAll(".ship-option").forEach(el => el.classList.remove("active"));
+      // Add active class to clicked ship
+      e.target.classList.add("active");
+
+      const shipId = e.target.id;
+      console.log("Switching to model: ", shipId);
+      document.getElementById("select-ship").dataset.shipId = shipId;
+      switchModel(shipId);
+    }
+  });
+} else {
+  console.warn("Ship selector bar not found - ships-bar element missing from DOM");
+}
 
 let previousModelId = null;
 
