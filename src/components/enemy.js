@@ -112,14 +112,21 @@ export const enemy = (() => {
         enemyObject.speedMultiplier = 0.8 + Math.random() * 0.6; // 0.8 to 1.4x speed variance
         enemyObject.turnSpeed = 0.015 + Math.random() * 0.01; // 0.015 to 0.025 turn speed
 
+        // Store planet center for collision avoidance
+        enemyObject.planetCenter = aroundPoint.clone();
+        enemyObject.minSafeDistance = 380; // Planet radius + safety margin
+
         // Assign random behavior pattern
         const behaviors = ['patrol', 'chase', 'orbit'];
         enemyObject.behavior = behaviors[Math.floor(Math.random() * behaviors.length)];
 
+        // SAFETY: Minimum distance from planet center (planets can be up to ~300 radius)
+        const minSafeDistance = 380; // Planet radius + safety margin
+
         // Set initial patrol target for patrol behavior
         if (enemyObject.behavior === 'patrol') {
           const patrolAngle = Math.random() * Math.PI * 2;
-          const patrolDistance = 150 + Math.random() * 100;
+          const patrolDistance = minSafeDistance + Math.random() * 150; // 380-530 units from planet
           enemyObject.patrolTarget = new THREE.Vector3(
             aroundPoint.x + Math.cos(patrolAngle) * patrolDistance,
             aroundPoint.y + (Math.random() - 0.5) * 50,
@@ -131,7 +138,7 @@ export const enemy = (() => {
         if (enemyObject.behavior === 'orbit') {
           enemyObject.orbitCenter = aroundPoint.clone();
           enemyObject.orbitAngle = Math.random() * Math.PI * 2;
-          enemyObject.orbitRadius = 100 + Math.random() * 80;
+          enemyObject.orbitRadius = minSafeDistance + Math.random() * 100; // 380-480 units from planet
           enemyObject.orbitSpeed = 0.01 + Math.random() * 0.015;
         }
 
@@ -293,9 +300,10 @@ export const enemy = (() => {
           } else {
             // Check if reached patrol target
             if (enemy.patrolTarget && enemy.position.distanceTo(enemy.patrolTarget) < 50) {
-              // Set new patrol target
+              // Set new patrol target with safe distance from planet
+              const minSafeDistance = 380; // Planet radius + safety margin
               const patrolAngle = Math.random() * Math.PI * 2;
-              const patrolDistance = 150 + Math.random() * 100;
+              const patrolDistance = minSafeDistance + Math.random() * 150;
               const center = alternateTarget || enemy.position;
               enemy.patrolTarget = new THREE.Vector3(
                 center.x + Math.cos(patrolAngle) * patrolDistance,
@@ -351,6 +359,24 @@ export const enemy = (() => {
         let direction = new THREE.Vector3();
         enemy.getWorldDirection(direction); // Get the direction the ship is facing
         direction.multiplyScalar(speed);
+
+        // PLANET COLLISION AVOIDANCE
+        if (enemy.planetCenter && enemy.minSafeDistance) {
+          const newPosition = enemy.position.clone().add(direction);
+          const distanceToPlanet = newPosition.distanceTo(enemy.planetCenter);
+
+          // If moving would take us too close to planet, don't move
+          if (distanceToPlanet < enemy.minSafeDistance) {
+            // Push away from planet instead
+            const awayFromPlanet = new THREE.Vector3()
+              .subVectors(enemy.position, enemy.planetCenter)
+              .normalize()
+              .multiplyScalar(speed);
+            enemy.position.add(awayFromPlanet);
+            return;
+          }
+        }
+
         enemy.position.add(direction);
       }
     }
