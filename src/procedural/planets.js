@@ -293,7 +293,7 @@ export const planets = (() => {
                 this.currentPlanet = planet;
                 this.currentlySpawning = true; // Spawn lock
 
-                const enemyCount = 5; // Max 5 enemies per planet
+                const enemyCount = 7; // Max 7 enemies per planet
 
                 // Create loader if it doesn't exist
                 if (!this.enemyLoader) {
@@ -306,7 +306,7 @@ export const planets = (() => {
                 // ALWAYS cleanup before spawning to ensure clean state
                 this.cleanupEnemies();
 
-                // Now spawn exactly 5 enemies
+                // Now spawn exactly 7 enemies
                 console.log(`[PLANET] Calling initaliseEnemies(${enemyCount})`);
                 this.enemyLoader.initaliseEnemies(enemyCount, planet.position);
 

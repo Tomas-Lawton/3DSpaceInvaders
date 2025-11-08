@@ -3,10 +3,11 @@
   padding: 0;
   box-sizing: border-box;
   cursor: none !important;
+  font-family: 'Orbitron', "Courier New", monospace;
 }
 
 body {
-  font-family: "Courier New", monospace;
+  font-family: 'Orbitron', "Courier New", monospace;
   background: #000;
   color: #00ffee;
   overflow: hidden;
