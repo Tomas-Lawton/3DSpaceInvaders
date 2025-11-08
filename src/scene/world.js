@@ -19,7 +19,7 @@ export const gameworld = (() => {
         this.scene.add(softLight);
 
         this.createSky();
-        this.createStarfield(100); //procedural - reduced to 100 for maximum performance
+        this.createStarfield(500); //procedural - increased to 500 for richer starfield
         this.createAsteroidSystems(1); //procedural - reduced to 1 system for performance
         this.createPlanets(1); //procedural
         // this.createStar();
