@@ -1212,6 +1212,17 @@ body {
   opacity: 0.9;
 }
 
+/* Orange and Cyan text colors for intro */
+.orange-text {
+  color: #ff9900;
+  text-shadow: 0 0 10px rgba(255, 153, 0, 0.8);
+}
+
+.cyan-text {
+  color: #00ffee;
+  text-shadow: 0 0 10px rgba(0, 255, 238, 0.8);
+}
+
 .intro-content {
   display: flex;
   flex-direction: column;

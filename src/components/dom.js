@@ -262,12 +262,11 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
   const maxDistance = 3000; // Max distance to show on map (in game units)
   const center = mapSize / 2;
 
-  // Rotate the map content so player always faces up
-  // playerRotation is in radians, convert to degrees
-  const rotationDegrees = (playerRotation * 180 / Math.PI);
-  miniMapContent.style.transform = `rotate(${-rotationDegrees}deg)`;
+  // Don't rotate the container - keep "N" pointing north
+  // Instead, rotate object positions so player's forward is always up
 
   // Helper function to rotate point around center based on player rotation
+  // This makes player's forward direction always point up on the map
   const rotatePoint = (dx, dz, angle) => {
     const cos = Math.cos(-angle);
     const sin = Math.sin(-angle);
