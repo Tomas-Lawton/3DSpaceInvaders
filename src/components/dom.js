@@ -265,13 +265,14 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
   // Rotate the map based on player's facing direction
   // Objects rotate around the player to show relative positions
   // CSS rotation: positive = clockwise, negative = counter-clockwise
-  const rotationDegrees = -(playerRotation * 180 / Math.PI) - 90;
+  const rotationDegrees = -(playerRotation * 180 / Math.PI);
   miniMapContent.style.transform = `rotate(${rotationDegrees}deg)`;
 
   // Counter-rotate player icon so it ALWAYS points up (forward)
   const playerIcon = document.querySelector('.player-ship-icon');
   if (playerIcon) {
-    playerIcon.style.transform = `translate(-50%, -50%) rotate(${-rotationDegrees}deg)`;
+    // Parent element handles rotation, keep icon centered
+    playerIcon.parentElement.style.transform = `translate(-50%, -50%) rotate(${-rotationDegrees}deg)`;
   }
 
   // Counter-rotate the North indicator to always point north
