@@ -250,6 +250,11 @@ body {
   border-radius: 12px;
   box-shadow: 0 0 20px rgba(0, 255, 238, 0.3);
   overflow: hidden;
+  pointer-events: none !important; /* Disable all clicking on messages */
+}
+
+#info-box * {
+  pointer-events: none !important; /* Disable all clicking on message children */
 }
 
 .message-header {
