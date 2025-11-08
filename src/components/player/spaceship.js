@@ -1,0 +1,1032 @@
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { third_person_camera } from "../../scene/camera.js";
+import { mapValue } from "../../utils/utils.js"; // Assuming you have a utility function for mapping values
+import { progressContainer, progressText } from "../dom.js";
+import { PHYSICS_CONSTANTS } from "../../utils/constants.js";
+import { incrementOre, addXP } from "../dom.js";
+import {
+  modelPaths,
+  normalizeModelSize,
+  normalizeModelPosition,
+} from "../../hud/hud.js";
+
+export const spaceship = (() => {
+  class Spaceship {
+    constructor(scene, camera, health = 100) {
+      this.scene = scene;
+      this.camera = camera;
+      this.spaceshipParams = {
+        positionX: 0,
+        positionY: 0.7,
+        positionZ: 0,
+        scale: 0.08,
+      };
+
+      this.loader = new GLTFLoader().setPath("public/ships/ship_0/");
+
+      this.mesh = null; // 3d
+      this.thirdPersonCamera = null; // follow cam
+
+      this.shipGroup = null;
+
+      // this.boosterFlame = new THREE.Mesh(
+      //   new THREE.BoxGeometry(0.15, 0.15, 0.15),
+      //   new THREE.MeshStandardMaterial({
+      //     emissiveIntensity: 2.5,
+      //     emissive: 0xc87dff,
+      //     color: 0xc87dff,
+      //     // color: 0x00ffee,
+      //     // emissive: 0x00ffee,
+      //     side: THREE.DoubleSide,
+      //   })
+      // );
+
+      this.boosterFlame = new THREE.Mesh(
+        new THREE.ConeGeometry(2, 5, 8),
+        new THREE.MeshStandardMaterial({
+          emissiveIntensity: 2.5,
+          emissive: 0xc87dff,
+          color: 0xc87dff,
+          transparent: true,
+          opacity: 0.6,
+          side: THREE.DoubleSide,
+        })
+      );
+
+      this.lightSound = new Audio("public/audio/pew.mp3");
+      this.boomSound = new Audio("public/audio/boom.mp3");
+      this.softBoom = new Audio("public/audio/soft_boom.mp3");
+      this.alarmSound = new Audio("public/audio/alarm.mp3");
+      this.deadSound = new Audio("public/audio/cool1.mp3");
+
+      this.forwardVelocity = 0;
+      this.upwardVelocity = 0;
+
+      // Cool
+      this.activeLasers = [];
+      this.engineParticles = [];
+      this.maxParticles = 200;
+      this.wingTrails = {
+        left: [],
+        right: [],
+      };
+
+      this.setHealth(health, true);
+      this.damageAmount = 26;
+
+      // Combo system
+      this.comboCount = 0;
+      this.comboTimer = null;
+      this.comboTimeout = 3000; // 3 seconds to continue combo
+      this.lastKillTime = 0;
+
+      // Stats tracking
+      this.totalKills = 0;
+      this.planetsSaved = 0;
+
+      let selectShip = document.getElementById("select-ship");
+      selectShip.addEventListener("click", () => {
+        const updatedShipId =
+          parseInt(selectShip.dataset.shipId.replace("ship-", ""), 10) - 1;
+        console.log("Updating, ", updatedShipId);
+        this.setSpaceshipModel(updatedShipId);
+      });
+
+      return this;
+    }
+
+    damageShip(damage) {
+      this.health -= damage;
+
+      if (this.health <= 0) {
+        if (this.deadSound) {
+          this.deadSound.currentTime = 0;
+          this.deadSound.volume = 0.5;
+          this.deadSound.play();
+        }
+        console.log("You Died");
+      }
+    }
+
+    setHealth(health, init = false) {
+      this.health = health;
+      if (init) {
+        this.maxHealth = health;
+      }
+    }
+
+    setSpaceshipModel(shipId) {
+      console.log("Loading Spaceship: ", shipId);
+      if (!modelPaths[shipId]) return;
+
+      const selectedModel = modelPaths[shipId];
+      console.log(selectedModel);
+
+      // Remove previous model if it exists
+      if (this.mesh) {
+        this.scene.remove(this.mesh);
+        this.mesh.traverse((child) => {
+          if (child.geometry) child.geometry.dispose();
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach((mat) => mat.dispose());
+            } else {
+              child.material.dispose();
+            }
+          }
+        });
+        this.mesh.clear();
+      }
+
+      this.loader.setPath(selectedModel.path).load(
+        "scene.gltf",
+        (gltf) => {
+          this.mesh = new THREE.Group();
+          const tempObjectGroup = new THREE.Group();
+          this.shipGroup = tempObjectGroup;
+          const loadedModel = gltf.scene;
+
+          loadedModel.traverse((child) => {
+            if (child.isMesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+
+          loadedModel.rotation.set(
+            selectedModel.rotation.x,
+            selectedModel.rotation.y - Math.PI / 2,
+            selectedModel.rotation.z
+          );
+
+          // Normalize model if needed
+          if (!selectedModel.isNormalized) {
+            // normalizeModelSize(loadedModel, 55);
+            normalizeModelPosition(loadedModel);
+            selectedModel.isNormalized = true;
+          }
+
+          tempObjectGroup.add(loadedModel);
+
+          // Reduce light distance for better performance
+          const cockpitGlow = new THREE.PointLight(0x00ffff, 5, 20); // Reduced from 30
+          cockpitGlow.position.set(0, 2, 8);
+          tempObjectGroup.add(cockpitGlow);
+          this.cockpitGlow = cockpitGlow; // Store reference for pulsing
+
+          // Remove ambient light - not needed with scene ambient light
+          // const ambientLight = new THREE.PointLight(0x660099, 1, 50);
+          // ambientLight.position.set(0, 5, 0);
+          // tempObjectGroup.add(ambientLight);
+
+          // Remove spotlight - emissive materials provide enough glow
+          // const spotLight = new THREE.SpotLight(
+          //   0xff6600,
+          //   3,
+          //   5,
+          //   Math.PI * 1.1,
+          //   0.2
+          // );
+          // spotLight.position.copy(tempObjectGroup.position);
+          // tempObjectGroup.add(spotLight);
+          tempObjectGroup.add(this.boosterFlame);
+
+          this.mesh.add(tempObjectGroup);
+          this.mesh.rotation.y = Math.PI;
+
+          this.scene.add(this.mesh);
+
+          this.thirdPersonCamera = new third_person_camera.ThirdPersonCamera({
+            camera: this.camera,
+            target: this.mesh,
+          });
+
+          this.updateSpaceshipPosition();
+
+          // Hide loading screen and show intro
+          progressContainer.style.display = "none";
+
+          // Show intro screen
+          const introScreen = document.getElementById('intro-screen');
+          if (introScreen) {
+            introScreen.style.display = 'flex';
+          }
+        },
+        (xhr) => {
+          let progressAmount = (xhr.loaded / xhr.total) * 100;
+          progressText.innerHTML = `LOADING ${progressAmount.toFixed(2)}/100`;
+        },
+        (error) => console.error("Error loading model:", error)
+      );
+    }
+    updateSpaceshipPosition() {
+      if (this.mesh) {
+        this.mesh.position.set(
+          this.spaceshipParams.positionX,
+          this.spaceshipParams.positionY,
+          this.spaceshipParams.positionZ
+        );
+        this.mesh.scale.set(
+          this.spaceshipParams.scale,
+          this.spaceshipParams.scale,
+          this.spaceshipParams.scale
+        );
+        // console.log(this.spaceshipParams)
+      }
+    }
+
+    fireLaser() {
+      if (!this.mesh || !this.mesh.children[0]) {
+        console.warn("Ship not fully loaded yet");
+        return;
+      }
+
+      const direction = new THREE.Vector3();
+      this.mesh.children[0].getWorldDirection(direction);
+      const laserPosition = this.mesh.position.clone();
+      // Use lower-poly geometry for player lasers
+      const laserBeam = new THREE.Mesh(
+        new THREE.SphereGeometry(0.2, 8, 8), // Reduced from 16x16
+        new THREE.MeshStandardMaterial({
+          emissive: 0xc87dff,
+          emissiveIntensity: 3,
+          color: 0x9400ff,
+        })
+      );
+
+      laserBeam.position.copy(laserPosition);
+      laserBeam.lookAt(laserPosition.add(direction));
+      this.scene.add(laserBeam);
+
+      const velocity = direction.normalize().multiplyScalar(30);
+      if (this.lightSound) {
+        this.lightSound.currentTime = 0;
+        this.lightSound.volume = 0.25;
+        this.lightSound.play();
+      }
+
+      this.activeLasers.push({ laserBeam, velocity, direction });
+    }
+
+    // updateboosterFlame(currentVelocity, maxVelocity) {
+    //   const rectangleLength = mapValue(currentVelocity, 0, maxVelocity, 0, -80);
+    //   this.boosterFlame.geometry.dispose(); // Dispose of the old geometry
+    //   this.boosterFlame.geometry = new THREE.BoxGeometry(
+    //     3,
+    //     3,
+    //     rectangleLength
+    //   ); // Adjust width and height as needed
+    //   this.boosterFlame.position.z = rectangleLength / 2 - 60;
+    //   this.boosterFlame.position.y = 10;
+    // }
+
+    updateBoosterFlame(currentVelocity, maxVelocity) {
+      const flameLength = mapValue(currentVelocity, 0, maxVelocity, 5, 150);
+
+      this.boosterFlame.geometry.dispose();
+
+      this.boosterFlame.geometry = new THREE.ConeGeometry(
+        2, // radius at base
+        flameLength, // height/length of cone
+        8 // segments (8 is good for performance)
+      );
+
+      this.boosterFlame.position.set(
+        0,
+        8, // Raised up a bit (adjust this value to move it higher/lower)
+        -flameLength / 2 - 5
+      );
+
+      this.boosterFlame.rotation.x = -Math.PI / 2;
+
+      this.boosterFlame.visible = currentVelocity > 0.1;
+
+      const intensity = mapValue(currentVelocity, 0, maxVelocity, 1, 4);
+      this.boosterFlame.material.emissiveIntensity = intensity;
+
+      const opacity = 0.6 + Math.sin(Date.now() * 0.01) * 0.05;
+      this.boosterFlame.material.opacity = opacity;
+    }
+
+    createWingTrail() {
+      // Left wing trail
+      const leftTrail = new THREE.Mesh(
+        new THREE.BoxGeometry(0.02, 0.08, 2),
+        new THREE.MeshStandardMaterial({
+          emissive: 0xffffff,
+          emissiveIntensity: 0.5,
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.3,
+        })
+      );
+
+      // Use the inner ship group's rotation
+      const shipGroup = this.mesh.children[0];
+      const leftOffset = new THREE.Vector3(-2, 0, 0);
+      leftOffset.applyQuaternion(shipGroup.quaternion);
+      leftOffset.applyQuaternion(this.mesh.quaternion); // Apply outer rotation too
+
+      leftTrail.position.copy(this.mesh.position).add(leftOffset);
+      leftTrail.quaternion
+        .copy(this.mesh.quaternion)
+        .multiply(shipGroup.quaternion);
+      leftTrail.life = 1.0;
+
+      this.scene.add(leftTrail);
+      this.wingTrails.left.push(leftTrail);
+
+      // Right wing trail
+      const rightTrail = new THREE.Mesh(
+        new THREE.BoxGeometry(0.02, 0.08, 2),
+        new THREE.MeshStandardMaterial({
+          emissive: 0xffffff,
+          emissiveIntensity: 0.5,
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.1,
+        })
+      );
+
+      const rightOffset = new THREE.Vector3(2, 0, 0);
+      rightOffset.applyQuaternion(shipGroup.quaternion);
+      rightOffset.applyQuaternion(this.mesh.quaternion);
+
+      rightTrail.position.copy(this.mesh.position).add(rightOffset);
+      rightTrail.quaternion
+        .copy(this.mesh.quaternion)
+        .multiply(shipGroup.quaternion);
+      rightTrail.life = 1.0;
+
+      this.scene.add(rightTrail);
+      this.wingTrails.right.push(rightTrail);
+
+      // Reduced max trails from 20 to 10 for better performance
+      if (this.wingTrails.left.length > 10) {
+        const old = this.wingTrails.left.shift();
+        this.scene.remove(old);
+        old.geometry.dispose();
+        old.material.dispose();
+
+        const oldRight = this.wingTrails.right.shift();
+        this.scene.remove(oldRight);
+        oldRight.geometry.dispose();
+        oldRight.material.dispose();
+      }
+    }
+    updateWingTrails() {
+      // Faster fade rate to reduce total trail count
+      [...this.wingTrails.left, ...this.wingTrails.right].forEach(
+        (trail) => {
+          trail.life -= 0.05; // Increased from 0.03 for faster fade
+          trail.material.opacity = trail.life * 0.3;
+
+          if (trail.life <= 0) {
+            this.scene.remove(trail);
+            trail.geometry.dispose();
+            trail.material.dispose();
+          }
+        }
+      );
+    }
+
+    checkCollision(mainObj, colisionObj) {
+      const laserBox = new THREE.Box3().setFromObject(mainObj);
+      const colisionBox = new THREE.Box3().setFromObject(colisionObj);
+      if (laserBox.intersectsBox(colisionBox)) {
+        console.log("Collision");
+        return true; // Collision detected
+      }
+      return false; // No collision detected
+    }
+
+    handleLaserMovement(asteroidLoader, enemyLoader) {
+      if (this.activeLasers) {
+        // Iterate backwards for safe removal during iteration
+        for (let index = this.activeLasers.length - 1; index >= 0; index--) {
+          const beam = this.activeLasers[index];
+          const { laserBeam, velocity } = beam;
+          laserBeam.position.add(velocity.clone().multiplyScalar(0.2));
+
+          // Check distance - increased threshold for better cleanup
+          if (laserBeam.position.distanceTo(this.mesh.position) > 300) {
+            this.scene.remove(laserBeam);
+            // Dispose geometry and material to free memory
+            if (laserBeam.geometry) laserBeam.geometry.dispose();
+            if (laserBeam.material) laserBeam.material.dispose();
+            this.activeLasers.splice(index, 1);
+            continue;
+          }
+
+          // check asteroid collisions
+          if (asteroidLoader) {
+            if (asteroidLoader.asteroidSystem) {
+              for (const system of asteroidLoader.asteroidSystem) {
+                system.children.forEach((asteroid) => {
+                  if (asteroid instanceof THREE.Light) {
+                    return;
+                  }
+                  if (this.checkCollision(laserBeam, asteroid)) {
+                    this.scene.remove(laserBeam);
+                    // Dispose geometry and material
+                    if (laserBeam.geometry) laserBeam.geometry.dispose();
+                    if (laserBeam.material) laserBeam.material.dispose();
+                    this.activeLasers.splice(index, 1);
+                    asteroid.health -= this.damageAmount;
+                    if (this.softBoom) {
+                      this.softBoom.currentTime = 0;
+                      this.softBoom.volume = 0.5;
+                      this.softBoom.play();
+                    }
+                    this.startRumbleEffect(asteroid);
+                    asteroid.velocity.add(
+                      velocity.clone().multiplyScalar(0.002)
+                    ); //smack it away a bit
+
+                    this.showHealthBar(asteroid);
+
+                    if (asteroid.health <= 0) {
+                      this.removeHealthBar(asteroid);
+                      asteroid.parent.remove(asteroid);
+                      this.playSound();
+                      incrementOre(asteroid.type);
+                    }
+                    return;
+                  }
+                });
+              }
+            }
+          }
+
+          // check enemy collisions
+          // console.log(enemyLoader);
+          if (enemyLoader && enemyLoader.enemies) {
+            enemyLoader.enemies.forEach((enemy, enemyIndex) => {
+              if (this.checkCollision(laserBeam, enemy)) {
+                this.scene.remove(laserBeam);
+                // Dispose geometry and material
+                if (laserBeam.geometry) laserBeam.geometry.dispose();
+                if (laserBeam.material) laserBeam.material.dispose();
+                this.activeLasers.splice(index, 1);
+                enemy.health -= this.damageAmount;
+                if (this.softBoom) {
+                  this.softBoom.currentTime = 0;
+                  this.softBoom.volume = 0.5;
+                  this.softBoom.play();
+                }
+                this.startRumbleEffect(enemy);
+                this.showHealthBar(enemy);
+
+                if (enemy.health <= 0) {
+                  this.removeHealthBar(enemy);
+                  this.scene.remove(enemy);
+                  enemyLoader.enemies.splice(enemyIndex, 1);
+                  this.playSound();
+
+                  // Track kill and combo
+                  this.addKill();
+
+                  // Award XP with combo bonus
+                  const baseXP = 20;
+                  const comboBonus = this.getComboBonus();
+                  const totalXP = Math.floor(baseXP * comboBonus);
+                  addXP(totalXP);
+
+                  // Show notification with combo info
+                  if (this.comboCount >= 2) {
+                    this.showNotification(`${this.comboCount}X COMBO! +${totalXP} XP`, 'success');
+                  } else {
+                    this.showNotification(`Enemy Destroyed! +${totalXP} XP`, 'success');
+                  }
+                }
+                return;
+              }
+            });
+          }
+        }
+      }
+    }
+    // showHealthBar(meshObj) {
+    //   if (!meshObj.healthBar) {
+    //     const healthBar = document.createElement("div");
+    //     healthBar.className = "health-bar";
+    //     healthBar.style.position = "absolute";
+    //     healthBar.style.height = "5px";
+    //     healthBar.style.width = "100px";
+    //     document.body.appendChild(healthBar);
+
+    //     meshObj.healthBar = { element: healthBar };
+
+    //     // Start an interval to update the health bar position
+    //     meshObj.healthBar.interval = setInterval(() => {
+    //       this.updateHealthBarPosition(meshObj);
+    //     }, 50); // Update every 100 milliseconds
+    //   }
+
+    //   const healthPercentage = meshObj.health / 100;
+    //   meshObj.healthBar.element.style.width = `${healthPercentage * 100}px`;
+    //   meshObj.healthBar.element.style.backgroundColor = `rgb(${
+    //     255 * (1 - healthPercentage)
+    //   }, ${255 * healthPercentage}, 0)`;
+    // }
+
+    showHealthBar(meshObj) {
+      if (!meshObj.healthBar) {
+        const healthBar = document.createElement("div");
+        healthBar.className = "health-bar";
+        healthBar.style.position = "absolute";
+        healthBar.style.height = "5px";
+        healthBar.style.width = "100px";
+        healthBar.style.background =
+          "linear-gradient(to right, #00ff00, #ffff00, #ff0000)";
+        healthBar.style.border = "1px solid rgba(0, 255, 238, 0.6)";
+        healthBar.style.borderRadius = "3px";
+        healthBar.style.boxShadow = "0 0 8px rgba(0, 255, 238, 0.4)";
+        healthBar.style.zIndex = "1000";
+        document.body.appendChild(healthBar);
+
+        meshObj.healthBar = { element: healthBar };
+
+        // Reduced update frequency from 50ms to 100ms for better performance
+        meshObj.healthBar.interval = setInterval(() => {
+          this.updateHealthBarPosition(meshObj);
+        }, 100);
+      }
+
+      const healthPercentage = Math.max(0, Math.min(1, meshObj.health / 100));
+      meshObj.healthBar.element.style.width = `${healthPercentage * 100}px`;
+
+      const red = Math.floor(255 * (1 - healthPercentage));
+      const green = Math.floor(255 * healthPercentage);
+      meshObj.healthBar.element.style.background = `rgb(${red}, ${green}, 0)`;
+    }
+
+    // updateHealthBarPosition(asteroid) {
+    //     const localPosition = asteroid.position.clone();
+    //     const groupPosition = asteroid.parent.position.clone();
+    //     const actualPosition = localPosition.add(groupPosition);
+    //     this.camera.updateMatrixWorld();
+
+    // 		// this.camera.updateMatrixWorld();
+    // 		// const screenPosition = localPosition.project( this.camera )
+    //     // const x = screenPosition.x
+    //     // const y = screenPosition.y
+
+    //     const screenPosition = actualPosition.project(this.camera);
+    //     const x = (screenPosition.x * 0.5 + 0.5) * window.innerWidth;
+    //     const y = (screenPosition.y * -0.5 + 0.5) * window.innerHeight;
+    //     const distanceToAsteroid = this.camera.position.distanceTo(actualPosition);
+    //     const visibilityThreshold = 1000;
+
+    //     if (distanceToAsteroid < visibilityThreshold) {
+    //         if (screenPosition.z > 0) { // In front of the camera
+    //             asteroid.healthBar.element.style.left = `${x}px`;
+    //             asteroid.healthBar.element.style.top = `${y - 10}px`;
+    //             asteroid.healthBar.element.style.display = 'block';
+    //         } else { // Off screen or facing away
+    //             asteroid.healthBar.element.style.display = 'none';
+    //         }
+    //     } else { // Too far
+    //         this.removeHealthBar(asteroid);
+    //     }
+    // }
+
+    updateHealthBarPosition(asteroid) {
+      // Use temporary vectors to avoid frequent cloning
+      const actualPosition = new THREE.Vector3();
+      actualPosition.copy(asteroid.position).add(asteroid.parent.position);
+
+      // Early exit if too far
+      const distanceToAsteroid =
+        this.camera.position.distanceTo(actualPosition);
+      const visibilityThreshold = 1000;
+      if (distanceToAsteroid >= visibilityThreshold) {
+        this.removeHealthBar(asteroid);
+        return;
+      }
+
+      // Get the direction from the camera to the asteroid
+      const directionToAsteroid = new THREE.Vector3();
+      directionToAsteroid
+        .subVectors(actualPosition, this.camera.position)
+        .normalize();
+
+      // Get the camera's forward direction (already normalized)
+      const cameraForward = new THREE.Vector3();
+      this.camera.getWorldDirection(cameraForward);
+
+      // Check if the asteroid is in front of the camera using the dot product
+      if (directionToAsteroid.dot(cameraForward) > 0) {
+        // Project asteroid position onto screen space
+        const screenPosition = actualPosition.project(this.camera);
+        const x = (screenPosition.x * 0.5 + 0.5) * window.innerWidth;
+        const y = (screenPosition.y * -0.5 + 0.5) * window.innerHeight;
+
+        // Update health bar position
+        asteroid.healthBar.element.style.left = `${x}px`;
+        asteroid.healthBar.element.style.top = `${y - 10}px`;
+        asteroid.healthBar.element.style.display = "block";
+      } else {
+        // Asteroid is behind the camera, hide the health bar
+        asteroid.healthBar.element.style.display = "none";
+      }
+    }
+
+    removeHealthBar(asteroid) {
+      if (asteroid.healthBar) {
+        document.body.removeChild(asteroid.healthBar.element);
+        // delete asteroid.healthBar;
+        clearInterval(asteroid.healthBar.interval); // Clear the interval
+      }
+    }
+    playSound() {
+      if (this.boomSound) {
+        this.boomSound.currentTime = 0;
+        this.boomSound.volume = 0.5;
+        this.boomSound.play();
+      }
+    }
+
+    showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `game-notification ${type}`;
+      notification.textContent = message;
+      notification.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 20px 40px;
+        background: rgba(0, 0, 0, 0.9);
+        border: 2px solid ${type === 'success' ? '#00ff00' : type === 'danger' ? '#ff0000' : '#00ffee'};
+        border-radius: 10px;
+        color: ${type === 'success' ? '#00ff00' : type === 'danger' ? '#ff0000' : '#00ffee'};
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+        z-index: 10000;
+        box-shadow: 0 0 20px ${type === 'success' ? 'rgba(0,255,0,0.5)' : type === 'danger' ? 'rgba(255,0,0,0.5)' : 'rgba(0,255,238,0.5)'};
+        pointer-events: none;
+        animation: fadeInOut 3s ease-in-out forwards;
+      `;
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+
+    addKill() {
+      const currentTime = performance.now();
+      this.totalKills++;
+
+      // Update combo
+      if (currentTime - this.lastKillTime < this.comboTimeout) {
+        this.comboCount++;
+      } else {
+        this.comboCount = 1;
+      }
+
+      this.lastKillTime = currentTime;
+
+      // Clear existing timer
+      if (this.comboTimer) {
+        clearTimeout(this.comboTimer);
+      }
+
+      // Show combo if 2 or more
+      if (this.comboCount >= 2) {
+        this.showCombo();
+
+        // Set timer to hide combo
+        this.comboTimer = setTimeout(() => {
+          this.hideCombo();
+          this.comboCount = 0;
+        }, this.comboTimeout);
+      }
+
+      // Update stats in pause menu
+      this.updatePauseStats();
+    }
+
+    showCombo() {
+      const comboElement = document.getElementById('combo-counter');
+      const multiplierElement = document.getElementById('combo-multiplier');
+
+      if (comboElement && multiplierElement) {
+        multiplierElement.textContent = `${this.comboCount}X`;
+        comboElement.style.display = 'block';
+
+        // Trigger animation
+        comboElement.style.animation = 'none';
+        setTimeout(() => {
+          comboElement.style.animation = 'comboPopIn 0.3s ease-out';
+        }, 10);
+      }
+    }
+
+    hideCombo() {
+      const comboElement = document.getElementById('combo-counter');
+      if (comboElement) {
+        comboElement.style.display = 'none';
+      }
+    }
+
+    getComboBonus() {
+      // Bonus XP multiplier based on combo
+      if (this.comboCount >= 5) return 3;
+      if (this.comboCount >= 3) return 2;
+      if (this.comboCount >= 2) return 1.5;
+      return 1;
+    }
+
+    screenShake(duration = 500) {
+      const canvas = document.getElementById('three-canvas');
+      if (canvas) {
+        canvas.classList.add('screen-shake');
+        setTimeout(() => {
+          canvas.classList.remove('screen-shake');
+        }, duration);
+      }
+    }
+
+    updatePauseStats() {
+      // Update stats in pause menu
+      const healthElement = document.getElementById('header-health');
+      const killsElement = document.getElementById('enemies-killed');
+      const savedElement = document.getElementById('planets-saved');
+
+      if (healthElement) healthElement.textContent = Math.floor(this.health);
+      if (killsElement) killsElement.textContent = this.totalKills;
+      if (savedElement) savedElement.textContent = this.planetsSaved;
+    }
+
+    startRumbleEffect(obj) {
+      const shakeDuration = 1000; // Duration of the shake in milliseconds
+      const shakeIntensity = 0.2; // Maximum shake offset
+      const endTimestamp = performance.now() + shakeDuration;
+
+      const rumble = () => {
+        const currentTimestamp = performance.now();
+
+        if (currentTimestamp < endTimestamp) {
+          const offsetX = (Math.random() - 0.5) * shakeIntensity;
+          const offsetY = (Math.random() - 0.5) * shakeIntensity;
+          const offsetZ = (Math.random() - 0.5) * shakeIntensity;
+
+          // Apply offset to the mesh's current position
+          obj.position.x += offsetX;
+          obj.position.y += offsetY;
+          obj.position.z += offsetZ;
+
+          requestAnimationFrame(rumble);
+        }
+      };
+
+      requestAnimationFrame(rumble);
+    }
+
+    checkAsteroidCollisions(asteroidLoader) {
+      const currentTimestamp = performance.now();
+
+      if (this.lastAsteroidCollisionCheck === undefined) {
+        this.lastAsteroidCollisionCheck = currentTimestamp;
+      }
+
+      // Check less frequently (500ms instead of 1000ms) but with cooldown after hit
+      if (currentTimestamp - this.lastAsteroidCollisionCheck < 500) {
+        return;
+      }
+
+      if (asteroidLoader && asteroidLoader.asteroidSystem) {
+        for (const system of asteroidLoader.asteroidSystem) {
+          // Calculate distance to system first for early exit
+          const distanceToSystem = this.mesh.position.distanceTo(system.position);
+          if (distanceToSystem > 200) continue; // Skip distant asteroid systems
+
+          for (const asteroid of system.children) {
+            if (asteroid instanceof THREE.Light) continue;
+
+            if (this.checkCollision(this.mesh, asteroid)) {
+              this.userHit(40);
+              this.lastAsteroidCollisionCheck = currentTimestamp + 500; // Add cooldown after hit
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    userHit(damage) {
+      console.log("HIT USER");
+      this.damageShip(damage);
+
+      // Screen shake based on damage
+      this.screenShake(damage > 40 ? 800 : 500);
+
+      if (this.boomSound) {
+        this.boomSound.currentTime = 0;
+        this.boomSound.volume = 0.5;
+        this.boomSound.play();
+      }
+      if (this.alarmSound) {
+        this.alarmSound.currentTime = 0;
+        this.alarmSound.volume = 0.5;
+        this.alarmSound.play();
+      }
+      this.startRumbleEffect(this.mesh);
+      this.updatePauseStats(); // Update health display
+    }
+
+    checkEnemyLaserCollisions(enemyLoader) {
+      const currentTimestamp = performance.now();
+
+      if (this.lastEnemyLaserCollisionCheck === undefined) {
+        this.lastEnemyLaserCollisionCheck = currentTimestamp;
+      }
+
+      // Check more frequently for enemy lasers (200ms) as they're fast
+      if (currentTimestamp - this.lastEnemyLaserCollisionCheck < 200) {
+        return;
+      }
+
+      if (enemyLoader && enemyLoader.activeLasers) {
+        for (const laserData of enemyLoader.activeLasers) {
+          const { laserBeam } = laserData;
+          if (this.checkCollision(this.mesh, laserBeam)) {
+            this.userHit(23);
+            this.lastEnemyLaserCollisionCheck = currentTimestamp + 300; // Add cooldown after hit
+            return;
+          }
+        }
+      }
+    }
+
+    Update(
+      forwardAcceleration,
+      upwardAcceleration,
+      timeElapsed,
+      audioManager,
+      asteroidLoader,
+      enemyLoader
+    ) {
+      this.calculateRotation();
+      this.calculateVelocity(
+        forwardAcceleration,
+        upwardAcceleration,
+        timeElapsed
+      );
+      this.moveSpaceship();
+      this.handleLaserMovement(asteroidLoader, enemyLoader);
+      this.updateBoosterFlame(
+        this.forwardVelocity,
+        PHYSICS_CONSTANTS.maxVelocity
+      );
+      this.checkAsteroidCollisions(asteroidLoader);
+      this.checkEnemyLaserCollisions(enemyLoader);
+
+      // Particle effects - spawn when moving at any speed
+      // if (this.forwardVelocity > 0.1) {
+      //   if (!this.particleCounter) this.particleCounter = 0;
+      //   this.particleCounter++;
+
+      //   if (this.particleCounter % 2 === 0) {
+      //     // Every other frame
+      //     this.createEngineParticle();
+      //   }
+      // }
+      // this.updateEngineParticles();
+
+      // Wing trails - create less frequently for better performance
+      if (this.forwardVelocity > 0.3 && Math.random() > 0.97) {
+        // Changed from 0.95 to 0.97 for less frequent spawning
+        this.createWingTrail();
+      }
+      this.updateWingTrails();
+
+      // Speed lines - only at high speed
+
+      // Cockpit glow pulse
+      if (this.cockpitGlow) {
+        const time = Date.now() * 0.005;
+        this.cockpitGlow.intensity = 2 + Math.sin(time) * 0.5;
+      }
+
+      this.thirdPersonCamera.Update(timeElapsed);
+      audioManager.updateSpaceshipVolume(this.forwardVelocity);
+    }
+    calculateRotation() {
+      if (this.forwardVelocity > 0 || this.upwardVelocity > 0) {
+        const continuousRotation = -(mouseX * 0.0001);
+        this.mesh.rotation.y += continuousRotation;
+        const targetX = this.mesh.children[0].rotation.x + mouseY * 0.0002;
+        const mappedTargetX = mapValue(
+          targetX,
+          -Math.PI,
+          Math.PI,
+          -Math.PI * 0.93,
+          Math.PI * 0.93
+        );
+        this.mesh.children[0].rotation.x = THREE.MathUtils.lerp(
+          this.mesh.children[0].rotation.x,
+          mappedTargetX,
+          0.8
+        );
+
+        // YAW
+        const maxRotation = Math.PI / 2;
+        const midX = window.innerWidth / 2;
+        this.mesh.children[0].rotation.z = mapValue(
+          mouseX,
+          -midX,
+          midX,
+          -maxRotation,
+          maxRotation
+        );
+      }
+    }
+
+    calculateVelocity(forwardAcceleration, upwardAcceleration, timeElapsed) {
+      this.updateUpwardVelocity(upwardAcceleration, timeElapsed); // update this.upwardVelocity
+      this.updateForwardVelocity(forwardAcceleration, timeElapsed); // update this.forwardVelocty
+    }
+
+    updateUpwardVelocity(upwardAcceleration, timeElapsed) {
+      if (upwardAcceleration > 0) {
+        this.upwardVelocity +=
+          PHYSICS_CONSTANTS.verticalAcceleration * timeElapsed;
+        this.upwardVelocity = Math.min(
+          this.upwardVelocity,
+          PHYSICS_CONSTANTS.maxVelocity
+        );
+      } else if (upwardAcceleration < 0) {
+        this.upwardVelocity -=
+          PHYSICS_CONSTANTS.verticalAcceleration * timeElapsed;
+        this.upwardVelocity = Math.max(
+          this.upwardVelocity,
+          -PHYSICS_CONSTANTS.maxVelocity
+        );
+      } else {
+        const easingFactor = 0.05; // Increase this value to make the easing more noticeable
+        this.upwardVelocity -=
+          Math.sign(this.upwardVelocity) * easingFactor * timeElapsed; // Ease towards zero
+      }
+    }
+
+    updateForwardVelocity(forwardAcceleration, timeElapsed) {
+      if (forwardAcceleration > 0) {
+        this.forwardVelocity = Math.min(
+          this.forwardVelocity + PHYSICS_CONSTANTS.acceleration * timeElapsed,
+          PHYSICS_CONSTANTS.maxVelocity
+        );
+      }
+      if (forwardAcceleration < 0) {
+        this.forwardVelocity -= PHYSICS_CONSTANTS.deceleration * timeElapsed;
+        this.forwardVelocity = Math.max(this.forwardVelocity, 0);
+      }
+    }
+
+    moveSpaceship() {
+      let moveVector = new THREE.Vector3();
+      let sinY = Math.sin(this.mesh.rotation.y); // Calculate sine of Y rotation for movement along the Y axis
+      let cosY = Math.cos(this.mesh.rotation.y); // Calculate cosine of Y rotation for movement along the Z axis
+      let cosX = Math.cos(this.mesh.children[0].rotation.x); // Calculate cosine of X rotation for vertical movement
+
+      moveVector.set(
+        sinY * cosX * this.forwardVelocity, // Horizontal movement based on forward velocity and Y rotation
+        -Math.sin(this.mesh.children[0].rotation.x) * this.forwardVelocity +
+          this.upwardVelocity, // Vertical movement based on upward velocity and pitch
+        cosY * cosX * this.forwardVelocity // Horizontal movement along the Z axis based on forward velocity and Y rotation
+      );
+
+      this.mesh.position.add(moveVector); // Update the spaceship's position based on the calculated move vector
+    }
+  }
+
+  return {
+    Spaceship: Spaceship,
+  };
+})();
+
+const centerX = window.innerWidth / 2;
+const centerY = window.innerHeight / 2;
+let mouseX = 0;
+let mouseY = 0;
+
+var cursorBig = document.querySelector(".big");
+var cursorSmall = document.querySelector(".small");
+window.addEventListener("mousemove", (event) => {
+  mouseX = event.clientX - centerX;
+  mouseY = event.clientY - centerY;
+  // console.log(mouseX, mouseY);
+
+  cursorBig.style.transform = `translate3d(calc(${event.clientX}px - 50%), calc(${event.clientY}px - 50%), 0)`;
+  // cursor.style.left = event.pageX + "px";
+  // cursor.style.top = event.pageY + "px";
+
+  cursorSmall.style.left = event.pageX + "px";
+  cursorSmall.style.top = event.pageY + "px";
+  // cursorBig.style.transform = `translate3d(calc(${mouseY}px), calc(${mouseY}px), 0)`;
+});

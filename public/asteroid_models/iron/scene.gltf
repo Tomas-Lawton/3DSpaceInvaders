@@ -1,0 +1,303 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 37189,
+      "max": [
+        1.5196622610092163,
+        0.9938448071479797,
+        1.1819183826446533
+      ],
+      "min": [
+        -1.3383290767669678,
+        -1.0319074392318726,
+        -1.1692050695419312
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 446268,
+      "componentType": 5126,
+      "count": 37189,
+      "max": [
+        0.9999762773513794,
+        0.9999773502349854,
+        0.9999527931213379
+      ],
+      "min": [
+        -0.9992961883544922,
+        -0.9999675750732422,
+        -0.9999225735664368
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 37189,
+      "max": [
+        0.9999520182609558,
+        0.9997704029083252,
+        0.9999902844429016,
+        -1.0
+      ],
+      "min": [
+        -0.9999925494194031,
+        -0.999297022819519,
+        -0.9999959468841553,
+        -1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 37189,
+      "max": [
+        0.9947900772094727,
+        0.9948345422744751
+      ],
+      "min": [
+        0.005161134526133537,
+        0.01667732000350952
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 297512,
+      "componentType": 5126,
+      "count": 37189,
+      "max": [
+        0.9947900772094727,
+        0.9948345422744751
+      ],
+      "min": [
+        0.005161134526133537,
+        0.01667732000350952
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 215586,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "Mykhailo Ohorodnichuk (https://sketchfab.com/GamePiggs)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/asteroid-1c-iron-free-game-model-a71465f870ec4d0c810a9aa6869c9110",
+      "title": "Asteroid 1c Iron FREE Game Model"
+    },
+    "generator": "Sketchfab-16.15.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 862344,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 595024,
+      "byteOffset": 862344,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 892536,
+      "byteOffset": 1457368,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 595024,
+      "byteOffset": 2349904,
+      "byteStride": 16,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 2944928,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/Asteroid_1c_baseColor.png"
+    },
+    {
+      "uri": "textures/Asteroid_1c_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/Asteroid_1c_normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "Asteroid_1c",
+      "normalTexture": {
+        "index": 2
+      },
+      "occlusionTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 1
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Object_0",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TANGENT": 2,
+            "TEXCOORD_0": 3,
+            "TEXCOORD_1": 4
+          },
+          "indices": 5,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2
+      ],
+      "name": "root"
+    },
+    {
+      "children": [
+        3
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        1.0,
+        0.0,
+        0.0,
+        -1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "GLTF_SceneRootNode"
+    },
+    {
+      "children": [
+        4
+      ],
+      "matrix": [
+        0.9985554045202065,
+        0.009880726906582421,
+        0.4120231466411492,
+        0.0,
+        -0.2789042083817901,
+        0.8113073748755422,
+        0.656480103653505,
+        0.0,
+        -0.3034355409493096,
+        -0.7132013512785975,
+        0.7524920617866823,
+        0.0,
+        -0.20245452225208282,
+        0.02639460563659668,
+        -0.0032253265380859375,
+        1.0
+      ],
+      "name": "Asteroid1c_0"
+    },
+    {
+      "mesh": 0,
+      "name": "Object_4"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    }
+  ]
+}

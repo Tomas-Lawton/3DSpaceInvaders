@@ -1,0 +1,11 @@
+Model Information:
+* title:	Transport shuttle
+* source:	https://sketchfab.com/3d-models/transport-shuttle-78426895e5c246cb95a5bf498c98af83
+* author:	IrisProcess (https://sketchfab.com/IrisProcess)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Transport shuttle" (https://sketchfab.com/3d-models/transport-shuttle-78426895e5c246cb95a5bf498c98af83) by IrisProcess (https://sketchfab.com/IrisProcess) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

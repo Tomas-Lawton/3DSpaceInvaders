@@ -1,0 +1,11 @@
+Model Information:
+* title:	Asteroid 1c Iron FREE Game Model
+* source:	https://sketchfab.com/3d-models/asteroid-1c-iron-free-game-model-a71465f870ec4d0c810a9aa6869c9110
+* author:	Mykhailo Ohorodnichuk (https://sketchfab.com/GamePiggs)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Asteroid 1c Iron FREE Game Model" (https://sketchfab.com/3d-models/asteroid-1c-iron-free-game-model-a71465f870ec4d0c810a9aa6869c9110) by Mykhailo Ohorodnichuk (https://sketchfab.com/GamePiggs) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
