@@ -88,11 +88,11 @@ export const enemy = (() => {
             child.isMesh && (child.castShadow = child.receiveShadow = true)
         );
         loadedModel.rotation.y = 2 * (Math.PI / 2) + Math.PI;
-        loadedModel.scale.set(0.5, 0.5, 0.5);
+        loadedModel.scale.set(0.3, 0.3, 0.3); // Reduced from 0.5 for smaller enemies
         enemyObject.add(loadedModel);
 
         // Use lower-poly geometry for glow effect
-        const glowGeometry = new THREE.SphereGeometry(0.3, 6, 6); // Reduced from 8x8
+        const glowGeometry = new THREE.SphereGeometry(0.2, 6, 6); // Reduced size
         const glowMaterial = new THREE.MeshStandardMaterial({
           emissive: 0xff4500,
           emissiveIntensity: 10,

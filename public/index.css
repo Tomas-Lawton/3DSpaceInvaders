@@ -430,8 +430,9 @@ body {
 
 #top-right-section {
   position: absolute;
-  top: 30px;
-  right: 30px;
+  top: 170px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 1100;
 }
 
@@ -562,7 +563,7 @@ body {
 #left-stats-section {
   position: absolute;
   left: 30px;
-  top: 470px;
+  top: 620px;
   width: 280px;
   pointer-events: none;
 }
@@ -609,7 +610,7 @@ body {
 
 #center-display {
   position: absolute;
-  top: 45%;
+  top: 52%;
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
@@ -1816,11 +1817,7 @@ body {
 
 /* Adjust other sections to make room for header */
 #top-left-section {
-  top: 140px !important;
-}
-
-#top-right-section {
-  top: 140px !important;
+  top: 200px !important;
 }
 
 /* ========================================
@@ -1828,6 +1825,7 @@ body {
    ======================================== */
 
 #combo-counter {
+  display: none !important; /* Hidden - distracting */
   position: fixed;
   top: 50%;
   left: 50%;

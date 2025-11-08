@@ -89,10 +89,10 @@ export function toggleHUD() {
     import('../hud/upgrade-ui.js').then(module => {
       module.onPauseMenuOpen();
     }).catch(err => console.error('Failed to load upgrade UI:', err));
-    // Update message UI when opening pause menu
-    import('../hud/message-ui.js').then(module => {
-      module.onPauseMenuOpenMessage();
-    }).catch(err => console.error('Failed to load message UI:', err));
+    // Message UI disabled - was causing layout issues
+    // import('../hud/message-ui.js').then(module => {
+    //   module.onPauseMenuOpenMessage();
+    // }).catch(err => console.error('Failed to load message UI:', err));
   } else {
     // Closing pause menu
     hud.style.display = 'none';
