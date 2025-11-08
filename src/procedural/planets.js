@@ -398,11 +398,17 @@ export const planets = (() => {
             enemyArray
           );
 
-          // Update mini-map
+          // Update mini-map (need player rotation and asteroid fields)
+          // Player rotation can be calculated from forward direction
+          const playerRotation = playerForwardDirection ?
+            Math.atan2(playerForwardDirection.x, playerForwardDirection.z) : 0;
+
           updateMiniMap(
             playerCurrentPosition,
             this.planets,
-            enemyArray
+            enemyArray,
+            playerRotation,
+            this.asteroidFields || []
           );
         }
       }
