@@ -87,14 +87,14 @@ export const enemy = (() => {
           if (child.isMesh) {
             child.castShadow = child.receiveShadow = true;
 
-            // Subtle red tint with natural ship colors
+            // Visible red tint for easier spotting
             if (child.material) {
               child.material = child.material.clone();
-              child.material.emissive = new THREE.Color(0x330000); // Very dark red emissive
-              child.material.emissiveIntensity = 0.08; // Reduced from 0.2 for subtlety
-              child.material.color = new THREE.Color(0xaaaaaa); // Lighter gray base (less dark)
-              child.material.metalness = 0.7;
-              child.material.roughness = 0.4;
+              child.material.emissive = new THREE.Color(0x550000); // Brighter red emissive
+              child.material.emissiveIntensity = 0.25; // Increased for better visibility
+              child.material.color = new THREE.Color(0xcccccc); // Brighter gray base
+              child.material.metalness = 0.6;
+              child.material.roughness = 0.3;
             }
           }
         });
@@ -102,13 +102,17 @@ export const enemy = (() => {
         loadedModel.scale.set(0.3, 0.3, 0.3); // Reduced from 0.5 for smaller enemies
         enemyObject.add(loadedModel);
 
-        // Softer red-orange light - menacing but not overpowering
-        const enemyLight = new THREE.PointLight(0xff3300, 12, 45); // Orange-red, lower intensity
+        // Brighter red light for better visibility
+        const enemyLight = new THREE.PointLight(0xff2200, 20, 60); // Red, increased intensity and range
         enemyLight.position.set(0, 2, 0);
         enemyLight.castShadow = false;
         enemyObject.add(enemyLight);
 
-        // PERFORMANCE: Single red light per enemy for simple, scary appearance
+        // Add subtle fill light to make ship more visible
+        const fillLight = new THREE.PointLight(0xffffff, 5, 30);
+        fillLight.position.set(0, -1, 0);
+        fillLight.castShadow = false;
+        enemyObject.add(fillLight);
 
         // Add variance to enemy properties
         enemyObject.speedMultiplier = 0.8 + Math.random() * 0.6; // 0.8 to 1.4x speed variance

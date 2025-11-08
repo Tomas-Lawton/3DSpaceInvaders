@@ -246,7 +246,7 @@ export function hidePlanetDefenseStatus() {
 let miniMapFrameCounter = 0;
 const MINI_MAP_UPDATE_INTERVAL = 5; // Update every 5 frames (~12 times per second)
 
-export function updateMiniMap(playerPosition, planets, enemies, playerRotation = 0, asteroidFields = []) {
+export function updateMiniMap(playerPosition, planets, enemies, playerRotation = 0, asteroidFields = [], currentPlanet = null) {
   miniMapFrameCounter++;
   if (miniMapFrameCounter < MINI_MAP_UPDATE_INTERVAL) return; // Skip this frame
   miniMapFrameCounter = 0;
@@ -259,7 +259,7 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
   miniMapTargets.innerHTML = '';
 
   const mapSize = 210; // Size of the mini-map content area (updated from 140)
-  const maxDistance = 3000; // Max distance to show on map (in game units)
+  const maxDistance = 5000; // Max distance to show on map (increased for better visibility)
   const center = mapSize / 2;
 
   // Rotate the map based on player's facing direction
@@ -295,10 +295,12 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
         const y = center + (dz / maxDistance) * (mapSize / 2);
 
         const planetDot = document.createElement('div');
-        planetDot.className = 'mini-map-planet';
+        // Yellow if under attack, green otherwise
+        const isUnderAttack = currentPlanet && planet === currentPlanet;
+        planetDot.className = isUnderAttack ? 'mini-map-planet-attack' : 'mini-map-planet';
         planetDot.style.left = `${x}px`;
         planetDot.style.top = `${y}px`;
-        planetDot.title = `Planet ${Math.floor(distance)}u`;
+        planetDot.title = `Planet ${Math.floor(distance)}u${isUnderAttack ? ' - UNDER ATTACK!' : ''}`;
         miniMapTargets.appendChild(planetDot);
       }
     });
