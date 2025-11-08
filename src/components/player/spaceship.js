@@ -460,16 +460,20 @@ export const spaceship = (() => {
           }
 
           // check enemy collisions
-          // console.log(enemyLoader);
-          if (enemyLoader && enemyLoader.enemies) {
-            enemyLoader.enemies.forEach((enemy, enemyIndex) => {
+          if (enemyLoader && enemyLoader.enemies && enemyLoader.enemies.length > 0) {
+            for (let enemyIndex = enemyLoader.enemies.length - 1; enemyIndex >= 0; enemyIndex--) {
+              const enemy = enemyLoader.enemies[enemyIndex];
               if (this.checkCollision(laserBeam, enemy)) {
+                console.log(`[LASER] Hit enemy! Health: ${enemy.health} -> ${enemy.health - this.damageAmount}`);
+
                 this.scene.remove(laserBeam);
                 // Dispose geometry and material
                 if (laserBeam.geometry) laserBeam.geometry.dispose();
                 if (laserBeam.material) laserBeam.material.dispose();
                 this.activeLasers.splice(index, 1);
+
                 enemy.health -= this.damageAmount;
+
                 if (this.softBoom) {
                   this.softBoom.currentTime = 0;
                   this.softBoom.volume = 0.5;
@@ -479,6 +483,7 @@ export const spaceship = (() => {
                 this.showHealthBar(enemy);
 
                 if (enemy.health <= 0) {
+                  console.log(`[LASER] Enemy destroyed!`);
                   this.removeHealthBar(enemy);
                   this.scene.remove(enemy);
                   enemyLoader.enemies.splice(enemyIndex, 1);
@@ -500,9 +505,9 @@ export const spaceship = (() => {
                     this.showNotification(`Enemy Destroyed! +${totalXP} XP`, 'success');
                   }
                 }
-                return;
+                break; // Exit loop after hit
               }
-            });
+            }
           }
         }
       }

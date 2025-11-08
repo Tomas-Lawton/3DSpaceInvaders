@@ -25,26 +25,47 @@ body {
 
 #hud-container {
   position: fixed;
-  width: 95vw;
-  height: 92vh;
+  width: min(1400px, 90vw);
+  max-height: 85vh;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(0, 20, 30, 0.15);
-  backdrop-filter: blur(5px);
+  background: rgba(0, 15, 25, 0.96);
+  backdrop-filter: blur(12px);
   border: 2px solid rgba(0, 255, 238, 0.6);
-  border-radius: 30px;
-  padding: 20px;
-  box-shadow: 0 0 30px rgba(0, 255, 238, 0.2),
-    inset 0 0 50px rgba(0, 255, 238, 0.03);
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 0 50px rgba(0, 255, 238, 0.4),
+    inset 0 0 80px rgba(0, 255, 238, 0.08);
   font-family: "Courier New", monospace;
   color: #00ffee;
   pointer-events: none;
   z-index: 1000;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 #hud-container > * {
   pointer-events: auto;
+}
+
+/* Scrollbar styling for pause menu */
+#hud-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+#hud-container::-webkit-scrollbar-track {
+  background: rgba(0, 255, 238, 0.1);
+  border-radius: 4px;
+}
+
+#hud-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 238, 0.5);
+  border-radius: 4px;
+}
+
+#hud-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 238, 0.7);
 }
 
 #top-left-section {
