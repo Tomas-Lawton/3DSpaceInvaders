@@ -298,7 +298,7 @@ export const enemy = (() => {
       enemy,
       playerCurrentPosition,
       alternateTarget = null,
-      inRangeDistance = 350, // Reduced to 350 - player can see enemies before they engage
+      inRangeDistance = 200, // Further reduced to 200 - tighter engagement range
       maxPlanetDistance = 1500
     ) {
       if (enemy) {
@@ -316,8 +316,8 @@ export const enemy = (() => {
 
         // Behavior-based target selection
         if (enemy.behavior === 'patrol') {
-          // Patrol between points, only chase if player very close
-          if (playerDistance < 250) {
+          // Start moving toward player as soon as detected (400 units)
+          if (playerDistance < 400) {
             chosenTargetPosition = playerCurrentPosition;
           } else {
             // Check if reached patrol target
@@ -336,8 +336,8 @@ export const enemy = (() => {
             chosenTargetPosition = enemy.patrolTarget;
           }
         } else if (enemy.behavior === 'orbit') {
-          // Orbit around planet, engage player if close
-          if (playerDistance < 350) {
+          // Start moving toward player as soon as detected (400 units)
+          if (playerDistance < 400) {
             chosenTargetPosition = playerCurrentPosition;
           } else if (alternateTarget) {
             // Calculate orbit position
@@ -431,7 +431,7 @@ export const enemy = (() => {
     //   }
     // }
 
-    checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null, inRangeDistance = 350) {
+    checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null, inRangeDistance = 200) {
       if (this.target) {
         alternateTarget = this.target;
       }
