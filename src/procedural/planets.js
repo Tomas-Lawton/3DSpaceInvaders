@@ -130,6 +130,7 @@ export const planets = (() => {
 
         // Check if all enemies are cleared while planet still exists
         if (this.currentPlanet && this.currentPlanet.hasEnemies && this.enemyLoader.enemies.length === 0) {
+          console.log(`[PLANET] 🌍 All enemies defeated! Planet saved!`);
           if (playerShip) {
             playerShip.health = Math.min(playerShip.health + 50, playerShip.maxHealth);
 
@@ -141,11 +142,12 @@ export const planets = (() => {
             playerShip.showNotification('🌍 Planet Saved! +100 XP +50 HP', 'success');
             playerShip.updatePauseStats();
           }
-          // Reset the flags
+          // Reset ALL flags
           this.currentPlanet.hasEnemies = false;
           this.currentPlanet = null;
           this.enemyLoader = null;
           this.enemiesSpawned = false;
+          this.currentlySpawning = false; // Reset spawn lock
 
           // Hide planet defense status
           hidePlanetDefenseStatus();
@@ -202,17 +204,26 @@ export const planets = (() => {
             // Clean up old enemies before repositioning planet
             this.cleanupEnemies();
             reposition(planet.position, playerCurrentPosition);
-            // Reset enemies spawned flag so new enemies can spawn at new location
+            // Reset ALL spawn flags so new enemies can spawn at new location
             this.enemiesSpawned = false;
             planet.hasEnemies = false;
+            this.currentlySpawning = false; // Reset spawn lock
+            console.log(`[PLANET] Planet repositioned - all spawn flags reset`);
           }
 
           if (playerDistance < 1500) { //  closer than 1500: spawn enemy group
-            if (!planet.hasEnemies) {
-                console.log(`[PLANET] Player within 1500 of planet. Triggering enemy spawn...`);
+            // ROBUST CHECK: Only spawn if no enemies exist AND not currently spawning
+            const hasActiveEnemies = this.enemyLoader && this.enemyLoader.enemies && this.enemyLoader.enemies.length > 0;
+
+            if (!planet.hasEnemies && !hasActiveEnemies && !this.currentlySpawning) {
+                console.log(`[PLANET] ✅ Player within 1500. Spawning enemies... (hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning})`);
+
+                // Set ALL flags IMMEDIATELY to prevent re-entry
                 planet.hasEnemies = true;
                 this.enemiesSpawned = true;
                 this.currentPlanet = planet;
+                this.currentlySpawning = true; // Spawn lock
+
                 const enemyCount = 5; // Max 5 enemies per planet
 
                 // Create loader if it doesn't exist
@@ -234,6 +245,18 @@ export const planets = (() => {
                 if (playerShip) {
                   playerShip.showNotification('⚠️ Planet Under Attack! Destroy All Enemies!', 'danger');
                 }
+
+                // Release spawn lock after async callbacks complete
+                setTimeout(() => {
+                  this.currentlySpawning = false;
+                  console.log(`[PLANET] Spawn lock released`);
+                }, 100);
+            } else {
+              // Log why spawn was blocked (only once per second to avoid spam)
+              if (!this._lastBlockLog || Date.now() - this._lastBlockLog > 1000) {
+                console.log(`[PLANET] ⛔ Spawn BLOCKED - hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning}`);
+                this._lastBlockLog = Date.now();
+              }
             }
           }
           if (playerDistance <= planet.planetSize) {
