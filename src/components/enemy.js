@@ -118,8 +118,8 @@ export const enemy = (() => {
         enemyObject.planetCenter = aroundPoint.clone();
         enemyObject.minSafeDistance = 380; // Planet radius + safety margin
 
-        // Assign random behavior pattern
-        const behaviors = ['patrol', 'chase', 'orbit'];
+        // Assign random behavior pattern with more variety
+        const behaviors = ['patrol', 'chase', 'orbit', 'attack_planet', 'arc', 'dive'];
         enemyObject.behavior = behaviors[Math.floor(Math.random() * behaviors.length)];
 
         // SAFETY: Minimum distance from planet center (planets can be up to ~300 radius)
@@ -142,6 +142,30 @@ export const enemy = (() => {
           enemyObject.orbitAngle = Math.random() * Math.PI * 2;
           enemyObject.orbitRadius = minSafeDistance + Math.random() * 100; // 380-480 units from planet
           enemyObject.orbitSpeed = 0.01 + Math.random() * 0.015;
+        }
+
+        // For attack_planet behavior
+        if (enemyObject.behavior === 'attack_planet') {
+          enemyObject.planetTarget = aroundPoint.clone();
+          enemyObject.attackDistance = minSafeDistance + 50; // Stay just outside planet
+          enemyObject.lastPlanetShotTime = 0;
+        }
+
+        // For arc behavior - wide arcing approaches
+        if (enemyObject.behavior === 'arc') {
+          enemyObject.arcCenter = aroundPoint.clone();
+          enemyObject.arcAngle = Math.random() * Math.PI * 2;
+          enemyObject.arcRadius = minSafeDistance + 200 + Math.random() * 200; // 580-780 from planet
+          enemyObject.arcSpeed = 0.015 + Math.random() * 0.01;
+          enemyObject.arcHeight = 50 + Math.random() * 100;
+        }
+
+        // For dive behavior - fly in and out
+        if (enemyObject.behavior === 'dive') {
+          enemyObject.diveCenter = aroundPoint.clone();
+          enemyObject.divePhase = 'out'; // Start flying out
+          enemyObject.diveDistance = minSafeDistance;
+          enemyObject.maxDiveDistance = minSafeDistance + 400;
         }
 
         // Make enemy face a random direction initially (not always at planet)
@@ -278,7 +302,7 @@ export const enemy = (() => {
       enemy,
       playerCurrentPosition,
       alternateTarget = null,
-      inRangeDistance = 200, // Further reduced to 200 - tighter engagement range
+      inRangeDistance = 350, // Reduced to 350 - closer engagement range
       maxPlanetDistance = 1500
     ) {
       if (enemy) {
@@ -294,10 +318,10 @@ export const enemy = (() => {
 
         let chosenTargetPosition;
 
-        // Behavior-based target selection
+        // Behavior-based target selection with reduced detection range (350 units)
         if (enemy.behavior === 'patrol') {
-          // Start moving toward player as soon as detected (600 units)
-          if (playerDistance < 600) {
+          // Attack player when close (350 units)
+          if (playerDistance < 350) {
             chosenTargetPosition = playerCurrentPosition;
           } else {
             // Check if reached patrol target
@@ -316,8 +340,8 @@ export const enemy = (() => {
             chosenTargetPosition = enemy.patrolTarget;
           }
         } else if (enemy.behavior === 'orbit') {
-          // Start moving toward player as soon as detected (600 units)
-          if (playerDistance < 600) {
+          // Attack player when close (350 units)
+          if (playerDistance < 350) {
             chosenTargetPosition = playerCurrentPosition;
           } else if (alternateTarget) {
             // Calculate orbit position
@@ -327,6 +351,57 @@ export const enemy = (() => {
               enemy.orbitCenter.y + Math.sin(enemy.orbitAngle * 0.5) * 30,
               enemy.orbitCenter.z + Math.sin(enemy.orbitAngle) * enemy.orbitRadius
             );
+          } else {
+            chosenTargetPosition = playerCurrentPosition;
+          }
+        } else if (enemy.behavior === 'attack_planet') {
+          // Attack player when close (350 units), otherwise attack planet
+          if (playerDistance < 350) {
+            chosenTargetPosition = playerCurrentPosition;
+          } else if (alternateTarget) {
+            // Circle around planet at attack distance, shooting at it
+            if (!enemy.planetAttackAngle) enemy.planetAttackAngle = Math.random() * Math.PI * 2;
+            enemy.planetAttackAngle += 0.008;
+            chosenTargetPosition = new THREE.Vector3(
+              enemy.planetTarget.x + Math.cos(enemy.planetAttackAngle) * enemy.attackDistance,
+              enemy.planetTarget.y,
+              enemy.planetTarget.z + Math.sin(enemy.planetAttackAngle) * enemy.attackDistance
+            );
+            // Shoot at planet periodically
+            this.shootAtPlanet(enemy);
+          } else {
+            chosenTargetPosition = playerCurrentPosition;
+          }
+        } else if (enemy.behavior === 'arc') {
+          // Attack player when close (350 units)
+          if (playerDistance < 350) {
+            chosenTargetPosition = playerCurrentPosition;
+          } else {
+            // Wide arcing flight pattern
+            enemy.arcAngle += enemy.arcSpeed;
+            chosenTargetPosition = new THREE.Vector3(
+              enemy.arcCenter.x + Math.cos(enemy.arcAngle) * enemy.arcRadius,
+              enemy.arcCenter.y + Math.sin(enemy.arcAngle * 0.3) * enemy.arcHeight,
+              enemy.arcCenter.z + Math.sin(enemy.arcAngle) * enemy.arcRadius
+            );
+          }
+        } else if (enemy.behavior === 'dive') {
+          // Attack player when close (350 units)
+          if (playerDistance < 350) {
+            chosenTargetPosition = playerCurrentPosition;
+          } else if (alternateTarget) {
+            // Dive in and out from planet
+            const currentDistance = enemy.position.distanceTo(enemy.diveCenter);
+            if (enemy.divePhase === 'out' && currentDistance > enemy.maxDiveDistance) {
+              enemy.divePhase = 'in';
+            } else if (enemy.divePhase === 'in' && currentDistance < enemy.diveDistance) {
+              enemy.divePhase = 'out';
+            }
+
+            // Set target based on dive phase
+            const targetDistance = enemy.divePhase === 'out' ? enemy.maxDiveDistance : enemy.diveDistance;
+            const direction = enemy.position.clone().sub(enemy.diveCenter).normalize();
+            chosenTargetPosition = enemy.diveCenter.clone().add(direction.multiplyScalar(targetDistance));
           } else {
             chosenTargetPosition = playerCurrentPosition;
           }
@@ -465,6 +540,30 @@ export const enemy = (() => {
         ) {
           this.fireLaser(enemy);
           enemy.lastShotTime = currentTime;
+        }
+      }
+    }
+
+    shootAtPlanet(enemy) {
+      const currentTime = performance.now();
+      const planetShootCooldown = 1500; // Shoot planet every 1.5 seconds
+
+      if (currentTime - (enemy.lastPlanetShotTime || 0) > planetShootCooldown) {
+        // Check if facing roughly toward planet
+        const enemyDirection = new THREE.Vector3();
+        enemy.getWorldDirection(enemyDirection);
+
+        const directionToPlanet = new THREE.Vector3();
+        directionToPlanet
+          .subVectors(enemy.planetTarget, enemy.position)
+          .normalize();
+
+        const angleToPlanet = enemyDirection.angleTo(directionToPlanet);
+
+        // Shoot if roughly facing planet (within 45 degrees)
+        if (angleToPlanet < Math.PI / 4) {
+          this.fireLaser(enemy, true); // Pass true to indicate planet damage
+          enemy.lastPlanetShotTime = currentTime;
         }
       }
     }

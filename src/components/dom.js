@@ -290,8 +290,8 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
 
       if (distance < maxDistance) {
         // Direct world-space mapping (map rotation handles orientation)
-        // Note: Flip Z axis so +Z (forward) appears at top of screen (-y in CSS)
-        const x = center + (dx / maxDistance) * (mapSize / 2);
+        // Flip both X and Z axes for correct orientation on screen
+        const x = center - (dx / maxDistance) * (mapSize / 2);
         const y = center - (dz / maxDistance) * (mapSize / 2);
 
         const planetDot = document.createElement('div');
@@ -312,8 +312,8 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
       const distance = Math.sqrt(dx * dx + dz * dz);
 
       if (distance < maxDistance) {
-        // Direct mapping - flip Z axis for proper orientation
-        const x = center + (dx / maxDistance) * (mapSize / 2);
+        // Direct mapping - flip both axes for proper orientation
+        const x = center - (dx / maxDistance) * (mapSize / 2);
         const y = center - (dz / maxDistance) * (mapSize / 2);
 
         const enemyDot = document.createElement('div');
@@ -333,8 +333,8 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
       const distance = Math.sqrt(dx * dx + dz * dz);
 
       if (distance < maxDistance) {
-        // Direct mapping - flip Z axis for proper orientation
-        const x = center + (dx / maxDistance) * (mapSize / 2);
+        // Direct mapping - flip both axes for proper orientation
+        const x = center - (dx / maxDistance) * (mapSize / 2);
         const y = center - (dz / maxDistance) * (mapSize / 2);
 
         const asteroidDot = document.createElement('div');
