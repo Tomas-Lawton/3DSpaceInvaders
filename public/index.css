@@ -37,7 +37,7 @@ body {
   border: 3px solid transparent;
   border-image: linear-gradient(45deg, rgba(0, 255, 238, 0.6), rgba(255, 153, 0, 0.6), rgba(0, 255, 238, 0.6)) 1;
   border-radius: 0;
-  padding: 20px;
+  padding: 15px;
   box-shadow:
     0 0 50px rgba(0, 255, 238, 0.3),
     0 0 30px rgba(255, 153, 0, 0.2),
@@ -47,13 +47,12 @@ body {
   color: #00ffee;
   pointer-events: none;
   z-index: 1000;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   display: grid;
-  grid-template-columns: 320px 1fr 320px;
-  grid-template-rows: auto 1fr auto;
-  gap: 15px;
-  position: relative;
+  grid-template-columns: minmax(250px, 320px) 1fr minmax(250px, 320px);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  box-sizing: border-box;
 }
 
 /* Holographic scan line effect */
@@ -105,6 +104,8 @@ body {
   grid-column: 1;
   grid-row: 2;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
 }
 
 #center-display {
@@ -114,12 +115,16 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 0;
+  overflow: hidden;
 }
 
 #right-upgrades-section {
   grid-column: 3;
   grid-row: 2;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
 }
 
 #bottom-ships-bar {
@@ -845,8 +850,10 @@ body {
 
 #ship-hanger {
   width: 100%;
-  max-width: 600px;
-  height: 600px;
+  max-width: min(500px, 100%);
+  height: auto;
+  aspect-ratio: 1;
+  max-height: 500px;
   border: 3px solid transparent;
   border-image: linear-gradient(45deg, rgba(0, 255, 238, 0.5), rgba(255, 153, 0, 0.5)) 1;
   background: radial-gradient(
