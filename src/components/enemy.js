@@ -83,10 +83,21 @@ export const enemy = (() => {
         );
 
         const loadedModel = gltf.scene.clone(); // Clone the cached model
-        loadedModel.traverse(
-          (child) =>
-            child.isMesh && (child.castShadow = child.receiveShadow = true)
-        );
+        loadedModel.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = child.receiveShadow = true;
+
+            // Make mesh material MUCH brighter and add emissive glow
+            if (child.material) {
+              child.material = child.material.clone();
+              child.material.emissive = new THREE.Color(0xff3300);
+              child.material.emissiveIntensity = 0.5; // Make mesh itself glow
+              child.material.color = new THREE.Color(0xffffff); // Brighten base color to white
+              child.material.metalness = 0.7;
+              child.material.roughness = 0.2;
+            }
+          }
+        });
         loadedModel.rotation.y = 2 * (Math.PI / 2) + Math.PI;
         loadedModel.scale.set(0.3, 0.3, 0.3); // Reduced from 0.5 for smaller enemies
         enemyObject.add(loadedModel);
@@ -118,18 +129,32 @@ export const enemy = (() => {
         topGlow.position.set(0, 2, 0);
         enemyObject.add(topGlow);
 
-        // Stronger main light for better visibility
-        const redLight = new THREE.PointLight(0xff3300, 30, 80); // Doubled intensity and distance
+        // Very strong main light for maximum visibility
+        const redLight = new THREE.PointLight(0xff3300, 50, 100); // Tripled intensity
         redLight.position.set(0, 1, 0);
         redLight.castShadow = false; // Keep shadows off for performance
         enemyObject.add(redLight);
 
         // Add directional spotlight pointing down for hull illumination
-        const spotLight = new THREE.SpotLight(0xff6600, 15, 40, Math.PI / 6, 0.5);
+        const spotLight = new THREE.SpotLight(0xff6600, 25, 50, Math.PI / 4, 0.5);
         spotLight.position.set(0, 5, 0);
         spotLight.target.position.set(0, 0, 0);
         enemyObject.add(spotLight);
         enemyObject.add(spotLight.target);
+
+        // Add rim lights from sides for better silhouette
+        const rimLight1 = new THREE.PointLight(0xffffff, 20, 30);
+        rimLight1.position.set(5, 0, 0);
+        enemyObject.add(rimLight1);
+
+        const rimLight2 = new THREE.PointLight(0xffffff, 20, 30);
+        rimLight2.position.set(-5, 0, 0);
+        enemyObject.add(rimLight2);
+
+        // Add front accent light
+        const frontLight = new THREE.PointLight(0xff6600, 15, 40);
+        frontLight.position.set(0, 0, 5);
+        enemyObject.add(frontLight);
 
         // Add variance to enemy properties
         enemyObject.speedMultiplier = 0.8 + Math.random() * 0.6; // 0.8 to 1.4x speed variance
