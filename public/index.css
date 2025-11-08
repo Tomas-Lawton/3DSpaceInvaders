@@ -50,7 +50,7 @@ body {
   overflow: hidden;
   display: grid;
   grid-template-columns: minmax(250px, 320px) 1fr minmax(250px, 320px);
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
   gap: 12px;
   box-sizing: border-box;
 }
@@ -74,7 +74,7 @@ body {
   z-index: 10000;
 }
 
-/* Holographic corner brackets */
+/* Holographic corner brackets with angled cuts */
 #hud-container::after {
   content: '';
   position: absolute;
@@ -82,10 +82,22 @@ body {
   left: 10px;
   right: 10px;
   bottom: 10px;
-  border: 2px solid rgba(0, 255, 238, 0.2);
-  border-radius: 4px;
+  background:
+    linear-gradient(135deg, transparent 0px, rgba(0, 255, 238, 0.2) 0px) top left,
+    linear-gradient(-135deg, transparent 0px, rgba(0, 255, 238, 0.2) 0px) top right,
+    linear-gradient(-45deg, transparent 0px, rgba(255, 153, 0, 0.2) 0px) bottom right,
+    linear-gradient(45deg, transparent 0px, rgba(255, 153, 0, 0.2) 0px) bottom left;
+  background-size: 20px 20px;
+  background-repeat: no-repeat;
   pointer-events: none;
   z-index: 10000;
+  clip-path: polygon(
+    0 20px, 20px 0,
+    calc(100% - 20px) 0, 100% 20px,
+    100% calc(100% - 20px), calc(100% - 20px) 100%,
+    20px 100%, 0 calc(100% - 20px)
+  );
+  border: 2px solid rgba(0, 255, 238, 0.3);
 }
 
 #hud-container > * {
@@ -96,13 +108,29 @@ body {
 
 /* Grid positioning for holographic display */
 #player-stats-header {
-  grid-column: 1 / -1;
+  grid-column: 1 / 3;
   grid-row: 1;
+}
+
+#bottom-right-info {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  font-size: 11px;
+}
+
+#top-left-section {
+  grid-column: 1;
+  grid-row: 2;
 }
 
 #left-stats-section {
   grid-column: 1;
-  grid-row: 2;
+  grid-row: 4;
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
@@ -110,7 +138,7 @@ body {
 
 #center-display {
   grid-column: 2;
-  grid-row: 2;
+  grid-row: 2 / 4;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -121,7 +149,7 @@ body {
 
 #right-upgrades-section {
   grid-column: 3;
-  grid-row: 2;
+  grid-row: 2 / 4;
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
@@ -132,11 +160,17 @@ body {
   grid-row: 3;
 }
 
-/* Hide old positioning elements */
-#top-left-section,
-#messages-badge,
+/* Restore elements with new grid positioning */
+#top-left-section {
+  /* Will be styled below - override absolute positioning */
+}
+
+#messages-badge {
+  display: none; /* Keep hidden for cleaner layout */
+}
+
 #bottom-right-info {
-  display: none;
+  /* Will be styled below - small status indicators */
 }
 
 /* Scrollbar styling for pause menu */
@@ -159,19 +193,23 @@ body {
 }
 
 #top-left-section {
-  position: absolute;
-  top: 30px;
-  left: 30px;
-  width: 250px;
-  pointer-events: none;
+  /* Positioned by grid - see above */
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: auto;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 #radar-display {
-  width: 200px;
-  height: 200px;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 180px;
   border: 2px solid rgba(0, 255, 238, 0.8);
   border-radius: 50%;
   position: relative;
+  margin: 0 auto;
   background: radial-gradient(
     circle,
     rgba(0, 255, 238, 0.05) 0%,
@@ -350,15 +388,21 @@ body {
 
 /* Info Box - Enhanced */
 #info-box {
-  margin-top: 20px;
+  margin-top: 12px;
   padding: 0;
-  background: rgba(0, 30, 40, 0.4);
-  backdrop-filter: blur(5px);
-  border: 2px solid rgba(0, 255, 238, 0.6);
-  border-radius: 12px;
-  box-shadow: 0 0 20px rgba(0, 255, 238, 0.3);
+  background: linear-gradient(135deg, rgba(0, 30, 40, 0.5) 0%, rgba(30, 15, 0, 0.5) 100%);
+  backdrop-filter: blur(8px);
+  border: 2px solid transparent;
+  border-image: linear-gradient(135deg, rgba(0, 255, 238, 0.6), rgba(255, 153, 0, 0.4)) 1;
+  box-shadow: 0 0 20px rgba(0, 255, 238, 0.2), 0 0 10px rgba(255, 153, 0, 0.1);
   overflow: hidden;
-  pointer-events: none !important; /* Disable all clicking on messages */
+  pointer-events: none !important;
+  clip-path: polygon(
+    0 8px, 8px 0,
+    calc(100% - 8px) 0, 100% 8px,
+    100% calc(100% - 8px), calc(100% - 8px) 100%,
+    8px 100%, 0 calc(100% - 8px)
+  );
 }
 
 #info-box * {
@@ -752,13 +796,18 @@ body {
 #left-stats-section {
   background: linear-gradient(135deg, rgba(0, 255, 238, 0.05) 0%, rgba(0, 20, 40, 0.3) 100%);
   border: 2px solid rgba(0, 255, 238, 0.4);
-  border-radius: 8px;
   padding: 20px;
   box-shadow:
     0 0 20px rgba(0, 255, 238, 0.2),
     inset 0 0 30px rgba(0, 255, 238, 0.03);
   position: relative;
   backdrop-filter: blur(5px);
+  clip-path: polygon(
+    0 10px, 10px 0,
+    calc(100% - 10px) 0, 100% 10px,
+    100% calc(100% - 10px), calc(100% - 10px) 100%,
+    10px 100%, 0 calc(100% - 10px)
+  );
 }
 
 /* Panel header */
@@ -918,7 +967,6 @@ body {
 #right-upgrades-section {
   background: linear-gradient(135deg, rgba(255, 153, 0, 0.05) 0%, rgba(0, 20, 40, 0.3) 100%);
   border: 2px solid rgba(255, 153, 0, 0.4);
-  border-radius: 8px;
   padding: 20px;
   box-shadow:
     0 0 20px rgba(255, 153, 0, 0.2),
@@ -926,6 +974,12 @@ body {
   pointer-events: auto;
   backdrop-filter: blur(5px);
   position: relative;
+  clip-path: polygon(
+    0 10px, 10px 0,
+    calc(100% - 10px) 0, 100% 10px,
+    100% calc(100% - 10px), calc(100% - 10px) 100%,
+    10px 100%, 0 calc(100% - 10px)
+  );
 }
 
 /* Corner brackets */
@@ -1176,45 +1230,35 @@ body {
 }
 
 #bottom-right-info {
-  position: absolute;
-  right: 30px;
-  bottom: 80px;
+  /* Positioned by grid - see above */
   text-align: right;
   pointer-events: none;
 }
 
 .time-display {
-  font-size: 24px;
+  font-size: 14px;
   font-weight: bold;
-  color: #00ffee;
-  margin: 5px 0;
-  text-shadow: 0 0 15px rgba(0, 255, 238, 0.8);
+  color: #ff9900;
+  margin: 0;
+  text-shadow: 0 0 10px rgba(255, 153, 0, 0.8);
   letter-spacing: 2px;
 }
 
 .location-display {
-  font-size: 16px;
+  font-size: 12px;
   color: #00ffee;
-  margin: 5px 0;
-  letter-spacing: 3px;
+  margin: 0;
+  letter-spacing: 2px;
   font-weight: bold;
+  text-shadow: 0 0 8px rgba(0, 255, 238, 0.6);
 }
 
 .resource-display {
-  font-size: 20px;
-  color: #00ffee;
-  margin: 10px 0 0 0;
-  font-weight: bold;
-  text-shadow: 0 0 10px rgba(0, 255, 238, 0.6);
+  display: none; /* Hidden - resources shown in header */
 }
 
 .resource-label {
-  font-size: 11px;
-  color: #00ffee;
-  margin: 0;
-  opacity: 0.7;
-  letter-spacing: 2px;
-  text-transform: uppercase;
+  display: none; /* Hidden - resources shown in header */
 }
 
 .xp-display {

@@ -262,16 +262,15 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
   const maxDistance = 3000; // Max distance to show on map (in game units)
   const center = mapSize / 2;
 
-  // Rotate the entire minimap so top always points in player's facing direction
-  // Convert rotation to degrees and rotate the content container
+  // Rotate the map based on player's facing direction
+  // Objects rotate around the player to show relative positions
   const rotationDegrees = -(playerRotation * 180 / Math.PI);
   miniMapContent.style.transform = `rotate(${rotationDegrees}deg)`;
 
-  // Keep player icon pointing up (counter-rotate to compensate for map rotation)
+  // Counter-rotate player icon so it ALWAYS points up (forward)
   const playerIcon = document.querySelector('.player-ship-icon');
   if (playerIcon) {
-    // Player icon doesn't need to rotate since map rotates around it
-    playerIcon.style.transform = `translate(-50%, -50%)`;
+    playerIcon.style.transform = `translate(-50%, -50%) rotate(${-rotationDegrees}deg)`;
   }
 
   // Counter-rotate the North indicator to always point north
