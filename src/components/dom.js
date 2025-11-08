@@ -40,6 +40,9 @@ function updateResourceDisplay() {
   if (xpDisplay) {
     xpDisplay.textContent = `XP: ${xp}`;
   }
+
+  // Update pause menu resources
+  updatePauseMenuResources();
 }
 
 export function addXP(amount) {
@@ -56,9 +59,20 @@ function updatePauseMenuXP() {
   }
 }
 
+function updatePauseMenuResources() {
+  const headerIron = document.getElementById('header-iron');
+  const headerGold = document.getElementById('header-gold');
+  const headerCrystal = document.getElementById('header-crystal');
+
+  if (headerIron) headerIron.textContent = iron;
+  if (headerGold) headerGold.textContent = gold;
+  if (headerCrystal) headerCrystal.textContent = crystal;
+}
+
 export function deductXP(amount) {
   xp = Math.max(0, xp - amount);
   updateResourceDisplay();
+  updatePauseMenuXP();
   console.log(`-${amount} XP. Remaining: ${xp}`);
 }
 
