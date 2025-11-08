@@ -46,8 +46,8 @@ export const spaceship = (() => {
         new THREE.ConeGeometry(2, 5, 8),
         new THREE.MeshStandardMaterial({
           emissiveIntensity: 2.5,
-          emissive: 0xc87dff,
-          color: 0xc87dff,
+          emissive: 0x00ffff, // 0xc87dff
+          color: 0x00ffff,
           transparent: true,
           opacity: 0.6,
           side: THREE.DoubleSide,
@@ -208,9 +208,9 @@ export const spaceship = (() => {
           progressContainer.style.display = "none";
 
           // Show intro screen
-          const introScreen = document.getElementById('intro-screen');
+          const introScreen = document.getElementById("intro-screen");
           if (introScreen) {
-            introScreen.style.display = 'flex';
+            introScreen.style.display = "flex";
           }
         },
         (xhr) => {
@@ -286,7 +286,12 @@ export const spaceship = (() => {
         this.lightSound.play();
       }
 
-      this.activeLasers.push({ laserBeam: laserGroup, velocity, direction, spawnTime });
+      this.activeLasers.push({
+        laserBeam: laserGroup,
+        velocity,
+        direction,
+        spawnTime,
+      });
     }
 
     // updateboosterFlame(currentVelocity, maxVelocity) {
@@ -397,18 +402,16 @@ export const spaceship = (() => {
     }
     updateWingTrails() {
       // Faster fade rate to reduce total trail count
-      [...this.wingTrails.left, ...this.wingTrails.right].forEach(
-        (trail) => {
-          trail.life -= 0.05; // Increased from 0.03 for faster fade
-          trail.material.opacity = trail.life * 0.3;
+      [...this.wingTrails.left, ...this.wingTrails.right].forEach((trail) => {
+        trail.life -= 0.05; // Increased from 0.03 for faster fade
+        trail.material.opacity = trail.life * 0.3;
 
-          if (trail.life <= 0) {
-            this.scene.remove(trail);
-            trail.geometry.dispose();
-            trail.material.dispose();
-          }
+        if (trail.life <= 0) {
+          this.scene.remove(trail);
+          trail.geometry.dispose();
+          trail.material.dispose();
         }
-      );
+      });
     }
 
     checkCollision(mainObj, colisionObj) {
@@ -435,7 +438,10 @@ export const spaceship = (() => {
           const age = currentTime - (spawnTime || 0);
 
           // Check distance OR lifetime - remove if too far OR too old
-          if (laserBeam.position.distanceTo(this.mesh.position) > 300 || age > maxLaserLifetime) {
+          if (
+            laserBeam.position.distanceTo(this.mesh.position) > 300 ||
+            age > maxLaserLifetime
+          ) {
             this.scene.remove(laserBeam);
             // Properly dispose of group and all children
             laserBeam.traverse((child) => {
@@ -489,11 +495,23 @@ export const spaceship = (() => {
           }
 
           // check enemy collisions
-          if (enemyLoader && enemyLoader.enemies && enemyLoader.enemies.length > 0) {
-            for (let enemyIndex = enemyLoader.enemies.length - 1; enemyIndex >= 0; enemyIndex--) {
+          if (
+            enemyLoader &&
+            enemyLoader.enemies &&
+            enemyLoader.enemies.length > 0
+          ) {
+            for (
+              let enemyIndex = enemyLoader.enemies.length - 1;
+              enemyIndex >= 0;
+              enemyIndex--
+            ) {
               const enemy = enemyLoader.enemies[enemyIndex];
               if (this.checkCollision(laserBeam, enemy)) {
-                console.log(`[LASER] Hit enemy! Health: ${enemy.health} -> ${enemy.health - this.damageAmount}`);
+                console.log(
+                  `[LASER] Hit enemy! Health: ${enemy.health} -> ${
+                    enemy.health - this.damageAmount
+                  }`
+                );
 
                 this.scene.remove(laserBeam);
                 // Properly dispose of group and all children
@@ -531,9 +549,15 @@ export const spaceship = (() => {
 
                   // Show notification with combo info
                   if (this.comboCount >= 2) {
-                    this.showNotification(`${this.comboCount}X COMBO! +${totalXP} XP`, 'success');
+                    this.showNotification(
+                      `${this.comboCount}X COMBO! +${totalXP} XP`,
+                      "success"
+                    );
                   } else {
-                    this.showNotification(`Enemy Destroyed! +${totalXP} XP`, 'success');
+                    this.showNotification(
+                      `Enemy Destroyed! +${totalXP} XP`,
+                      "success"
+                    );
                   }
                 }
                 break; // Exit loop after hit
@@ -684,8 +708,8 @@ export const spaceship = (() => {
       }
     }
 
-    showNotification(message, type = 'info') {
-      const notification = document.createElement('div');
+    showNotification(message, type = "info") {
+      const notification = document.createElement("div");
       notification.className = `game-notification ${type}`;
       notification.textContent = message;
       notification.style.cssText = `
@@ -695,14 +719,32 @@ export const spaceship = (() => {
         transform: translate(-50%, -50%);
         padding: 20px 40px;
         background: rgba(0, 0, 0, 0.9);
-        border: 2px solid ${type === 'success' ? '#00ff00' : type === 'danger' ? '#ff0000' : '#00ffee'};
+        border: 2px solid ${
+          type === "success"
+            ? "#00ff00"
+            : type === "danger"
+            ? "#ff0000"
+            : "#00ffee"
+        };
         border-radius: 10px;
-        color: ${type === 'success' ? '#00ff00' : type === 'danger' ? '#ff0000' : '#00ffee'};
+        color: ${
+          type === "success"
+            ? "#00ff00"
+            : type === "danger"
+            ? "#ff0000"
+            : "#00ffee"
+        };
         font-size: 24px;
         font-weight: bold;
         text-align: center;
         z-index: 10000;
-        box-shadow: 0 0 20px ${type === 'success' ? 'rgba(0,255,0,0.5)' : type === 'danger' ? 'rgba(255,0,0,0.5)' : 'rgba(0,255,238,0.5)'};
+        box-shadow: 0 0 20px ${
+          type === "success"
+            ? "rgba(0,255,0,0.5)"
+            : type === "danger"
+            ? "rgba(255,0,0,0.5)"
+            : "rgba(0,255,238,0.5)"
+        };
         pointer-events: none;
         animation: fadeInOut 1.2s ease-in-out forwards;
       `;
@@ -750,25 +792,25 @@ export const spaceship = (() => {
     }
 
     showCombo() {
-      const comboElement = document.getElementById('combo-counter');
-      const multiplierElement = document.getElementById('combo-multiplier');
+      const comboElement = document.getElementById("combo-counter");
+      const multiplierElement = document.getElementById("combo-multiplier");
 
       if (comboElement && multiplierElement) {
         multiplierElement.textContent = `${this.comboCount}X`;
-        comboElement.style.display = 'block';
+        comboElement.style.display = "block";
 
         // Trigger animation
-        comboElement.style.animation = 'none';
+        comboElement.style.animation = "none";
         setTimeout(() => {
-          comboElement.style.animation = 'comboPopIn 0.3s ease-out';
+          comboElement.style.animation = "comboPopIn 0.3s ease-out";
         }, 10);
       }
     }
 
     hideCombo() {
-      const comboElement = document.getElementById('combo-counter');
+      const comboElement = document.getElementById("combo-counter");
       if (comboElement) {
-        comboElement.style.display = 'none';
+        comboElement.style.display = "none";
       }
     }
 
@@ -781,20 +823,20 @@ export const spaceship = (() => {
     }
 
     screenShake(duration = 500) {
-      const canvas = document.getElementById('three-canvas');
+      const canvas = document.getElementById("three-canvas");
       if (canvas) {
-        canvas.classList.add('screen-shake');
+        canvas.classList.add("screen-shake");
         setTimeout(() => {
-          canvas.classList.remove('screen-shake');
+          canvas.classList.remove("screen-shake");
         }, duration);
       }
     }
 
     updatePauseStats() {
       // Update stats in pause menu
-      const healthElement = document.getElementById('header-health');
-      const killsElement = document.getElementById('enemies-killed');
-      const savedElement = document.getElementById('planets-saved');
+      const healthElement = document.getElementById("header-health");
+      const killsElement = document.getElementById("enemies-killed");
+      const savedElement = document.getElementById("planets-saved");
 
       if (healthElement) healthElement.textContent = Math.floor(this.health);
       if (killsElement) killsElement.textContent = this.totalKills;
@@ -841,7 +883,9 @@ export const spaceship = (() => {
       if (asteroidLoader && asteroidLoader.asteroidSystem) {
         for (const system of asteroidLoader.asteroidSystem) {
           // Calculate distance to system first for early exit
-          const distanceToSystem = this.mesh.position.distanceTo(system.position);
+          const distanceToSystem = this.mesh.position.distanceTo(
+            system.position
+          );
           if (distanceToSystem > 200) continue; // Skip distant asteroid systems
 
           for (const asteroid of system.children) {

@@ -20,7 +20,7 @@ export const gameworld = (() => {
 
         this.createSky();
         this.createStarfield(500); //procedural - increased to 500 for richer starfield
-        this.createAsteroidSystems(1); //procedural - reduced to 1 system for performance
+        this.createAsteroidSystems(5); //procedural - reduced to 1 system for performance
         this.createPlanets(1); //procedural
         // this.createStar();
         // this.addGround(); // Removed ground for performance - not needed in space
