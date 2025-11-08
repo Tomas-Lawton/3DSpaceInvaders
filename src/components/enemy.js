@@ -108,8 +108,42 @@ export const enemy = (() => {
         redLight.position.set(0, 1, 0);
         enemyObject.add(redLight);
 
-        // Make enemy face toward the planet initially
-        enemyObject.lookAt(aroundPoint);
+        // Add variance to enemy properties
+        enemyObject.speedMultiplier = 0.8 + Math.random() * 0.6; // 0.8 to 1.4x speed variance
+        enemyObject.turnSpeed = 0.015 + Math.random() * 0.01; // 0.015 to 0.025 turn speed
+
+        // Assign random behavior pattern
+        const behaviors = ['patrol', 'chase', 'orbit'];
+        enemyObject.behavior = behaviors[Math.floor(Math.random() * behaviors.length)];
+
+        // Set initial patrol target for patrol behavior
+        if (enemyObject.behavior === 'patrol') {
+          const patrolAngle = Math.random() * Math.PI * 2;
+          const patrolDistance = 150 + Math.random() * 100;
+          enemyObject.patrolTarget = new THREE.Vector3(
+            aroundPoint.x + Math.cos(patrolAngle) * patrolDistance,
+            aroundPoint.y + (Math.random() - 0.5) * 50,
+            aroundPoint.z + Math.sin(patrolAngle) * patrolDistance
+          );
+        }
+
+        // For orbit behavior, store orbit center and angle
+        if (enemyObject.behavior === 'orbit') {
+          enemyObject.orbitCenter = aroundPoint.clone();
+          enemyObject.orbitAngle = Math.random() * Math.PI * 2;
+          enemyObject.orbitRadius = 100 + Math.random() * 80;
+          enemyObject.orbitSpeed = 0.01 + Math.random() * 0.015;
+        }
+
+        // Make enemy face a random direction initially (not always at planet)
+        const randomAngle = Math.random() * Math.PI * 2;
+        const randomTarget = new THREE.Vector3(
+          enemyObject.position.x + Math.cos(randomAngle) * 100,
+          enemyObject.position.y,
+          enemyObject.position.z + Math.sin(randomAngle) * 100
+        );
+        enemyObject.lookAt(randomTarget);
+
         enemyObject.health = this.health;
         enemyObject.lastShotTime = 0; // Initialize firing timer
 
@@ -242,18 +276,57 @@ export const enemy = (() => {
         if (this.target) {
           alternateTarget = this.target;
         }
-        const phaseSpeed = 0.018; // Reduced from 0.025 for slower, more predictable turning
+
+        const phaseSpeed = enemy.turnSpeed || 0.018; // Use individual turn speed
         const playerDistance = enemy.position.distanceTo(playerCurrentPosition);
         const planetDistance = alternateTarget
           ? enemy.position.distanceTo(alternateTarget)
           : Infinity;
 
-        // PRIORITIZE PLANET: Only engage player if very close AND planet still exists
-        // If no planet (alternateTarget is null), always chase player
-        const chosenTargetPosition =
-          !alternateTarget || (playerDistance < inRangeDistance && planetDistance < maxPlanetDistance)
-            ? playerCurrentPosition
-            : alternateTarget;
+        let chosenTargetPosition;
+
+        // Behavior-based target selection
+        if (enemy.behavior === 'patrol') {
+          // Patrol between points, only chase if player very close
+          if (playerDistance < 200) {
+            chosenTargetPosition = playerCurrentPosition;
+          } else {
+            // Check if reached patrol target
+            if (enemy.patrolTarget && enemy.position.distanceTo(enemy.patrolTarget) < 50) {
+              // Set new patrol target
+              const patrolAngle = Math.random() * Math.PI * 2;
+              const patrolDistance = 150 + Math.random() * 100;
+              const center = alternateTarget || enemy.position;
+              enemy.patrolTarget = new THREE.Vector3(
+                center.x + Math.cos(patrolAngle) * patrolDistance,
+                center.y + (Math.random() - 0.5) * 50,
+                center.z + Math.sin(patrolAngle) * patrolDistance
+              );
+            }
+            chosenTargetPosition = enemy.patrolTarget;
+          }
+        } else if (enemy.behavior === 'orbit') {
+          // Orbit around planet, engage player if close
+          if (playerDistance < 300) {
+            chosenTargetPosition = playerCurrentPosition;
+          } else if (alternateTarget) {
+            // Calculate orbit position
+            enemy.orbitAngle += enemy.orbitSpeed;
+            chosenTargetPosition = new THREE.Vector3(
+              enemy.orbitCenter.x + Math.cos(enemy.orbitAngle) * enemy.orbitRadius,
+              enemy.orbitCenter.y + Math.sin(enemy.orbitAngle * 0.5) * 30,
+              enemy.orbitCenter.z + Math.sin(enemy.orbitAngle) * enemy.orbitRadius
+            );
+          } else {
+            chosenTargetPosition = playerCurrentPosition;
+          }
+        } else {
+          // Chase behavior - original logic
+          chosenTargetPosition =
+            !alternateTarget || (playerDistance < inRangeDistance && planetDistance < maxPlanetDistance)
+              ? playerCurrentPosition
+              : alternateTarget;
+        }
 
         const directionToTarget = new THREE.Vector3();
         directionToTarget
@@ -272,7 +345,9 @@ export const enemy = (() => {
 
     animateForwardMovement(enemy) {
       if (enemy) {
-        let speed = 0.35; // Reduced from 0.6 to 0.35 for easier catching
+        const baseSpeed = 0.35;
+        const speedMultiplier = enemy.speedMultiplier || 1.0;
+        let speed = baseSpeed * speedMultiplier; // Apply individual speed variance
         let direction = new THREE.Vector3();
         enemy.getWorldDirection(direction); // Get the direction the ship is facing
         direction.multiplyScalar(speed);
