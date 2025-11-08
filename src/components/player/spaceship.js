@@ -66,7 +66,7 @@ export const spaceship = (() => {
       // Cool
       this.activeLasers = [];
       this.engineParticles = [];
-      this.maxParticles = 200;
+      this.maxParticles = 50; // Reduced from 200 for better performance
       this.wingTrails = {
         left: [],
         right: [],
@@ -902,19 +902,13 @@ export const spaceship = (() => {
       // this.updateEngineParticles();
 
       // Wing trails - create less frequently for better performance
-      if (this.forwardVelocity > 0.3 && Math.random() > 0.97) {
-        // Changed from 0.95 to 0.97 for less frequent spawning
+      if (this.forwardVelocity > 0.3 && Math.random() > 0.98) {
+        // Changed from 0.97 to 0.98 for less frequent spawning
         this.createWingTrail();
       }
       this.updateWingTrails();
 
-      // Speed lines - only at high speed
-
-      // Cockpit glow pulse
-      if (this.cockpitGlow) {
-        const time = Date.now() * 0.005;
-        this.cockpitGlow.intensity = 2 + Math.sin(time) * 0.5;
-      }
+      // Removed cockpit glow pulse for better performance
 
       this.thirdPersonCamera.Update(timeElapsed);
       audioManager.updateSpaceshipVolume(this.forwardVelocity);

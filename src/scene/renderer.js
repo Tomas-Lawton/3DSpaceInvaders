@@ -68,25 +68,24 @@ const RadialBlurShader = {
 export function initRenderer() {
     const renderer = new THREE.WebGLRenderer({
       canvas: canvas,
-      antialias: true,
+      antialias: false, // Disable antialiasing for better performance
       powerPreference: "high-performance" // Use dedicated GPU if available
     });
 
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x000000);
-    // Cap pixel ratio at 2 to avoid rendering too many pixels on high-DPI displays
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFShadowMap; // Faster than PCFSoftShadowMap
+    // Cap pixel ratio at 1.5 to avoid rendering too many pixels on high-DPI displays
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.shadowMap.enabled = false; // Disable shadows for major performance boost
     return renderer;
   }
 
   export function initComposer(renderer, scene, camera) {
     const renderScene = new RenderPass(scene, camera);
-    // Reduce bloom resolution by 25% for better performance
+    // Reduce bloom resolution by 50% for better performance
     const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth * 0.75, window.innerHeight * 0.75),
-      1.5, 1, 1 // Reduced intensity from 1.8
+      new THREE.Vector2(window.innerWidth * 0.5, window.innerHeight * 0.5),
+      1.2, 0.8, 0.8 // Reduced intensity and thresholds
     );
 
     // Create radial blur pass for warp effect

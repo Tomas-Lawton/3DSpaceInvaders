@@ -79,7 +79,7 @@ export const enemy = (() => {
         enemyObject.add(glowPoint);
 
         // Reduce light intensity and distance for better performance
-        const redLight = new THREE.PointLight(0xff0000, 30, 100); // Reduced distance from 200 to 100
+        const redLight = new THREE.PointLight(0xff0000, 15, 50); // Further reduced for performance
         redLight.position.set(0, 1, 0);
         enemyObject.add(redLight);
 

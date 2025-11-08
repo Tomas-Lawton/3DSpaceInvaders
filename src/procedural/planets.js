@@ -160,7 +160,10 @@ export const planets = (() => {
         let closestDistance = null
 
         this.planets.forEach((planet, index) => {
-          planet.children[0].rotation.y += 0.0001;
+          // Throttle planet rotation - only update every 3rd frame
+          if (Math.random() < 0.33) {
+            planet.children[0].rotation.y += 0.0003; // Compensate with 3x rotation speed
+          }
 
           // Check if planet health is depleted
           if (planet.health <= 0) {
