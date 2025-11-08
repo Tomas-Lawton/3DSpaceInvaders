@@ -67,7 +67,7 @@ export const enemy = (() => {
         const enemyObject = new THREE.Group();
 
         const angle = Math.random() * Math.PI * 2;
-        const distance = 200;
+        const distance = 120; // Reduced from 200 to 120 for easier catching
         const x = aroundPoint.x + Math.cos(angle) * distance;
         const z = aroundPoint.z + Math.sin(angle) * distance;
         const y = aroundPoint.y;
@@ -76,9 +76,9 @@ export const enemy = (() => {
         // Add position variation within the group itself for smaller offsets
         enemyObject.position.add(
           new THREE.Vector3(
-            (Math.random() - 0.5) * 50,
-            (Math.random() - 0.5) * 50,
-            (Math.random() - 0.5) * 50
+            (Math.random() - 0.5) * 30, // Reduced from 50 to 30
+            (Math.random() - 0.5) * 30,
+            (Math.random() - 0.5) * 30
           )
         );
 
@@ -250,7 +250,7 @@ export const enemy = (() => {
         if (this.target) {
           alternateTarget = this.target;
         }
-        const phaseSpeed = 0.025; // Increased from 0.014 for more responsive turning
+        const phaseSpeed = 0.018; // Reduced from 0.025 for slower, more predictable turning
         const playerDistance = enemy.position.distanceTo(playerCurrentPosition);
         const planetDistance = alternateTarget
           ? enemy.position.distanceTo(alternateTarget)
@@ -280,7 +280,7 @@ export const enemy = (() => {
 
     animateForwardMovement(enemy) {
       if (enemy) {
-        let speed = 0.6; // Increased from 0.4 for more aggressive pursuit
+        let speed = 0.35; // Reduced from 0.6 to 0.35 for easier catching
         let direction = new THREE.Vector3();
         enemy.getWorldDirection(direction); // Get the direction the ship is facing
         direction.multiplyScalar(speed);

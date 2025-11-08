@@ -26,17 +26,17 @@ body {
 #hud-container {
   position: fixed;
   width: min(1400px, 90vw);
-  max-height: 85vh;
+  max-height: 90vh;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(0, 15, 25, 0.96);
-  backdrop-filter: blur(12px);
+  background: rgba(0, 15, 25, 0.92);
+  backdrop-filter: blur(8px);
   border: 2px solid rgba(0, 255, 238, 0.6);
-  border-radius: 16px;
-  padding: 25px;
-  box-shadow: 0 0 50px rgba(0, 255, 238, 0.4),
-    inset 0 0 80px rgba(0, 255, 238, 0.08);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 0 30px rgba(0, 255, 238, 0.4),
+    inset 0 0 60px rgba(0, 255, 238, 0.08);
   font-family: "Courier New", monospace;
   color: #00ffee;
   pointer-events: none;

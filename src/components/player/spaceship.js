@@ -245,19 +245,37 @@ export const spaceship = (() => {
       const direction = new THREE.Vector3();
       this.mesh.children[0].getWorldDirection(direction);
       const laserPosition = this.mesh.position.clone();
-      // Use lower-poly geometry for player lasers
+
+      // Create laser group for better visual quality
+      const laserGroup = new THREE.Group();
+
+      // Main laser beam (slightly larger)
       const laserBeam = new THREE.Mesh(
-        new THREE.SphereGeometry(0.2, 8, 8), // Reduced from 16x16
+        new THREE.SphereGeometry(0.3, 10, 10), // Increased size and segments
         new THREE.MeshStandardMaterial({
           emissive: 0xc87dff,
-          emissiveIntensity: 3,
+          emissiveIntensity: 5, // Increased glow
           color: 0x9400ff,
         })
       );
+      laserGroup.add(laserBeam);
 
-      laserBeam.position.copy(laserPosition);
-      laserBeam.lookAt(laserPosition.add(direction));
-      this.scene.add(laserBeam);
+      // Add subtle glow effect
+      const glowBeam = new THREE.Mesh(
+        new THREE.SphereGeometry(0.5, 8, 8),
+        new THREE.MeshStandardMaterial({
+          emissive: 0xc87dff,
+          emissiveIntensity: 2,
+          color: 0xc87dff,
+          transparent: true,
+          opacity: 0.3,
+        })
+      );
+      laserGroup.add(glowBeam);
+
+      laserGroup.position.copy(laserPosition);
+      laserGroup.lookAt(laserPosition.clone().add(direction));
+      this.scene.add(laserGroup);
 
       const velocity = direction.normalize().multiplyScalar(30);
       if (this.lightSound) {
@@ -266,7 +284,7 @@ export const spaceship = (() => {
         this.lightSound.play();
       }
 
-      this.activeLasers.push({ laserBeam, velocity, direction });
+      this.activeLasers.push({ laserBeam: laserGroup, velocity, direction });
     }
 
     // updateboosterFlame(currentVelocity, maxVelocity) {
@@ -412,9 +430,11 @@ export const spaceship = (() => {
           // Check distance - increased threshold for better cleanup
           if (laserBeam.position.distanceTo(this.mesh.position) > 300) {
             this.scene.remove(laserBeam);
-            // Dispose geometry and material to free memory
-            if (laserBeam.geometry) laserBeam.geometry.dispose();
-            if (laserBeam.material) laserBeam.material.dispose();
+            // Properly dispose of group and all children
+            laserBeam.traverse((child) => {
+              if (child.geometry) child.geometry.dispose();
+              if (child.material) child.material.dispose();
+            });
             this.activeLasers.splice(index, 1);
             continue;
           }
@@ -429,9 +449,11 @@ export const spaceship = (() => {
                   }
                   if (this.checkCollision(laserBeam, asteroid)) {
                     this.scene.remove(laserBeam);
-                    // Dispose geometry and material
-                    if (laserBeam.geometry) laserBeam.geometry.dispose();
-                    if (laserBeam.material) laserBeam.material.dispose();
+                    // Properly dispose of group and all children
+                    laserBeam.traverse((child) => {
+                      if (child.geometry) child.geometry.dispose();
+                      if (child.material) child.material.dispose();
+                    });
                     this.activeLasers.splice(index, 1);
                     asteroid.health -= this.damageAmount;
                     if (this.softBoom) {
@@ -467,9 +489,11 @@ export const spaceship = (() => {
                 console.log(`[LASER] Hit enemy! Health: ${enemy.health} -> ${enemy.health - this.damageAmount}`);
 
                 this.scene.remove(laserBeam);
-                // Dispose geometry and material
-                if (laserBeam.geometry) laserBeam.geometry.dispose();
-                if (laserBeam.material) laserBeam.material.dispose();
+                // Properly dispose of group and all children
+                laserBeam.traverse((child) => {
+                  if (child.geometry) child.geometry.dispose();
+                  if (child.material) child.material.dispose();
+                });
                 this.activeLasers.splice(index, 1);
 
                 enemy.health -= this.damageAmount;
