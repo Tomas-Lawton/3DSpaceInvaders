@@ -295,12 +295,24 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
         const y = center + (dz / maxDistance) * (mapSize / 2);
 
         const planetDot = document.createElement('div');
-        // Yellow if under attack, green otherwise
+        // Orange if under attack, green if saved, blue if safe
         const isUnderAttack = currentPlanet && planet === currentPlanet;
-        planetDot.className = isUnderAttack ? 'mini-map-planet-attack' : 'mini-map-planet';
+        const isSaved = planet.enemiesDefeatedOnce === true;
+        let className = 'mini-map-planet'; // Blue for safe
+        let status = '';
+
+        if (isUnderAttack) {
+          className = 'mini-map-planet-attack'; // Orange for under attack
+          status = ' - UNDER ATTACK!';
+        } else if (isSaved) {
+          className = 'mini-map-planet-saved'; // Green for saved
+          status = ' - SAVED';
+        }
+
+        planetDot.className = className;
         planetDot.style.left = `${x}px`;
         planetDot.style.top = `${y}px`;
-        planetDot.title = `Planet ${Math.floor(distance)}u${isUnderAttack ? ' - UNDER ATTACK!' : ''}`;
+        planetDot.title = `Planet ${Math.floor(distance)}u${status}`;
         miniMapTargets.appendChild(planetDot);
       }
     });
@@ -329,7 +341,8 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
 
   // Add asteroid fields to mini-map
   if (asteroidFields && asteroidFields.length > 0) {
-    asteroidFields.forEach(field => {
+    console.log(`[MINIMAP] Rendering ${asteroidFields.length} asteroid fields`);
+    asteroidFields.forEach((field, index) => {
       const dx = field.position.x - playerPosition.x;
       const dz = field.position.z - playerPosition.z;
       const distance = Math.sqrt(dx * dx + dz * dz);
@@ -344,8 +357,11 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
         asteroidDot.style.left = `${x}px`;
         asteroidDot.style.top = `${y}px`;
         miniMapTargets.appendChild(asteroidDot);
+        console.log(`[MINIMAP] Asteroid ${index}: distance=${distance.toFixed(0)}u, pos=(${x.toFixed(1)}, ${y.toFixed(1)})`);
       }
     });
+  } else {
+    console.log('[MINIMAP] No asteroid fields to render');
   }
 }
 

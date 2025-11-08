@@ -86,14 +86,7 @@ body {
   grid-row: 1;
 }
 
-#left-stats-section {
-  grid-column: 1;
-  grid-row: 2;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+/* Left stats section is now part of top-left-section */
 
 #center-display {
   grid-column: 2;
@@ -118,8 +111,16 @@ body {
   grid-row: 3;
 }
 
-/* Hide old positioning elements */
-#top-left-section,
+/* Show top-left section with radar and messages */
+#top-left-section {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  overflow-y: auto;
+}
+
 #messages-badge,
 #bottom-right-info {
   display: none;
@@ -2316,8 +2317,34 @@ body {
   }
 }
 
-/* Planets */
+/* Planets - Blue for safe */
 .mini-map-planet {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, #00aaff, #0066cc);
+  border: 1px solid rgba(0, 170, 255, 0.6);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 170, 255, 1), inset 0 0 4px rgba(255, 255, 255, 0.3);
+  animation: miniMapPulse 2s ease-in-out infinite;
+  transform: translate(-50%, -50%);
+}
+
+/* Orange for under attack */
+.mini-map-planet-attack {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, #ff9900, #cc6600);
+  border: 1px solid rgba(255, 153, 0, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(255, 153, 0, 1), inset 0 0 4px rgba(255, 255, 255, 0.3);
+  animation: miniMapPulse 0.8s ease-in-out infinite;
+  transform: translate(-50%, -50%);
+}
+
+/* Green for saved planets */
+.mini-map-planet-saved {
   position: absolute;
   width: 10px;
   height: 10px;
@@ -2326,18 +2353,6 @@ body {
   border-radius: 50%;
   box-shadow: 0 0 10px rgba(0, 255, 0, 1), inset 0 0 4px rgba(255, 255, 255, 0.3);
   animation: miniMapPulse 2s ease-in-out infinite;
-  transform: translate(-50%, -50%);
-}
-
-.mini-map-planet-attack {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background: radial-gradient(circle, #ffff00, #ccaa00);
-  border: 1px solid rgba(255, 255, 0, 0.8);
-  border-radius: 50%;
-  box-shadow: 0 0 12px rgba(255, 255, 0, 1), inset 0 0 4px rgba(255, 255, 255, 0.3);
-  animation: miniMapPulse 1s ease-in-out infinite;
   transform: translate(-50%, -50%);
 }
 
@@ -2362,16 +2377,18 @@ body {
   }
 }
 
-/* Asteroids - Green dots */
+/* Asteroids - Bright green dots */
 .mini-map-asteroid {
   position: absolute;
-  width: 6px;
-  height: 6px;
-  background: radial-gradient(circle, #00ff00, #00aa00);
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(circle, #00ff00, #00cc00);
+  border: 1px solid rgba(0, 255, 0, 0.8);
   border-radius: 50%;
-  box-shadow: 0 0 6px rgba(0, 255, 0, 0.8);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 1);
   transform: translate(-50%, -50%);
-  opacity: 0.9;
+  opacity: 1;
+  z-index: 5;
 }
 
 @keyframes miniMapPulse {
