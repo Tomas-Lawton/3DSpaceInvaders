@@ -278,13 +278,15 @@ export const spaceship = (() => {
       this.scene.add(laserGroup);
 
       const velocity = direction.normalize().multiplyScalar(30);
+      const spawnTime = performance.now(); // Track creation time for max lifetime
+
       if (this.lightSound) {
         this.lightSound.currentTime = 0;
         this.lightSound.volume = 0.25;
         this.lightSound.play();
       }
 
-      this.activeLasers.push({ laserBeam: laserGroup, velocity, direction });
+      this.activeLasers.push({ laserBeam: laserGroup, velocity, direction, spawnTime });
     }
 
     // updateboosterFlame(currentVelocity, maxVelocity) {
@@ -421,14 +423,19 @@ export const spaceship = (() => {
 
     handleLaserMovement(asteroidLoader, enemyLoader) {
       if (this.activeLasers) {
+        const currentTime = performance.now();
+        const maxLaserLifetime = 3000; // 3 seconds max lifetime to prevent accidental long-range hits
+
         // Iterate backwards for safe removal during iteration
         for (let index = this.activeLasers.length - 1; index >= 0; index--) {
           const beam = this.activeLasers[index];
-          const { laserBeam, velocity } = beam;
+          const { laserBeam, velocity, spawnTime } = beam;
           laserBeam.position.add(velocity.clone().multiplyScalar(0.2));
 
-          // Check distance - increased threshold for better cleanup
-          if (laserBeam.position.distanceTo(this.mesh.position) > 300) {
+          const age = currentTime - (spawnTime || 0);
+
+          // Check distance OR lifetime - remove if too far OR too old
+          if (laserBeam.position.distanceTo(this.mesh.position) > 300 || age > maxLaserLifetime) {
             this.scene.remove(laserBeam);
             // Properly dispose of group and all children
             laserBeam.traverse((child) => {

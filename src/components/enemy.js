@@ -83,30 +83,52 @@ export const enemy = (() => {
         );
 
         const loadedModel = gltf.scene.clone(); // Clone the cached model
-        loadedModel.traverse(
-          (child) =>
-            child.isMesh && (child.castShadow = child.receiveShadow = true)
-        );
+        loadedModel.traverse((child) => {
+          if (child.isMesh) {
+            child.castShadow = child.receiveShadow = true;
+
+            // Brighten mesh with subtle warm tint
+            if (child.material) {
+              child.material = child.material.clone();
+              child.material.emissive = new THREE.Color(0xff6633);
+              child.material.emissiveIntensity = 0.3; // Increased from 0.15 to compensate for fewer lights
+              child.material.color = new THREE.Color(0xdddddd); // Light gray base
+              child.material.metalness = 0.6;
+              child.material.roughness = 0.3;
+            }
+          }
+        });
         loadedModel.rotation.y = 2 * (Math.PI / 2) + Math.PI;
         loadedModel.scale.set(0.3, 0.3, 0.3); // Reduced from 0.5 for smaller enemies
         enemyObject.add(loadedModel);
 
-        // Use lower-poly geometry for glow effect
-        const glowGeometry = new THREE.SphereGeometry(0.2, 6, 6); // Reduced size
+        // Rear engine glow (orange for identification)
+        const glowGeometry = new THREE.SphereGeometry(0.25, 8, 8);
         const glowMaterial = new THREE.MeshStandardMaterial({
-          emissive: 0xff4500,
-          emissiveIntensity: 10,
-          color: 0xff4500,
+          emissive: 0xff5500,
+          emissiveIntensity: 18,
+          color: 0xff5500,
+          transparent: true,
+          opacity: 0.8,
         });
 
         const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
         glowPoint.position.set(0, 0, -5);
         enemyObject.add(glowPoint);
 
-        // Reduce light intensity and distance for better performance
-        const redLight = new THREE.PointLight(0xff0000, 15, 50); // Further reduced for performance
-        redLight.position.set(0, 1, 0);
-        enemyObject.add(redLight);
+        // Main white light for natural illumination (optimized for performance)
+        const mainLight = new THREE.PointLight(0xffffff, 40, 60);
+        mainLight.position.set(0, 3, 0);
+        mainLight.castShadow = false;
+        enemyObject.add(mainLight);
+
+        // Orange rear accent for enemy identification (optimized for performance)
+        const rearLight = new THREE.PointLight(0xff4400, 15, 25);
+        rearLight.position.set(0, 0, -3);
+        enemyObject.add(rearLight);
+
+        // PERFORMANCE: Reduced from 5 lights to 2 lights per enemy (60% reduction)
+        // Emissive materials compensate for removed fill/rim lights
 
         // Add variance to enemy properties
         enemyObject.speedMultiplier = 0.8 + Math.random() * 0.6; // 0.8 to 1.4x speed variance
@@ -276,7 +298,7 @@ export const enemy = (() => {
       enemy,
       playerCurrentPosition,
       alternateTarget = null,
-      inRangeDistance = 600, // Increased to 600 - enemies engage from further distance
+      inRangeDistance = 200, // Further reduced to 200 - tighter engagement range
       maxPlanetDistance = 1500
     ) {
       if (enemy) {
@@ -294,8 +316,8 @@ export const enemy = (() => {
 
         // Behavior-based target selection
         if (enemy.behavior === 'patrol') {
-          // Patrol between points, only chase if player very close
-          if (playerDistance < 200) {
+          // Start moving toward player as soon as detected (400 units)
+          if (playerDistance < 400) {
             chosenTargetPosition = playerCurrentPosition;
           } else {
             // Check if reached patrol target
@@ -314,8 +336,8 @@ export const enemy = (() => {
             chosenTargetPosition = enemy.patrolTarget;
           }
         } else if (enemy.behavior === 'orbit') {
-          // Orbit around planet, engage player if close
-          if (playerDistance < 300) {
+          // Start moving toward player as soon as detected (400 units)
+          if (playerDistance < 400) {
             chosenTargetPosition = playerCurrentPosition;
           } else if (alternateTarget) {
             // Calculate orbit position
@@ -353,7 +375,7 @@ export const enemy = (() => {
 
     animateForwardMovement(enemy) {
       if (enemy) {
-        const baseSpeed = 0.35;
+        const baseSpeed = 0.5; // Increased from 0.35 for faster, more challenging enemies
         const speedMultiplier = enemy.speedMultiplier || 1.0;
         let speed = baseSpeed * speedMultiplier; // Apply individual speed variance
         let direction = new THREE.Vector3();
@@ -409,7 +431,7 @@ export const enemy = (() => {
     //   }
     // }
 
-    checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null, inRangeDistance = 600) {
+    checkFiringPosition(enemy, playerCurrentPosition, alternateTarget = null, inRangeDistance = 200) {
       if (this.target) {
         alternateTarget = this.target;
       }

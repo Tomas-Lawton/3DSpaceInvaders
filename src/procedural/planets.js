@@ -59,8 +59,8 @@ export const planets = (() => {
           Math.cos(angle2)
         );
 
-        // Spawn 2500-3500 units away from player
-        const spawnDistance = 2500 + Math.random() * 1000;
+        // Spawn 1800-2800 units away from player (reduced for faster exploration)
+        const spawnDistance = 1800 + Math.random() * 1000;
         planetGroup.position.set(
           playerPosition.x + direction.x * spawnDistance,
           playerPosition.y + direction.y * spawnDistance * 0.2, // Less vertical spread
@@ -293,7 +293,7 @@ export const planets = (() => {
                 this.currentPlanet = planet;
                 this.currentlySpawning = true; // Spawn lock
 
-                const enemyCount = 5; // Max 5 enemies per planet
+                const enemyCount = 7; // Max 7 enemies per planet
 
                 // Create loader if it doesn't exist
                 if (!this.enemyLoader) {
@@ -306,7 +306,7 @@ export const planets = (() => {
                 // ALWAYS cleanup before spawning to ensure clean state
                 this.cleanupEnemies();
 
-                // Now spawn exactly 5 enemies
+                // Now spawn exactly 7 enemies
                 console.log(`[PLANET] Calling initaliseEnemies(${enemyCount})`);
                 this.enemyLoader.initaliseEnemies(enemyCount, planet.position);
 
@@ -329,12 +329,7 @@ export const planets = (() => {
             } else {
               // Log why spawn was blocked (only once per second to avoid spam)
               if (!this._lastBlockLog || Date.now() - this._lastBlockLog > 1000) {
-                const cooldownRemaining = onCooldown ? Math.ceil((planet.saveCooldown - (currentTime - planet.lastSaveTime)) / 1000) : 0;
-                if (onCooldown) {
-                  console.log(`[PLANET] ⏱️ Spawn BLOCKED - Planet on cooldown (${cooldownRemaining}s remaining)`);
-                } else {
-                  console.log(`[PLANET] ⛔ Spawn BLOCKED - hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning}`);
-                }
+                console.log(`[PLANET] ⛔ Spawn BLOCKED - hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning}`);
                 this._lastBlockLog = Date.now();
               }
             }
@@ -403,11 +398,17 @@ export const planets = (() => {
             enemyArray
           );
 
-          // Update mini-map
+          // Update mini-map (need player rotation and asteroid fields)
+          // Player rotation can be calculated from forward direction
+          const playerRotation = playerForwardDirection ?
+            Math.atan2(playerForwardDirection.x, playerForwardDirection.z) : 0;
+
           updateMiniMap(
             playerCurrentPosition,
             this.planets,
-            enemyArray
+            enemyArray,
+            playerRotation,
+            this.asteroidFields || []
           );
         }
       }

@@ -18,6 +18,8 @@ export class Audio_Manager {
     this.dogfightMusic = null;
     this.dogfightSource = null;
     this.isDogfightPlaying = false;
+
+    this.bleepSound = null;
   }
 
   async loadSounds(path) {
@@ -186,6 +188,23 @@ export class Audio_Manager {
       this.dogfightMusic.currentTime = 0;
       this.isDogfightPlaying = false;
       console.log('🎵 Dogfight music stopped');
+    }
+  }
+
+  async loadBleepSound(path) {
+    try {
+      this.bleepSound = new Audio(path);
+      this.bleepSound.volume = 0.3;
+    } catch (error) {
+      console.warn('Failed to load bleep sound:', error);
+      this.bleepSound = null;
+    }
+  }
+
+  playBleepSound() {
+    if (this.bleepSound) {
+      this.bleepSound.currentTime = 0;
+      this.bleepSound.play().catch(err => console.warn('Failed to play bleep:', err));
     }
   }
 

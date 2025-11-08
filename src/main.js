@@ -87,13 +87,20 @@ class Game {
 
   setupPauseListener() {
     window.addEventListener("keydown", (event) => {
-      if ((event.key === "e" || event.key === "E") && this.gameStarted) {
+      if (event.key === "Escape" && this.gameStarted) {
         this.isPaused = !this.isPaused; // Toggle the pause state
+
+        // Play bleep sound on toggle
+        if (this.audioManager) {
+          this.audioManager.playBleepSound();
+        }
+
         if (this.isPaused) {
           console.log("Game Paused");
-          // Pause rocket booster audio
+          // Pause all audio
           if (this.audioManager) {
             this.audioManager.pauseSpaceshipSound();
+            this.audioManager.stopDogfightMusic();
           }
         } else {
           console.log("Game Resumed");
@@ -117,13 +124,7 @@ class Game {
       }
     };
 
-    // Button click
-    const startButton = document.getElementById('start-game-btn');
-    if (startButton) {
-      startButton.addEventListener('click', startGame);
-    }
-
-    // Enter or Space key press
+    // Enter or Space key press (button click removed)
     const keyHandler = (event) => {
       if (!this.gameStarted && (event.key === 'Enter' || event.key === ' ')) {
         event.preventDefault(); // Prevent default space/enter behavior
@@ -145,6 +146,7 @@ class Game {
         this.audioManager.loadSoundtrack("./public/audio/soundtrack.wav"),
         this.audioManager.loadSpaceshipSound("./public/audio/ship_rumble.wav"),
         this.audioManager.loadDogfightMusic("./public/audio/dogfight.mp3"),
+        this.audioManager.loadBleepSound("./public/audio/bleep.mp3"),
       ]);
       this.audioManager.playSpaceshipSound();
     } catch (error) {
