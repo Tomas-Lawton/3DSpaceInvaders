@@ -87,7 +87,7 @@ class Game {
 
   setupPauseListener() {
     window.addEventListener("keydown", (event) => {
-      if ((event.key === "e" || event.key === "E") && this.gameStarted) {
+      if (event.key === "Escape" && this.gameStarted) {
         this.isPaused = !this.isPaused; // Toggle the pause state
 
         // Play bleep sound on toggle
@@ -124,13 +124,7 @@ class Game {
       }
     };
 
-    // Button click
-    const startButton = document.getElementById('start-game-btn');
-    if (startButton) {
-      startButton.addEventListener('click', startGame);
-    }
-
-    // Enter or Space key press
+    // Enter or Space key press (button click removed)
     const keyHandler = (event) => {
       if (!this.gameStarted && (event.key === 'Enter' || event.key === ' ')) {
         event.preventDefault(); // Prevent default space/enter behavior
