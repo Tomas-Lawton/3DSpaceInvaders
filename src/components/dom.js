@@ -267,9 +267,11 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
 
   // Helper function to rotate point around center based on player rotation
   // This makes player's forward direction always point up on the map
+  // Add 90 degree offset to correct orientation (forward was appearing left)
   const rotatePoint = (dx, dz, angle) => {
-    const cos = Math.cos(-angle);
-    const sin = Math.sin(-angle);
+    const correctedAngle = -angle - Math.PI / 2; // Add 90° offset
+    const cos = Math.cos(correctedAngle);
+    const sin = Math.sin(correctedAngle);
     return {
       x: dx * cos - dz * sin,
       z: dx * sin + dz * cos

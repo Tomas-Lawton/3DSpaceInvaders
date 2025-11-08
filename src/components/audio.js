@@ -182,6 +182,20 @@ export class Audio_Manager {
     }
   }
 
+  pauseDogfightMusic() {
+    if (this.dogfightMusic && this.isDogfightPlaying) {
+      this.dogfightMusic.pause();
+      console.log('🎵 Dogfight music paused');
+    }
+  }
+
+  resumeDogfightMusic() {
+    if (this.dogfightMusic && this.isDogfightPlaying) {
+      this.dogfightMusic.play().catch(err => console.warn('Failed to resume dogfight music:', err));
+      console.log('🎵 Dogfight music resumed');
+    }
+  }
+
   stopDogfightMusic() {
     if (this.dogfightMusic && this.isDogfightPlaying) {
       this.dogfightMusic.pause();
