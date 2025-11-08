@@ -100,13 +100,14 @@ class Game {
           // Pause all audio
           if (this.audioManager) {
             this.audioManager.pauseSpaceshipSound();
-            this.audioManager.stopDogfightMusic();
+            this.audioManager.pauseDogfightMusic();
           }
         } else {
           console.log("Game Resumed");
-          // Resume rocket booster audio
+          // Resume all audio
           if (this.audioManager) {
             this.audioManager.resumeSpaceshipSound();
+            this.audioManager.resumeDogfightMusic();
           }
         }
         toggleHUD();
