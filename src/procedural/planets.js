@@ -117,7 +117,7 @@ export const planets = (() => {
 
 
 
-    animatePlanets(playerCurrentPosition, reposition, playerForwardDirection = null, playerShip = null) {
+    animatePlanets(playerCurrentPosition, reposition, playerForwardDirection = null, playerShip = null, audioManager = null) {
       if (this.enemyLoader) {
         this.enemyLoader.animateEnemies(playerCurrentPosition);
         // Check for enemy laser collisions with planets
@@ -141,6 +141,12 @@ export const planets = (() => {
           }
         } else if (canCheckPlanetSaved) {
           console.log(`[PLANET] 🌍 All enemies defeated! Planet saved!`);
+
+          // Stop dogfight music
+          if (audioManager) {
+            audioManager.stopDogfightMusic();
+          }
+
           if (playerShip) {
             playerShip.health = Math.min(playerShip.health + 50, playerShip.maxHealth);
 
@@ -191,6 +197,11 @@ export const planets = (() => {
             if (planet.hasEnemies && this.enemyLoader) {
               // Set target to null so enemies chase player
               this.enemyLoader.target = null;
+
+              // Stop dogfight music since planet is gone (enemies still chase player)
+              if (audioManager) {
+                audioManager.stopDogfightMusic();
+              }
             }
 
             // Show planet destroyed notification
@@ -221,6 +232,12 @@ export const planets = (() => {
           if (playerDistance > 6000) {
             // Clean up old enemies before repositioning planet
             this.cleanupEnemies();
+
+            // Stop dogfight music when repositioning
+            if (audioManager) {
+              audioManager.stopDogfightMusic();
+            }
+
             reposition(planet.position, playerCurrentPosition);
             // Reset ALL spawn flags so new enemies can spawn at new location
             this.enemiesSpawned = false;
@@ -269,6 +286,11 @@ export const planets = (() => {
                 // Now spawn exactly 5 enemies
                 console.log(`[PLANET] Calling initaliseEnemies(${enemyCount})`);
                 this.enemyLoader.initaliseEnemies(enemyCount, planet.position);
+
+                // Start dogfight music
+                if (audioManager) {
+                  audioManager.playDogfightMusic();
+                }
 
                 // Show warning notification
                 if (playerShip) {

@@ -14,6 +14,10 @@ export class Audio_Manager {
 
     this.spaceshipSound = null;
     this.spaceshipSource = null;
+
+    this.dogfightMusic = null;
+    this.dogfightSource = null;
+    this.isDogfightPlaying = false;
   }
 
   async loadSounds(path) {
@@ -33,6 +37,23 @@ export class Audio_Manager {
   async loadSpaceshipSound(path) {
     this.spaceshipSound = new Audio(path);
     this.spaceshipSound.loop = true;
+  }
+
+  async loadDogfightMusic(path) {
+    try {
+      this.dogfightMusic = new Audio(path);
+      this.dogfightMusic.loop = true;
+      this.dogfightMusic.volume = 0.4; // Moderate volume for combat music
+
+      // Test if file exists by attempting to load
+      this.dogfightMusic.addEventListener('error', () => {
+        console.warn('Dogfight music file not found - continuing without combat music');
+        this.dogfightMusic = null;
+      });
+    } catch (error) {
+      console.warn('Failed to load dogfight music:', error);
+      this.dogfightMusic = null;
+    }
   }
 
   async playSpaceshipSound() {
@@ -105,6 +126,34 @@ export class Audio_Manager {
     if (this.soundtrack && !this.soundtrack.paused) {
       this.soundtrack.pause();
       console.log('Paused Soundtrack');
+    }
+  }
+
+  async playDogfightMusic() {
+    if (!this.dogfightMusic || this.isDogfightPlaying) return;
+
+    try {
+      await this.audioContext.resume();
+
+      if (!this.dogfightSource) {
+        this.dogfightSource = this.audioContext.createMediaElementSource(this.dogfightMusic);
+        this.dogfightSource.connect(this.audioContext.destination);
+      }
+
+      await this.dogfightMusic.play();
+      this.isDogfightPlaying = true;
+      console.log('🎵 Dogfight music started');
+    } catch (error) {
+      console.warn('Failed to play dogfight music:', error);
+    }
+  }
+
+  stopDogfightMusic() {
+    if (this.dogfightMusic && this.isDogfightPlaying) {
+      this.dogfightMusic.pause();
+      this.dogfightMusic.currentTime = 0;
+      this.isDogfightPlaying = false;
+      console.log('🎵 Dogfight music stopped');
     }
   }
 

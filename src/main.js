@@ -136,6 +136,7 @@ class Game {
         this.audioManager.loadSounds("./public/audio/sounds"),
         this.audioManager.loadSoundtrack("./public/audio/soundtrack.wav"),
         this.audioManager.loadSpaceshipSound("./public/audio/ship_rumble.wav"),
+        this.audioManager.loadDogfightMusic("./public/audio/dogfight.mp3"),
       ]);
       this.audioManager.playSpaceshipSound();
     } catch (error) {

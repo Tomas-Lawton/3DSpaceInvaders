@@ -42,7 +42,8 @@ export const gameworld = (() => {
           playerCurrentPosition,
           this.repositionObj,
           playerForwardDirection,
-          playerShip
+          playerShip,
+          audioManager
         );
       }
 

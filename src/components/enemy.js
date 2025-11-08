@@ -416,7 +416,7 @@ export const enemy = (() => {
 
       const currentTime = performance.now(); // For laser cooldown
 
-      const distanceThreshold = 200; // Increased firing range from 100 to 200
+      const distanceThreshold = 150; // Enemies only fire when close (within 150 units)
       const angleThreshold = Math.PI / 4; // Widened from PI/6 to PI/4 for easier shooting
 
       // Get the current facing direction of the enemy
