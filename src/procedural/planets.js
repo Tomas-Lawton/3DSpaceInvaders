@@ -209,6 +209,7 @@ export const planets = (() => {
 
           if (playerDistance < 1500) { //  closer than 1500: spawn enemy group
             if (!planet.hasEnemies) {
+                console.log(`[PLANET] Player within 1500 of planet. Triggering enemy spawn...`);
                 planet.hasEnemies = true;
                 this.enemiesSpawned = true;
                 this.currentPlanet = planet;
@@ -216,13 +217,17 @@ export const planets = (() => {
 
                 // Create loader if it doesn't exist
                 if (!this.enemyLoader) {
+                  console.log(`[PLANET] Creating NEW enemy loader`);
                   this.enemyLoader = new enemy.EnemyLoader(this.scene);
+                } else {
+                  console.log(`[PLANET] Reusing existing enemy loader`);
                 }
 
                 // ALWAYS cleanup before spawning to ensure clean state
                 this.cleanupEnemies();
 
                 // Now spawn exactly 5 enemies
+                console.log(`[PLANET] Calling initaliseEnemies(${enemyCount})`);
                 this.enemyLoader.initaliseEnemies(enemyCount, planet.position);
 
                 // Show warning notification
@@ -272,9 +277,12 @@ export const planets = (() => {
 
     cleanupEnemies() {
       if (this.enemyLoader) {
+        console.log(`[CLEANUP] Starting cleanup. Current enemies: ${this.enemyLoader.enemies ? this.enemyLoader.enemies.length : 0}`);
+
         // Remove all enemies from scene
-        if (this.enemyLoader.enemies) {
-          this.enemyLoader.enemies.forEach((enemy) => {
+        if (this.enemyLoader.enemies && this.enemyLoader.enemies.length > 0) {
+          this.enemyLoader.enemies.forEach((enemy, index) => {
+            console.log(`[CLEANUP] Removing enemy ${index + 1}/${this.enemyLoader.enemies.length}`);
             this.scene.remove(enemy);
             // Dispose of geometries and materials
             enemy.traverse((child) => {
@@ -290,10 +298,12 @@ export const planets = (() => {
           });
           // CRITICAL: Clear the enemies array!
           this.enemyLoader.enemies = [];
+          console.log(`[CLEANUP] ✅ Enemies array cleared. New length: ${this.enemyLoader.enemies.length}`);
         }
 
         // Remove all lasers from scene
-        if (this.enemyLoader.activeLasers) {
+        if (this.enemyLoader.activeLasers && this.enemyLoader.activeLasers.length > 0) {
+          console.log(`[CLEANUP] Removing ${this.enemyLoader.activeLasers.length} lasers`);
           this.enemyLoader.activeLasers.forEach((laserData) => {
             this.scene.remove(laserData.laserBeam);
             if (laserData.laserBeam.geometry) laserData.laserBeam.geometry.dispose();
@@ -304,6 +314,7 @@ export const planets = (() => {
         }
 
         // DO NOT null out enemyLoader - we reuse it!
+        console.log(`[CLEANUP] ✅ Cleanup complete`);
       }
     }
 

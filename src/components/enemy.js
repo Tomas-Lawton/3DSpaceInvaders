@@ -30,26 +30,32 @@ export const enemy = (() => {
       const maxEnemies = 5;
       const currentEnemyCount = this.enemies.length;
 
+      console.log(`[ENEMY SPAWN] Called with ${numEnemies} requested. Current count: ${currentEnemyCount}`);
+
       if (currentEnemyCount >= maxEnemies) {
-        console.warn(`Enemy cap reached! Current: ${currentEnemyCount}, Max: ${maxEnemies}`);
+        console.error(`[ENEMY SPAWN] ❌ BLOCKED! Already at cap: ${currentEnemyCount}/${maxEnemies}`);
         return; // Don't spawn any more enemies
       }
 
       // Calculate how many we can actually spawn
       const enemiesToSpawn = Math.min(numEnemies, maxEnemies - currentEnemyCount);
-      console.log(`Spawning ${enemiesToSpawn} enemies (Current: ${currentEnemyCount}, Requested: ${numEnemies})`);
+      console.log(`[ENEMY SPAWN] ✅ Spawning ${enemiesToSpawn} enemies (Current: ${currentEnemyCount}, Requested: ${numEnemies})`);
 
       this.target = aroundPoint;
       for (let i = 0; i < enemiesToSpawn; i++) {
         this.createEnemy(aroundPoint, (enemyObject) => {
-          // Double-check cap before adding
+          // CRITICAL: Double-check cap before adding (async callback protection)
           if (this.enemies.length < maxEnemies) {
             enemyObject.lastShotTime = 0;
             this.scene.add(enemyObject);
             this.enemies.push(enemyObject);
+            console.log(`[ENEMY SPAWN] Enemy ${this.enemies.length}/${maxEnemies} added to scene`);
           } else {
-            console.warn('Enemy cap reached during spawn, removing excess enemy');
+            console.error(`[ENEMY SPAWN] ❌ ASYNC CAP BLOCK! Tried to add enemy when at ${this.enemies.length}/${maxEnemies}`);
             this.scene.remove(enemyObject);
+            // Dispose of the excess enemy
+            if (enemyObject.geometry) enemyObject.geometry.dispose();
+            if (enemyObject.material) enemyObject.material.dispose();
           }
         });
       }
@@ -144,6 +150,11 @@ export const enemy = (() => {
     animateEnemies(playerCurrentPosition) {
       this.updateCounter++;
       const LOD_UPDATE_INTERVAL = 3; // Update distant enemies every 3 frames
+
+      // Log enemy count every 60 frames (once per second at 60fps)
+      if (this.updateCounter % 60 === 0) {
+        console.log(`[ENEMY ANIMATE] Currently animating ${this.enemies.length} enemies`);
+      }
 
       this.enemies.forEach((enemy, index) => {
         const distanceToPlayer = enemy.position.distanceTo(playerCurrentPosition);

@@ -82,11 +82,12 @@ export function initRenderer() {
 
   export function initComposer(renderer, scene, camera) {
     const renderScene = new RenderPass(scene, camera);
-    // Reduce bloom resolution by 50% for better performance
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth * 0.5, window.innerHeight * 0.5),
-      1.2, 0.8, 0.8 // Reduced intensity and thresholds
-    );
+
+    // Bloom pass completely disabled for maximum performance
+    // const bloomPass = new UnrealBloomPass(
+    //   new THREE.Vector2(window.innerWidth * 0.5, window.innerHeight * 0.5),
+    //   1.2, 0.8, 0.8
+    // );
 
     // Radial blur disabled for performance
     // const radialBlurPass = new ShaderPass(RadialBlurShader);
@@ -95,7 +96,7 @@ export function initRenderer() {
     const composer = new EffectComposer(renderer);
     composer.addPass(renderScene);
     // composer.addPass(radialBlurPass); // Disabled for performance
-    composer.addPass(bloomPass);
+    // composer.addPass(bloomPass); // Disabled for maximum performance
 
     // Store reference to the warp pass for external control (disabled)
     // composer.warpPass = radialBlurPass;
