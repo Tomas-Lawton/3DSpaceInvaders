@@ -13,31 +13,31 @@ export const UPGRADE_SYSTEM = {
     'ship-2': {
       name: 'SCOUT',
       unlocked: false,
-      cost: { iron: 50, gold: 20, crystal: 5, xp: 500 },
+      cost: { iron: 2, gold: 1, crystal: 1, xp: 20 }, // TESTING: reduced from 50/20/5/500
       stats: { speed: 1.3, health: 0.9, fireRate: 1.1 }
     },
     'ship-3': {
       name: 'FIGHTER',
       unlocked: false,
-      cost: { iron: 100, gold: 50, crystal: 15, xp: 1500 },
+      cost: { iron: 3, gold: 2, crystal: 1, xp: 40 }, // TESTING: reduced from 100/50/15/1500
       stats: { speed: 1.1, health: 1.3, fireRate: 1.4 }
     },
     'ship-4': {
       name: 'HEAVY',
       unlocked: false,
-      cost: { iron: 150, gold: 80, crystal: 30, xp: 3000 },
+      cost: { iron: 4, gold: 3, crystal: 2, xp: 60 }, // TESTING: reduced from 150/80/30/3000
       stats: { speed: 0.8, health: 1.8, fireRate: 1.2 }
     },
     'ship-5': {
       name: 'INTERCEPTOR',
       unlocked: false,
-      cost: { iron: 200, gold: 120, crystal: 50, xp: 5000 },
+      cost: { iron: 5, gold: 4, crystal: 2, xp: 80 }, // TESTING: reduced from 200/120/50/5000
       stats: { speed: 1.5, health: 1.0, fireRate: 1.6 }
     },
     'ship-6': {
       name: 'CAPITAL',
       unlocked: false,
-      cost: { iron: 300, gold: 200, crystal: 100, xp: 10000 },
+      cost: { iron: 6, gold: 5, crystal: 3, xp: 100 }, // TESTING: reduced from 300/200/100/10000
       stats: { speed: 0.9, health: 2.0, fireRate: 1.8 }
     }
   },

@@ -215,21 +215,36 @@ function handleShipClick(event) {
   const shipEl = event.currentTarget;
   const shipId = shipEl.id;
 
-  // Only allow selection of unlocked ships
   const ship = UPGRADE_SYSTEM.ships[shipId];
-  if (!ship || !ship.unlocked) {
-    // If locked, select it to show unlock button
-    currentlySelectedShip = shipId;
+  if (!ship) return;
 
-    // Update active state
+  // If locked, check if user can afford it before allowing selection
+  if (!ship.unlocked) {
+    const resources = getOres();
+    const xp = getXP();
+    const affordable = canAfford(ship.cost, resources, xp);
+
+    if (!affordable) {
+      // Visual feedback that they can't afford it
+      shipEl.style.borderColor = 'rgba(255, 0, 0, 0.8)';
+      shipEl.style.boxShadow = '0 0 20px rgba(255, 0, 0, 0.6)';
+      setTimeout(() => {
+        shipEl.style.borderColor = '';
+        shipEl.style.boxShadow = '';
+      }, 500);
+      console.log(`Cannot select ${ship.name} - insufficient resources`);
+      return; // Don't allow selection
+    }
+
+    // If affordable, allow selection to show unlock button
+    currentlySelectedShip = shipId;
     document.querySelectorAll('.ship-option').forEach(el => el.classList.remove('active'));
     shipEl.classList.add('active');
-
     updateShipStates();
     return;
   }
 
-  // Select the ship
+  // Select the unlocked ship
   currentlySelectedShip = shipId;
 
   // Update active state
@@ -292,7 +307,16 @@ function handleSelectShip() {
 
   const ship = UPGRADE_SYSTEM.ships[shipId];
   if (!ship || !ship.unlocked) {
-    console.log('Cannot select locked ship');
+    // Visual feedback - flash the select button red
+    if (selectButton) {
+      selectButton.style.borderColor = 'rgba(255, 0, 0, 0.8)';
+      selectButton.style.boxShadow = '0 0 20px rgba(255, 0, 0, 0.6)';
+      setTimeout(() => {
+        selectButton.style.borderColor = '';
+        selectButton.style.boxShadow = '';
+      }, 500);
+    }
+    console.log('Cannot select locked ship - unlock it first!');
     return;
   }
 
