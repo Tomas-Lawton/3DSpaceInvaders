@@ -129,7 +129,17 @@ export const planets = (() => {
         }
 
         // Check if all enemies are cleared while planet still exists
-        if (this.currentPlanet && this.currentPlanet.hasEnemies && this.enemyLoader.enemies.length === 0) {
+        // CRITICAL: Don't check if currently spawning (async callbacks haven't completed yet!)
+        const canCheckPlanetSaved = this.currentPlanet && this.currentPlanet.hasEnemies &&
+                                    this.enemyLoader && this.enemyLoader.enemies.length === 0;
+
+        if (canCheckPlanetSaved && this.currentlySpawning) {
+          // Prevent premature "planet saved" during async enemy spawn
+          if (!this._lastSpawnBlockLog || Date.now() - this._lastSpawnBlockLog > 1000) {
+            console.log(`[PLANET] ⚠️ Skipping planet saved check - enemies still spawning (async callbacks pending)`);
+            this._lastSpawnBlockLog = Date.now();
+          }
+        } else if (canCheckPlanetSaved) {
           console.log(`[PLANET] 🌍 All enemies defeated! Planet saved!`);
           if (playerShip) {
             playerShip.health = Math.min(playerShip.health + 50, playerShip.maxHealth);
@@ -258,10 +268,11 @@ export const planets = (() => {
                 }
 
                 // Release spawn lock after async callbacks complete
+                // Increased to 500ms to ensure GLTF loading callbacks have time to fire
                 setTimeout(() => {
                   this.currentlySpawning = false;
-                  console.log(`[PLANET] Spawn lock released`);
-                }, 100);
+                  console.log(`[PLANET] Spawn lock released (enemies should be in scene now)`);
+                }, 500);
             } else {
               // Log why spawn was blocked (only once per second to avoid spam)
               if (!this._lastBlockLog || Date.now() - this._lastBlockLog > 1000) {
