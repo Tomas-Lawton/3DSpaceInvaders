@@ -3,6 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <title>Space Invaders 2063</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="public/index.css" />
     <script
       async
@@ -60,8 +63,13 @@
     <div id="mini-map" class="hud-ui">
       <div class="mini-map-header">SECTOR MAP</div>
       <div class="mini-map-content">
-        <div class="mini-map-player">◆</div>
+        <div class="mini-map-north">N</div>
+        <div class="mini-map-player">
+          <div class="player-ship-icon">▲</div>
+          <div class="player-direction-line"></div>
+        </div>
         <div id="mini-map-targets"></div>
+        <div class="mini-map-grid"></div>
       </div>
     </div>
 
@@ -118,6 +126,34 @@
               <div class="stat-info">
                 <span class="stat-label">KILLS</span>
                 <span class="stat-value-large" id="enemies-killed">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resources Section -->
+          <div class="stats-title" style="margin-top: 20px;">
+            <h3 style="font-size: 18px; color: #00ffee; margin: 0;">RESOURCES</h3>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-icon">🔩</span>
+              <div class="stat-info">
+                <span class="stat-label">IRON</span>
+                <span class="stat-value-large" id="header-iron">0</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">🏆</span>
+              <div class="stat-info">
+                <span class="stat-label">GOLD</span>
+                <span class="stat-value-large" id="header-gold">0</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon">💎</span>
+              <div class="stat-info">
+                <span class="stat-label">CRYSTAL</span>
+                <span class="stat-value-large" id="header-crystal">0</span>
               </div>
             </div>
           </div>
@@ -330,51 +366,51 @@
             <span class="ship-lock-icon">🔒</span>
             <span class="ship-name-label">SCOUT</span>
             <div class="ship-cost-detail">
-              <span>🔩 50</span>
-              <span>🏆 20</span>
-              <span>💎 5</span>
+              <span>🔩 2</span>
+              <span>🏆 1</span>
+              <span>💎 1</span>
             </div>
-            <div class="ship-xp-detail">⭐ XP: 100</div>
+            <div class="ship-xp-detail">⭐ XP: 20</div>
           </div>
           <div id="ship-3" class="ship-option locked" data-ship="ship-3">
             <span class="ship-lock-icon">🔒</span>
             <span class="ship-name-label">FIGHTER</span>
             <div class="ship-cost-detail">
-              <span>🔩 100</span>
-              <span>🏆 50</span>
-              <span>💎 15</span>
+              <span>🔩 3</span>
+              <span>🏆 2</span>
+              <span>💎 1</span>
             </div>
-            <div class="ship-xp-detail">⭐ XP: 300</div>
+            <div class="ship-xp-detail">⭐ XP: 40</div>
           </div>
           <div id="ship-4" class="ship-option locked" data-ship="ship-4">
             <span class="ship-lock-icon">🔒</span>
             <span class="ship-name-label">HEAVY</span>
             <div class="ship-cost-detail">
-              <span>🔩 150</span>
-              <span>🏆 80</span>
-              <span>💎 30</span>
+              <span>🔩 4</span>
+              <span>🏆 3</span>
+              <span>💎 2</span>
             </div>
-            <div class="ship-xp-detail">⭐ XP: 600</div>
+            <div class="ship-xp-detail">⭐ XP: 60</div>
           </div>
           <div id="ship-5" class="ship-option locked" data-ship="ship-5">
             <span class="ship-lock-icon">🔒</span>
             <span class="ship-name-label">INTER</span>
             <div class="ship-cost-detail">
-              <span>🔩 200</span>
-              <span>🏆 120</span>
-              <span>💎 50</span>
+              <span>🔩 5</span>
+              <span>🏆 4</span>
+              <span>💎 2</span>
             </div>
-            <div class="ship-xp-detail">⭐ XP: 1000</div>
+            <div class="ship-xp-detail">⭐ XP: 80</div>
           </div>
           <div id="ship-6" class="ship-option locked" data-ship="ship-6">
             <span class="ship-lock-icon">🔒</span>
             <span class="ship-name-label">CAPITAL</span>
             <div class="ship-cost-detail">
-              <span>🔩 300</span>
-              <span>🏆 200</span>
-              <span>💎 100</span>
+              <span>🔩 6</span>
+              <span>🏆 5</span>
+              <span>💎 3</span>
             </div>
-            <div class="ship-xp-detail">⭐ XP: 2000</div>
+            <div class="ship-xp-detail">⭐ XP: 100</div>
           </div>
         </div>
         <button id="unlock-ship" style="display: none;">UNLOCK SHIP</button>
@@ -394,13 +430,13 @@
     <div id="intro-screen" style="display: none;">
       <div class="intro-container">
         <div class="intro-header">
-          <h1 class="intro-title">🚀 3D SPACE INVADERS</h1>
-          <p class="intro-subtitle">Defend Planets • Collect Resources • Upgrade Ships</p>
+          <h1 class="intro-title">3D SPACE INVADERS</h1>
+          <p class="intro-subtitle">Defend Planets <span class="orange-text">•</span> Collect Resources <span class="orange-text">•</span> Upgrade Ships</p>
         </div>
 
         <div class="intro-content">
           <div class="intro-section">
-            <h2 class="intro-section-title">🎮 CONTROLS</h2>
+            <h2 class="intro-section-title orange-text">CONTROLS</h2>
             <div class="intro-controls-grid">
               <div class="intro-control">
                 <span class="intro-key">WASD</span>
@@ -411,23 +447,23 @@
                 <span class="intro-label">Aim</span>
               </div>
               <div class="intro-control">
-                <span class="intro-key">SPACE</span>
+                <span class="intro-key orange-text">SPACE</span>
                 <span class="intro-label">Fire</span>
               </div>
               <div class="intro-control">
-                <span class="intro-key">ESC</span>
+                <span class="intro-key orange-text">ESC</span>
                 <span class="intro-label">Menu</span>
               </div>
             </div>
           </div>
 
           <div class="intro-section">
-            <h2 class="intro-section-title">⚔️ QUICK TIPS</h2>
+            <h2 class="intro-section-title orange-text">QUICK TIPS</h2>
             <div class="intro-tips">
-              <p class="intro-tip">▸ Defend planets from enemy waves (< 1500km)</p>
-              <p class="intro-tip">▸ Follow <strong>cyan arrows</strong> to planets, <strong>red arrows</strong> to enemies</p>
-              <p class="intro-tip">▸ Destroy asteroids for resources 🔩 🏆 💎</p>
-              <p class="intro-tip">▸ Press <strong>ESC</strong> to upgrade your ship</p>
+              <p class="intro-tip"><span class="orange-text">▸</span> Defend planets from enemy waves (< 1500km)</p>
+              <p class="intro-tip"><span class="orange-text">▸</span> Follow <strong class="cyan-text">cyan arrows</strong> to planets, <strong class="orange-text">red arrows</strong> to enemies</p>
+              <p class="intro-tip"><span class="orange-text">▸</span> Destroy asteroids for resources (Iron, Gold, Crystal)</p>
+              <p class="intro-tip"><span class="orange-text">▸</span> Press <strong class="orange-text">ESC</strong> to upgrade your ship</p>
             </div>
           </div>
         </div>

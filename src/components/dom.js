@@ -40,6 +40,9 @@ function updateResourceDisplay() {
   if (xpDisplay) {
     xpDisplay.textContent = `XP: ${xp}`;
   }
+
+  // Update pause menu resources
+  updatePauseMenuResources();
 }
 
 export function addXP(amount) {
@@ -56,9 +59,20 @@ function updatePauseMenuXP() {
   }
 }
 
+function updatePauseMenuResources() {
+  const headerIron = document.getElementById('header-iron');
+  const headerGold = document.getElementById('header-gold');
+  const headerCrystal = document.getElementById('header-crystal');
+
+  if (headerIron) headerIron.textContent = iron;
+  if (headerGold) headerGold.textContent = gold;
+  if (headerCrystal) headerCrystal.textContent = crystal;
+}
+
 export function deductXP(amount) {
   xp = Math.max(0, xp - amount);
   updateResourceDisplay();
+  updatePauseMenuXP();
   console.log(`-${amount} XP. Remaining: ${xp}`);
 }
 
@@ -232,20 +246,35 @@ export function hidePlanetDefenseStatus() {
 let miniMapFrameCounter = 0;
 const MINI_MAP_UPDATE_INTERVAL = 5; // Update every 5 frames (~12 times per second)
 
-export function updateMiniMap(playerPosition, planets, enemies) {
+export function updateMiniMap(playerPosition, planets, enemies, playerRotation = 0, asteroidFields = []) {
   miniMapFrameCounter++;
   if (miniMapFrameCounter < MINI_MAP_UPDATE_INTERVAL) return; // Skip this frame
   miniMapFrameCounter = 0;
 
   const miniMapTargets = document.getElementById('mini-map-targets');
-  if (!miniMapTargets) return;
+  const miniMapContent = document.querySelector('.mini-map-content');
+  if (!miniMapTargets || !miniMapContent) return;
 
   // Clear existing targets
   miniMapTargets.innerHTML = '';
 
-  const mapSize = 140; // Size of the mini-map content area
+  const mapSize = 210; // Size of the mini-map content area (updated from 140)
   const maxDistance = 3000; // Max distance to show on map (in game units)
   const center = mapSize / 2;
+
+  // Don't rotate the container - keep "N" pointing north
+  // Instead, rotate object positions so player's forward is always up
+
+  // Helper function to rotate point around center based on player rotation
+  // This makes player's forward direction always point up on the map
+  const rotatePoint = (dx, dz, angle) => {
+    const cos = Math.cos(-angle);
+    const sin = Math.sin(-angle);
+    return {
+      x: dx * cos - dz * sin,
+      z: dx * sin + dz * cos
+    };
+  };
 
   // Add planets to mini-map
   if (planets && planets.length > 0) {
@@ -255,13 +284,15 @@ export function updateMiniMap(playerPosition, planets, enemies) {
       const distance = Math.sqrt(dx * dx + dz * dz);
 
       if (distance < maxDistance) {
-        const x = center + (dx / maxDistance) * (mapSize / 2);
-        const y = center + (dz / maxDistance) * (mapSize / 2);
+        const rotated = rotatePoint(dx, dz, playerRotation);
+        const x = center + (rotated.x / maxDistance) * (mapSize / 2);
+        const y = center + (rotated.z / maxDistance) * (mapSize / 2);
 
         const planetDot = document.createElement('div');
         planetDot.className = 'mini-map-planet';
         planetDot.style.left = `${x}px`;
         planetDot.style.top = `${y}px`;
+        planetDot.title = `Planet ${Math.floor(distance)}u`;
         miniMapTargets.appendChild(planetDot);
       }
     });
@@ -275,14 +306,36 @@ export function updateMiniMap(playerPosition, planets, enemies) {
       const distance = Math.sqrt(dx * dx + dz * dz);
 
       if (distance < maxDistance) {
-        const x = center + (dx / maxDistance) * (mapSize / 2);
-        const y = center + (dz / maxDistance) * (mapSize / 2);
+        const rotated = rotatePoint(dx, dz, playerRotation);
+        const x = center + (rotated.x / maxDistance) * (mapSize / 2);
+        const y = center + (rotated.z / maxDistance) * (mapSize / 2);
 
         const enemyDot = document.createElement('div');
         enemyDot.className = 'mini-map-enemy';
         enemyDot.style.left = `${x}px`;
         enemyDot.style.top = `${y}px`;
         miniMapTargets.appendChild(enemyDot);
+      }
+    });
+  }
+
+  // Add asteroid fields to mini-map
+  if (asteroidFields && asteroidFields.length > 0) {
+    asteroidFields.forEach(field => {
+      const dx = field.position.x - playerPosition.x;
+      const dz = field.position.z - playerPosition.z;
+      const distance = Math.sqrt(dx * dx + dz * dz);
+
+      if (distance < maxDistance) {
+        const rotated = rotatePoint(dx, dz, playerRotation);
+        const x = center + (rotated.x / maxDistance) * (mapSize / 2);
+        const y = center + (rotated.z / maxDistance) * (mapSize / 2);
+
+        const asteroidDot = document.createElement('div');
+        asteroidDot.className = 'mini-map-asteroid';
+        asteroidDot.style.left = `${x}px`;
+        asteroidDot.style.top = `${y}px`;
+        miniMapTargets.appendChild(asteroidDot);
       }
     });
   }
