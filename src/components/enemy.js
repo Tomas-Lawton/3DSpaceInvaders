@@ -91,22 +91,45 @@ export const enemy = (() => {
         loadedModel.scale.set(0.3, 0.3, 0.3); // Reduced from 0.5 for smaller enemies
         enemyObject.add(loadedModel);
 
-        // Use lower-poly geometry for glow effect
-        const glowGeometry = new THREE.SphereGeometry(0.2, 6, 6); // Reduced size
+        // Enhanced glow effect for better visibility
+        const glowGeometry = new THREE.SphereGeometry(0.3, 8, 8); // Slightly larger
         const glowMaterial = new THREE.MeshStandardMaterial({
           emissive: 0xff4500,
-          emissiveIntensity: 10,
+          emissiveIntensity: 20, // Doubled from 10
           color: 0xff4500,
+          transparent: true,
+          opacity: 0.9,
         });
 
         const glowPoint = new THREE.Mesh(glowGeometry, glowMaterial);
         glowPoint.position.set(0, 0, -5);
         enemyObject.add(glowPoint);
 
-        // Reduce light intensity and distance for better performance
-        const redLight = new THREE.PointLight(0xff0000, 15, 50); // Further reduced for performance
+        // Add secondary glow on top for better visibility
+        const topGlowGeometry = new THREE.SphereGeometry(0.25, 6, 6);
+        const topGlowMaterial = new THREE.MeshStandardMaterial({
+          emissive: 0xff6600,
+          emissiveIntensity: 15,
+          color: 0xff6600,
+          transparent: true,
+          opacity: 0.8,
+        });
+        const topGlow = new THREE.Mesh(topGlowGeometry, topGlowMaterial);
+        topGlow.position.set(0, 2, 0);
+        enemyObject.add(topGlow);
+
+        // Stronger main light for better visibility
+        const redLight = new THREE.PointLight(0xff3300, 30, 80); // Doubled intensity and distance
         redLight.position.set(0, 1, 0);
+        redLight.castShadow = false; // Keep shadows off for performance
         enemyObject.add(redLight);
+
+        // Add directional spotlight pointing down for hull illumination
+        const spotLight = new THREE.SpotLight(0xff6600, 15, 40, Math.PI / 6, 0.5);
+        spotLight.position.set(0, 5, 0);
+        spotLight.target.position.set(0, 0, 0);
+        enemyObject.add(spotLight);
+        enemyObject.add(spotLight.target);
 
         // Add variance to enemy properties
         enemyObject.speedMultiplier = 0.8 + Math.random() * 0.6; // 0.8 to 1.4x speed variance
