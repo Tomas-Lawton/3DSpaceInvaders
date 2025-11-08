@@ -347,9 +347,9 @@ export const planets = (() => {
           }
         });
 
-        // Check if player is far from combat - stop dogfight music if so
-        if (audioManager && this.enemyLoader && this.enemyLoader.enemies.length > 0) {
-          const combatDistance = 2500; // Distance threshold to end combat music
+        // Check if player is far from combat - end dogfight completely
+        if (this.enemyLoader && this.enemyLoader.enemies.length > 0 && this.currentPlanet) {
+          const combatDistance = 2500; // Distance threshold to end combat
           const nearestEnemyDistance = Math.min(...this.enemyLoader.enemies.map(enemy => {
             const dx = enemy.position.x - playerCurrentPosition.x;
             const dy = enemy.position.y - playerCurrentPosition.y;
@@ -358,8 +358,26 @@ export const planets = (() => {
           }));
 
           if (nearestEnemyDistance > combatDistance) {
-            console.log(`[COMBAT] Player fled combat (${nearestEnemyDistance.toFixed(0)}u away) - stopping music`);
-            audioManager.stopDogfightMusic();
+            console.log(`[COMBAT] Player fled combat (${nearestEnemyDistance.toFixed(0)}u away) - ending dogfight`);
+
+            // Clean up enemies
+            this.cleanupEnemies();
+
+            // Reset combat state
+            this.currentPlanet = null;
+            this.enemiesSpawned = false;
+            this.currentlySpawning = false;
+
+            // Stop dogfight music
+            if (audioManager) {
+              audioManager.stopDogfightMusic();
+            }
+
+            // Hide planet info UI
+            const planetInfo = document.getElementById('planet-info');
+            if (planetInfo) {
+              planetInfo.style.display = 'none';
+            }
           }
         }
 
