@@ -694,6 +694,7 @@ export const spaceship = (() => {
       // Clear existing timer
       if (this.comboTimer) {
         clearTimeout(this.comboTimer);
+        this.comboTimer = null;
       }
 
       // Show combo if 2 or more
@@ -704,10 +705,11 @@ export const spaceship = (() => {
         this.comboTimer = setTimeout(() => {
           this.hideCombo();
           this.comboCount = 0;
+          this.comboTimer = null;
         }, this.comboTimeout);
       }
 
-      // Update stats in pause menu
+      // Update stats in pause menu (safe - checks if elements exist)
       this.updatePauseStats();
     }
 

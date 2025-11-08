@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { getRandomDeepColor } from "../utils/utils.js";
-import { updateCloestPlanet, updateDirectionalIndicators, updatePlanetDefenseStatus, hidePlanetDefenseStatus, updateMiniMap } from "../components/dom.js";
+import { updateCloestPlanet, updateDirectionalIndicators, updatePlanetDefenseStatus, hidePlanetDefenseStatus, updateMiniMap, addXP } from "../components/dom.js";
 import { enemy } from "../components/enemy.js";
 
 export const planets = (() => {
@@ -137,7 +137,6 @@ export const planets = (() => {
             playerShip.planetsSaved++;
 
             // Award bonus XP for saving the planet
-            const { addXP } = await import("../components/dom.js");
             addXP(100);
             playerShip.showNotification('🌍 Planet Saved! +100 XP +50 HP', 'success');
             playerShip.updatePauseStats();
