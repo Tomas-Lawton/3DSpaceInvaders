@@ -262,15 +262,22 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
   const maxDistance = 3000; // Max distance to show on map (in game units)
   const center = mapSize / 2;
 
-  // Compass mode: North always points north, don't rotate the map
-  // Objects are shown in their real relative positions to player
-  // Player icon rotates to show which direction they're facing
+  // Rotate the entire minimap so top always points in player's facing direction
+  // Convert rotation to degrees and rotate the content container
+  const rotationDegrees = -(playerRotation * 180 / Math.PI);
+  miniMapContent.style.transform = `rotate(${rotationDegrees}deg)`;
 
-  // Update player icon rotation to show heading
+  // Keep player icon pointing up (counter-rotate to compensate for map rotation)
   const playerIcon = document.querySelector('.player-ship-icon');
   if (playerIcon) {
-    const rotationDegrees = (playerRotation * 180 / Math.PI);
-    playerIcon.style.transform = `translate(-50%, -50%) rotate(${rotationDegrees}deg)`;
+    // Player icon doesn't need to rotate since map rotates around it
+    playerIcon.style.transform = `translate(-50%, -50%)`;
+  }
+
+  // Counter-rotate the North indicator to always point north
+  const northIndicator = document.querySelector('.mini-map-north');
+  if (northIndicator) {
+    northIndicator.style.transform = `translateX(-50%) rotate(${-rotationDegrees}deg)`;
   }
 
   // Add planets to mini-map
@@ -281,7 +288,7 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
       const distance = Math.sqrt(dx * dx + dz * dz);
 
       if (distance < maxDistance) {
-        // Direct mapping without rotation (compass mode)
+        // Direct world-space mapping (map rotation handles orientation)
         const x = center + (dx / maxDistance) * (mapSize / 2);
         const y = center + (dz / maxDistance) * (mapSize / 2);
 
