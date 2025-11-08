@@ -142,12 +142,19 @@ export const planets = (() => {
             playerShip.showNotification('🌍 Planet Saved! +100 XP +50 HP', 'success');
             playerShip.updatePauseStats();
           }
+
+          // CRITICAL: Set cooldown timestamp to prevent immediate respawn
+          this.currentPlanet.lastSaveTime = performance.now();
+          this.currentPlanet.saveCooldown = 10000; // 10 second cooldown before enemies can spawn again
+
           // Reset ALL flags
           this.currentPlanet.hasEnemies = false;
           this.currentPlanet = null;
           this.enemyLoader = null;
           this.enemiesSpawned = false;
           this.currentlySpawning = false; // Reset spawn lock
+
+          console.log(`[PLANET] 🛡️ Planet on cooldown for 10 seconds - no new spawns`);
 
           // Hide planet defense status
           hidePlanetDefenseStatus();
@@ -212,10 +219,14 @@ export const planets = (() => {
           }
 
           if (playerDistance < 1500) { //  closer than 1500: spawn enemy group
-            // ROBUST CHECK: Only spawn if no enemies exist AND not currently spawning
+            // Check if planet is on cooldown after being saved
+            const currentTime = performance.now();
+            const onCooldown = planet.lastSaveTime && (currentTime - planet.lastSaveTime < planet.saveCooldown);
+
+            // ROBUST CHECK: Only spawn if no enemies exist AND not currently spawning AND not on cooldown
             const hasActiveEnemies = this.enemyLoader && this.enemyLoader.enemies && this.enemyLoader.enemies.length > 0;
 
-            if (!planet.hasEnemies && !hasActiveEnemies && !this.currentlySpawning) {
+            if (!planet.hasEnemies && !hasActiveEnemies && !this.currentlySpawning && !onCooldown) {
                 console.log(`[PLANET] ✅ Player within 1500. Spawning enemies... (hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning})`);
 
                 // Set ALL flags IMMEDIATELY to prevent re-entry
@@ -254,7 +265,12 @@ export const planets = (() => {
             } else {
               // Log why spawn was blocked (only once per second to avoid spam)
               if (!this._lastBlockLog || Date.now() - this._lastBlockLog > 1000) {
-                console.log(`[PLANET] ⛔ Spawn BLOCKED - hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning}`);
+                const cooldownRemaining = onCooldown ? Math.ceil((planet.saveCooldown - (currentTime - planet.lastSaveTime)) / 1000) : 0;
+                if (onCooldown) {
+                  console.log(`[PLANET] ⏱️ Spawn BLOCKED - Planet on cooldown (${cooldownRemaining}s remaining)`);
+                } else {
+                  console.log(`[PLANET] ⛔ Spawn BLOCKED - hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning}`);
+                }
                 this._lastBlockLog = Date.now();
               }
             }
