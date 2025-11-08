@@ -149,7 +149,6 @@ export const enemy = (() => {
 
     animateEnemies(playerCurrentPosition) {
       this.updateCounter++;
-      const LOD_UPDATE_INTERVAL = 3; // Update distant enemies every 3 frames
 
       // Log enemy count every 60 frames (once per second at 60fps)
       if (this.updateCounter % 60 === 0) {
@@ -157,19 +156,10 @@ export const enemy = (() => {
       }
 
       this.enemies.forEach((enemy, index) => {
-        const distanceToPlayer = enemy.position.distanceTo(playerCurrentPosition);
-
-        // Always move enemies
+        // Always update and move all enemies (removed LOD for better movement)
+        this.phaseTowardsTarget(enemy, playerCurrentPosition);
         this.animateForwardMovement(enemy);
-
-        // LOD: Only update distant enemy AI every few frames
-        const isDistant = distanceToPlayer > 300;
-        const shouldUpdate = !isDistant || (this.updateCounter % LOD_UPDATE_INTERVAL === index % LOD_UPDATE_INTERVAL);
-
-        if (shouldUpdate) {
-          this.phaseTowardsTarget(enemy, playerCurrentPosition);
-          this.checkFiringPosition(enemy, playerCurrentPosition);
-        }
+        this.checkFiringPosition(enemy, playerCurrentPosition);
       });
 
       // Update lasers every frame
@@ -393,7 +383,8 @@ export const enemy = (() => {
       this.scene.add(laserBeam);
 
       const velocity = direction.multiplyScalar(1); // higher is slower
-      this.activeLasers.push({ laserBeam, velocity, direction, targetingPlanet });
+      const spawnTime = performance.now(); // Track creation time
+      this.activeLasers.push({ laserBeam, velocity, direction, targetingPlanet, spawnTime });
 
       if (this.lightSound) {
         this.lightSound.currentTime = 0;
@@ -403,17 +394,21 @@ export const enemy = (() => {
     }
 
     updateLasers(playerCurrentPosition) {
+      const currentTime = performance.now();
+      const maxLaserLifetime = 5000; // 5 seconds max lifetime
+
       // Iterate backwards to safely remove items during iteration
       for (let i = this.activeLasers.length - 1; i >= 0; i--) {
         const laserData = this.activeLasers[i];
-        const { laserBeam, velocity } = laserData;
+        const { laserBeam, velocity, spawnTime } = laserData;
 
         laserBeam.position.add(velocity);
 
         const distanceToPlayer = laserBeam.position.distanceTo(playerCurrentPosition);
+        const age = currentTime - (spawnTime || 0);
 
-        // Increased distance threshold for better cleanup
-        if (distanceToPlayer > 500) {
+        // Remove lasers that are too far OR too old
+        if (distanceToPlayer > 400 || age > maxLaserLifetime) {
           this.scene.remove(laserBeam);
           // Dispose geometry and material to free memory
           if (laserBeam.geometry) laserBeam.geometry.dispose();

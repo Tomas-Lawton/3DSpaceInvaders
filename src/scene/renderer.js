@@ -113,8 +113,8 @@ export function initRenderer() {
     // Calculate warp strength based on velocity (0 to 1)
     const velocityRatio = Math.min(velocity / maxVelocity, 1.0);
 
-    // Only activate warp at high speeds (above 70% max velocity)
-    const threshold = 0.7;
+    // Activate warp at medium-high speeds (above 50% max velocity)
+    const threshold = 0.5;
     let warpStrength = 0;
 
     if (velocityRatio > threshold) {
@@ -122,8 +122,8 @@ export function initRenderer() {
       warpStrength = (velocityRatio - threshold) / (1.0 - threshold);
       // Apply easing for smoother effect
       warpStrength = Math.pow(warpStrength, 2.0);
-      // Scale to desired blur amount (0.0 to 0.015) - reduced from 0.03
-      warpStrength *= 0.015;
+      // Scale to much stronger blur amount (0.0 to 0.1) for dramatic warp effect
+      warpStrength *= 0.1;
     }
 
     composer.warpPass.uniforms.strength.value = warpStrength;

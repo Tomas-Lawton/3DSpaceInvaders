@@ -697,14 +697,14 @@ export const spaceship = (() => {
         z-index: 10000;
         box-shadow: 0 0 20px ${type === 'success' ? 'rgba(0,255,0,0.5)' : type === 'danger' ? 'rgba(255,0,0,0.5)' : 'rgba(0,255,238,0.5)'};
         pointer-events: none;
-        animation: fadeInOut 3s ease-in-out forwards;
+        animation: fadeInOut 1.2s ease-in-out forwards;
       `;
 
       document.body.appendChild(notification);
 
       setTimeout(() => {
         notification.remove();
-      }, 3000);
+      }, 1200);
     }
 
     addKill() {
