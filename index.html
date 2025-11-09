@@ -3,9 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <title>Space Invaders 2063</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="public/index.css" />
     <script
       async
@@ -36,7 +39,7 @@
     <p id="nearest-planet" class="hud-ui"></p>
 
     <!-- Planet Defense Status -->
-    <div id="planet-defense-status" class="hud-ui" style="display: none;">
+    <div id="planet-defense-status" class="hud-ui" style="display: none">
       <div class="defense-header">🌍 PLANET DEFENSE</div>
       <div class="defense-health-bar">
         <div id="planet-health-fill"></div>
@@ -48,7 +51,7 @@
     </div>
 
     <!-- Combo Counter -->
-    <div id="combo-counter" class="hud-ui" style="display: none;">
+    <div id="combo-counter" class="hud-ui" style="display: none">
       <div class="combo-content">
         <span class="combo-multiplier" id="combo-multiplier">2</span>
         <span class="combo-text">COMBO!</span>
@@ -182,7 +185,7 @@
           </div>
 
           <!-- Quest Tracker (Below info box) -->
-          <div id="quest-tracker" style="display: none;">
+          <div id="quest-tracker" style="display: none">
             <div class="quest-header">
               <span class="quest-icon">📋</span>
               <span class="quest-title">Active Quests</span>
@@ -208,6 +211,8 @@
               <p class="ship-name">MARS SHIP</p>
               <p class="ship-status">AVAILABLE</p>
             </div>
+            <button id="select-ship">SELECT SHIP</button>
+
             <div id="select-ship-label">SELECT SHIP</div>
           </div>
         </div>
@@ -220,7 +225,11 @@
             <div class="stat-item">
               <label class="stat-label">Inertial Velocity</label>
               <div class="stat-bar-container">
-                <div class="stat-bar" id="velocity-stat" style="width: 45%"></div>
+                <div
+                  class="stat-bar"
+                  id="velocity-stat"
+                  style="width: 45%"
+                ></div>
               </div>
               <span class="stat-value" id="velocity-value">7.68 km/s</span>
             </div>
@@ -228,7 +237,11 @@
             <div class="stat-item">
               <label class="stat-label">Altitude</label>
               <div class="stat-bar-container">
-                <div class="stat-bar" id="altitude-stat" style="width: 30%"></div>
+                <div
+                  class="stat-bar"
+                  id="altitude-stat"
+                  style="width: 30%"
+                ></div>
               </div>
               <span class="stat-value" id="altitude-value">390.0 km</span>
             </div>
@@ -244,7 +257,11 @@
             <div class="stat-item">
               <label class="stat-label">Perigee</label>
               <div class="stat-bar-container">
-                <div class="stat-bar" id="perigee-stat" style="width: 40%"></div>
+                <div
+                  class="stat-bar"
+                  id="perigee-stat"
+                  style="width: 40%"
+                ></div>
               </div>
               <span class="stat-value" id="perigee-value">389.4 km</span>
             </div>
@@ -261,16 +278,24 @@
               </div>
             </div>
             <div class="upgrade-level">
-              <span class="level-display">Lv <span class="current-level">0</span>/5</span>
+              <span class="level-display"
+                >Lv <span class="current-level">0</span>/5</span
+              >
               <div class="level-bar">
                 <div class="level-progress" style="width: 0%"></div>
               </div>
             </div>
             <button class="upgrade-button" data-upgrade="speed">
               <span class="cost-display">
-                <span class="cost-item">🔩<span class="iron-cost">20</span></span>
-                <span class="cost-item">🏆<span class="gold-cost">10</span></span>
-                <span class="cost-item">💎<span class="crystal-cost">5</span></span>
+                <span class="cost-item"
+                  >🔩<span class="iron-cost">20</span></span
+                >
+                <span class="cost-item"
+                  >🏆<span class="gold-cost">10</span></span
+                >
+                <span class="cost-item"
+                  >💎<span class="crystal-cost">5</span></span
+                >
               </span>
               <span class="xp-cost">XP: 200</span>
             </button>
@@ -285,16 +310,24 @@
               </div>
             </div>
             <div class="upgrade-level">
-              <span class="level-display">Lv <span class="current-level">0</span>/5</span>
+              <span class="level-display"
+                >Lv <span class="current-level">0</span>/5</span
+              >
               <div class="level-bar">
                 <div class="level-progress" style="width: 0%"></div>
               </div>
             </div>
             <button class="upgrade-button" data-upgrade="health">
               <span class="cost-display">
-                <span class="cost-item">🔩<span class="iron-cost">30</span></span>
-                <span class="cost-item">🏆<span class="gold-cost">15</span></span>
-                <span class="cost-item">💎<span class="crystal-cost">5</span></span>
+                <span class="cost-item"
+                  >🔩<span class="iron-cost">30</span></span
+                >
+                <span class="cost-item"
+                  >🏆<span class="gold-cost">15</span></span
+                >
+                <span class="cost-item"
+                  >💎<span class="crystal-cost">5</span></span
+                >
               </span>
               <span class="xp-cost">XP: 300</span>
             </button>
@@ -309,16 +342,24 @@
               </div>
             </div>
             <div class="upgrade-level">
-              <span class="level-display">Lv <span class="current-level">0</span>/5</span>
+              <span class="level-display"
+                >Lv <span class="current-level">0</span>/5</span
+              >
               <div class="level-bar">
                 <div class="level-progress" style="width: 0%"></div>
               </div>
             </div>
             <button class="upgrade-button" data-upgrade="fireRate">
               <span class="cost-display">
-                <span class="cost-item">🔩<span class="iron-cost">15</span></span>
-                <span class="cost-item">🏆<span class="gold-cost">20</span></span>
-                <span class="cost-item">💎<span class="crystal-cost">10</span></span>
+                <span class="cost-item"
+                  >🔩<span class="iron-cost">15</span></span
+                >
+                <span class="cost-item"
+                  >🏆<span class="gold-cost">20</span></span
+                >
+                <span class="cost-item"
+                  >💎<span class="crystal-cost">10</span></span
+                >
               </span>
               <span class="xp-cost">XP: 250</span>
             </button>
@@ -333,16 +374,24 @@
               </div>
             </div>
             <div class="upgrade-level">
-              <span class="level-display">Lv <span class="current-level">0</span>/3</span>
+              <span class="level-display"
+                >Lv <span class="current-level">0</span>/3</span
+              >
               <div class="level-bar">
                 <div class="level-progress" style="width: 0%"></div>
               </div>
             </div>
             <button class="upgrade-button" data-upgrade="shields">
               <span class="cost-display">
-                <span class="cost-item">🔩<span class="iron-cost">50</span></span>
-                <span class="cost-item">🏆<span class="gold-cost">50</span></span>
-                <span class="cost-item">💎<span class="crystal-cost">25</span></span>
+                <span class="cost-item"
+                  >🔩<span class="iron-cost">50</span></span
+                >
+                <span class="cost-item"
+                  >🏆<span class="gold-cost">50</span></span
+                >
+                <span class="cost-item"
+                  >💎<span class="crystal-cost">25</span></span
+                >
               </span>
               <span class="xp-cost">XP: 800</span>
             </button>
@@ -351,7 +400,11 @@
 
         <!-- Bottom Section - Ship Selector Bar -->
         <div id="bottom-ships-bar">
-          <div id="ship-1" class="ship-option active unlocked" data-ship="ship-1">
+          <div
+            id="ship-1"
+            class="ship-option active unlocked"
+            data-ship="ship-1"
+          >
             <span class="ship-lock-icon">🚀</span>
             <span class="ship-name-label">STARTER</span>
           </div>
@@ -406,9 +459,7 @@
             <div class="ship-xp-detail">⭐ XP: 100</div>
           </div>
         </div>
-        <button id="unlock-ship" style="display: none;">UNLOCK SHIP</button>
-
-        <button id="select-ship">SELECT SHIP</button>
+        <button id="unlock-ship" style="display: none">UNLOCK SHIP</button>
       </div>
     </div>
 
@@ -420,11 +471,14 @@
     </div>
 
     <!-- Intro Screen (After Loading) -->
-    <div id="intro-screen" style="display: none;">
+    <div id="intro-screen" style="display: none">
       <div class="intro-container">
         <div class="intro-header">
           <h1 class="intro-title">3D SPACE INVADERS</h1>
-          <p class="intro-subtitle">Defend Planets <span class="orange-text">•</span> Collect Resources <span class="orange-text">•</span> Upgrade Ships</p>
+          <p class="intro-subtitle">
+            Defend Planets <span class="orange-text">•</span> Collect Resources
+            <span class="orange-text">•</span> Upgrade Ships
+          </p>
         </div>
 
         <div class="intro-content">
@@ -453,10 +507,23 @@
           <div class="intro-section">
             <h2 class="intro-section-title orange-text">QUICK TIPS</h2>
             <div class="intro-tips">
-              <p class="intro-tip"><span class="orange-text">▸</span> Defend planets from enemy waves (< 1500km)</p>
-              <p class="intro-tip"><span class="orange-text">▸</span> Follow <strong class="cyan-text">cyan arrows</strong> to planets, <strong class="orange-text">red arrows</strong> to enemies</p>
-              <p class="intro-tip"><span class="orange-text">▸</span> Destroy asteroids for resources (Iron, Gold, Crystal)</p>
-              <p class="intro-tip"><span class="orange-text">▸</span> Press <strong class="orange-text">ESC</strong> to upgrade your ship</p>
+              <p class="intro-tip">
+                <span class="orange-text">▸</span> Defend planets from enemy
+                waves (< 1500km)
+              </p>
+              <p class="intro-tip">
+                <span class="orange-text">▸</span> Follow
+                <strong class="cyan-text">cyan arrows</strong> to planets,
+                <strong class="orange-text">red arrows</strong> to enemies
+              </p>
+              <p class="intro-tip">
+                <span class="orange-text">▸</span> Destroy asteroids for
+                resources (Iron, Gold, Crystal)
+              </p>
+              <p class="intro-tip">
+                <span class="orange-text">▸</span> Press
+                <strong class="orange-text">ESC</strong> to upgrade your ship
+              </p>
             </div>
           </div>
         </div>
