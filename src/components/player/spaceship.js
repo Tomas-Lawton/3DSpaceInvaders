@@ -125,6 +125,11 @@ export const spaceship = (() => {
       }
     }
 
+    healShip(amount) {
+      // Heal the ship, but don't exceed max health
+      this.health = Math.min(this.health + amount, this.maxHealth);
+    }
+
     setSpaceshipModel(shipId) {
       console.log("Loading Spaceship: ", shipId);
       if (!modelPaths[shipId]) return;
@@ -177,18 +182,18 @@ export const spaceship = (() => {
 
           // Normalize model if needed
           if (!selectedModel.isNormalized) {
-            // normalizeModelSize(loadedModel, 55);
+            normalizeModelSize(loadedModel, 55);
             normalizeModelPosition(loadedModel);
             selectedModel.isNormalized = true;
           }
 
           tempObjectGroup.add(loadedModel);
 
-          // Cockpit glow light removed for cleaner visual
-          // const cockpitGlow = new THREE.PointLight(0x00ffff, 5, 20);
-          // cockpitGlow.position.set(0, 2, 8);
-          // tempObjectGroup.add(cockpitGlow);
-          // this.cockpitGlow = cockpitGlow;
+          // Add soft ambient light around the ship
+          const shipLight = new THREE.PointLight(0xffffff, 2, 30);
+          shipLight.position.set(0, 5, 0);
+          tempObjectGroup.add(shipLight);
+          this.shipLight = shipLight;
 
           // Remove ambient light - not needed with scene ambient light
           // const ambientLight = new THREE.PointLight(0x660099, 1, 50);
