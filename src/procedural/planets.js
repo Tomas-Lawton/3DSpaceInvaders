@@ -422,14 +422,16 @@ export const planets = (() => {
         }
 
         // Update directional indicators ALWAYS (outside the forEach loop)
-        // Pass all planets and all enemies to the indicator system
+        // Pass all planets, enemies, and asteroid fields to the indicator system
         if (playerForwardDirection) {
           const enemyArray = (this.enemyLoader && this.enemyLoader.enemies) ? this.enemyLoader.enemies : [];
+          const asteroidArray = asteroidLoader && asteroidLoader.asteroidSystem ? asteroidLoader.asteroidSystem : [];
           updateDirectionalIndicators(
             playerCurrentPosition,
             playerForwardDirection,
             this.planets,
-            enemyArray
+            enemyArray,
+            asteroidArray
           );
 
           // Update mini-map (need player rotation and asteroid fields)

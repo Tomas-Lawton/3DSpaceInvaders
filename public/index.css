@@ -1981,6 +1981,47 @@ body {
   animation: enemyVerticalPulse 1s ease-in-out infinite;
 }
 
+.direction-arrow.asteroid {
+  color: #ff9933;
+  filter: drop-shadow(0 0 8px rgba(255, 153, 51, 0.9))
+          drop-shadow(0 0 16px rgba(255, 153, 51, 0.5));
+  animation: asteroidPulse 2s ease-in-out infinite;
+}
+
+.direction-arrow.asteroid.above {
+  color: #ffaa55;
+  filter: drop-shadow(0 0 12px rgba(255, 170, 85, 1))
+          drop-shadow(0 0 24px rgba(255, 170, 85, 0.7));
+  animation: asteroidVerticalPulse 1.8s ease-in-out infinite;
+}
+
+.direction-arrow.asteroid.below {
+  color: #cc7733;
+  filter: drop-shadow(0 0 12px rgba(204, 119, 51, 1))
+          drop-shadow(0 0 24px rgba(204, 119, 51, 0.7));
+  animation: asteroidVerticalPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes asteroidPulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes asteroidVerticalPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 1;
+  }
+}
+
 @keyframes verticalPulse {
   0%, 100% {
     transform: translate(-50%, -50%) scale(1);

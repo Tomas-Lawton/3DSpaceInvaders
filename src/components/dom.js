@@ -369,7 +369,7 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
 let indicatorFrameCounter = 0;
 const INDICATOR_UPDATE_INTERVAL = 3; // Update every 3 frames (~20 times per second)
 
-export function updateDirectionalIndicators(playerPosition, playerForwardDirection, planets, enemies) {
+export function updateDirectionalIndicators(playerPosition, playerForwardDirection, planets, enemies, asteroidFields = []) {
   indicatorFrameCounter++;
   if (indicatorFrameCounter < INDICATOR_UPDATE_INTERVAL) return; // Skip this frame
   indicatorFrameCounter = 0;
@@ -563,6 +563,13 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
   if (enemies && enemies.length > 0) {
     enemies.forEach(enemy => {
       createIndicator(enemy.position, 'enemy');
+    });
+  }
+
+  // Create indicators for asteroid fields
+  if (asteroidFields && asteroidFields.length > 0) {
+    asteroidFields.forEach(field => {
+      createIndicator(field.position, 'asteroid');
     });
   }
 }
