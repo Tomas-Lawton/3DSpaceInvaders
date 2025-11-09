@@ -41,13 +41,13 @@ export const asteroids = (() => {
       try {
         let asteroidGroup = new THREE.Group();
         asteroidGroup.position.set(
-            (Math.random() - 0.5) * 1000, 
-            (Math.random() - 0.5) * 1000,
-            (Math.random() - 0.5) * 1000
+            (Math.random() - 0.5) * 3000,
+            (Math.random() - 0.5) * 3000,
+            (Math.random() - 0.5) * 3000
         );
         this.scene.add(asteroidGroup);
-        // Reduced max asteroids from 90 to 50 for better performance
-        const numberOfAsteroids = Math.floor(Math.random() * 40) + 10; // 10-50 asteroids per system
+        // Reduced to fewer asteroids for better gameplay
+        const numberOfAsteroids = Math.floor(Math.random() * 15) + 5; // 5-20 asteroids per system
         let entropyCoefficient = (Math.random() - 0.5);
     
         // Choose a formation type: 'circle', 'spiral', 'cluster'
