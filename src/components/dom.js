@@ -490,6 +490,23 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     indicator.style.left = `${indicatorX}px`;
     indicator.style.top = `${indicatorY}px`;
 
+    // For asteroids, create a simple blue line instead of full marker
+    if (type === 'asteroid') {
+      indicator.style.cssText = `
+        position: absolute;
+        left: ${indicatorX}px;
+        top: ${indicatorY}px;
+        width: 3px;
+        height: 16px;
+        background: #0099ff;
+        box-shadow: 0 0 8px rgba(0, 153, 255, 0.8);
+        transform: translate(-50%, -50%);
+        border-radius: 2px;
+      `;
+      container.appendChild(indicator);
+      return;
+    }
+
     // Add vertical offset class for styling
     if (localUp > verticalThreshold) {
       indicator.classList.add('above');

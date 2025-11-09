@@ -41,9 +41,9 @@ export const asteroids = (() => {
       try {
         let asteroidGroup = new THREE.Group();
         asteroidGroup.position.set(
-            (Math.random() - 0.5) * 8000,
-            (Math.random() - 0.5) * 8000,
-            (Math.random() - 0.5) * 8000
+            (Math.random() - 0.5) * 5000,
+            (Math.random() - 0.5) * 2000, // Reduced y-axis range for better discoverability
+            (Math.random() - 0.5) * 5000
         );
         this.scene.add(asteroidGroup);
         // Reduced to fewer asteroids for better gameplay
