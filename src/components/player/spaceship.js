@@ -479,7 +479,10 @@ export const spaceship = (() => {
                       velocity.clone().multiplyScalar(0.002)
                     ); //smack it away a bit
 
-                    this.showHealthBar(asteroid);
+                    // Only show health bar if asteroid has been damaged
+                    if (asteroid.health < 100) {
+                      this.showHealthBar(asteroid);
+                    }
 
                     if (asteroid.health <= 0) {
                       this.removeHealthBar(asteroid);
