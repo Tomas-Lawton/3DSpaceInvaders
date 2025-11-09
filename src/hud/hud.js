@@ -10,12 +10,60 @@ const models = {};
 const canvas = document.getElementById("ship-hanger");
 
 export const modelPaths = [
-  { path: "public/ships/ship_0/", rotation: { x: 0, y: 0, z: 0 }, isNormalized: false },
-  { path: "public/ships/ship_1/", rotation: { x: 0, y: Math.PI / 2, z: 0 }, isNormalized: false },
-  { path: "public/ships/ship_2/", rotation: { x: 0, y: Math.PI / 2, z: 0 }, isNormalized: false },
-  { path: "public/ships/ship_5/", rotation: { x: 0, y: Math.PI / 2, z: 0 }, isNormalized: false },
-  { path: "public/ships/ship_6/", rotation: { x: 0, y: Math.PI / 2, z: 0 }, isNormalized: false },
-  { path: "public/ships/ship_7/", rotation: { x: 0, y: 2 * Math.PI, z: 0 }, isNormalized: false },
+  {
+    path: "public/ships/ship_0/",
+    rotation: { x: 0, y: 0, z: 0 },
+    isNormalized: false,
+    name: "VOID REAPER",
+    boosterColor: 0xc87dff, // Purple
+    laserColor: 0xc87dff,
+    laserGlow: 0x9400ff
+  },
+  {
+    path: "public/ships/ship_1/",
+    rotation: { x: 0, y: Math.PI / 2, z: 0 },
+    isNormalized: false,
+    name: "NOVA STRIKER",
+    boosterColor: 0x00ffee, // Cyan
+    laserColor: 0x00ffee,
+    laserGlow: 0x00ccbb
+  },
+  {
+    path: "public/ships/ship_2/",
+    rotation: { x: 0, y: Math.PI / 2, z: 0 },
+    isNormalized: false,
+    name: "CRIMSON FANG",
+    boosterColor: 0xff3333, // Red
+    laserColor: 0xff3333,
+    laserGlow: 0xff6666
+  },
+  {
+    path: "public/ships/ship_5/",
+    rotation: { x: 0, y: Math.PI / 2, z: 0 },
+    isNormalized: false,
+    name: "SOLAR PHANTOM",
+    boosterColor: 0xffaa00, // Orange
+    laserColor: 0xffaa00,
+    laserGlow: 0xff8800
+  },
+  {
+    path: "public/ships/ship_6/",
+    rotation: { x: 0, y: Math.PI / 2, z: 0 },
+    isNormalized: false,
+    name: "EMERALD FURY",
+    boosterColor: 0x00ff66, // Green
+    laserColor: 0x00ff66,
+    laserGlow: 0x00cc44
+  },
+  {
+    path: "public/ships/ship_7/",
+    rotation: { x: 0, y: 2 * Math.PI, z: 0 },
+    isNormalized: false,
+    name: "GHOST BLADE",
+    boosterColor: 0x6699ff, // Light Blue
+    laserColor: 0x6699ff,
+    laserGlow: 0x3366cc
+  },
 ];
 
 export function initHUD() {
@@ -70,10 +118,14 @@ async function loadShipModels() {
     const modelPromises = modelPaths.map(async (modelData, index) => {
       const gltf = await loader.setPath(modelData.path).loadAsync("scene.gltf");
       const model = gltf.scene.clone();
-      models[`ship-${index + 1}`] = { 
-        model, 
+      models[`ship-${index + 1}`] = {
+        model,
         rotation: modelData.rotation,
-        isNormalized: false 
+        isNormalized: false,
+        name: modelData.name,
+        boosterColor: modelData.boosterColor,
+        laserColor: modelData.laserColor,
+        laserGlow: modelData.laserGlow
       };
     });
 
@@ -107,7 +159,7 @@ let previousModelId = null;
 function switchModel(shipId) {
   if (!models[shipId]) return;
   if (previousModelId === shipId) return;
-  
+
   if (currentModel) {
     scene.remove(currentModel.model);
   }
@@ -119,14 +171,21 @@ function switchModel(shipId) {
     normalizeModelPosition(currentModel.model);
     currentModel.isNormalized = true;
   }
-  
+
   currentModel.model.rotation.set(
     currentModel.rotation.x,
     currentModel.rotation.y,
     currentModel.rotation.z
   );
-  
+
   scene.add(currentModel.model);
+
+  // Update ship name display
+  const shipNameElem = document.querySelector('.ship-name');
+  if (shipNameElem && currentModel.name) {
+    shipNameElem.textContent = currentModel.name;
+  }
+
   previousModelId = shipId;
 }
 
