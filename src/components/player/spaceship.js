@@ -88,6 +88,12 @@ export const spaceship = (() => {
       // Track if this is the initial model load
       this.isInitialLoad = true;
 
+      // Initialize default ship colors (will be updated when ship loads)
+      this.currentShipId = 0;
+      this.boosterColor = 0xc87dff;
+      this.laserColor = 0xc87dff;
+      this.laserGlow = 0x9400ff;
+
       let selectShip = document.getElementById("select-ship");
       selectShip.addEventListener("click", () => {
         const updatedShipId =
@@ -125,6 +131,12 @@ export const spaceship = (() => {
 
       const selectedModel = modelPaths[shipId];
       console.log(selectedModel);
+
+      // Store ship colors for lasers and booster
+      this.currentShipId = shipId;
+      this.boosterColor = selectedModel.boosterColor || 0xc87dff;
+      this.laserColor = selectedModel.laserColor || 0xc87dff;
+      this.laserGlow = selectedModel.laserGlow || 0x9400ff;
 
       // Remove previous model if it exists
       if (this.mesh) {
@@ -193,6 +205,11 @@ export const spaceship = (() => {
           // );
           // spotLight.position.copy(tempObjectGroup.position);
           // tempObjectGroup.add(spotLight);
+
+          // Update booster flame color for this ship
+          this.boosterFlame.material.emissive.setHex(this.boosterColor);
+          this.boosterFlame.material.color.setHex(this.boosterColor);
+
           tempObjectGroup.add(this.boosterFlame);
 
           this.mesh.add(tempObjectGroup);
@@ -255,13 +272,17 @@ export const spaceship = (() => {
       // Create laser group for better visual quality
       const laserGroup = new THREE.Group();
 
+      // Use ship-specific colors or fallback to default purple
+      const laserColor = this.laserColor || 0xc87dff;
+      const laserGlow = this.laserGlow || 0x9400ff;
+
       // Main laser beam (slightly larger)
       const laserBeam = new THREE.Mesh(
         new THREE.SphereGeometry(0.3, 10, 10), // Increased size and segments
         new THREE.MeshStandardMaterial({
-          emissive: 0xc87dff,
+          emissive: laserColor,
           emissiveIntensity: 5, // Increased glow
-          color: 0x9400ff,
+          color: laserGlow,
         })
       );
       laserGroup.add(laserBeam);
@@ -270,9 +291,9 @@ export const spaceship = (() => {
       const glowBeam = new THREE.Mesh(
         new THREE.SphereGeometry(0.5, 8, 8),
         new THREE.MeshStandardMaterial({
-          emissive: 0xc87dff,
+          emissive: laserColor,
           emissiveIntensity: 2,
-          color: 0xc87dff,
+          color: laserColor,
           transparent: true,
           opacity: 0.3,
         })
