@@ -136,7 +136,7 @@ export const enemy = (() => {
           opacity: 0.9
         });
         const markerSprite = new THREE.Sprite(markerMaterial);
-        markerSprite.scale.set(0.025, 0.025, 1);
+        markerSprite.scale.set(0.015, 0.015, 1);
         markerSprite.position.set(0, 10, 0);
         enemyObject.add(markerSprite);
         enemyObject.marker = markerSprite;

@@ -85,6 +85,9 @@ export const spaceship = (() => {
       this.totalKills = 0;
       this.planetsSaved = 0;
 
+      // Track if this is the initial model load
+      this.isInitialLoad = true;
+
       let selectShip = document.getElementById("select-ship");
       selectShip.addEventListener("click", () => {
         const updatedShipId =
@@ -204,13 +207,16 @@ export const spaceship = (() => {
 
           this.updateSpaceshipPosition();
 
-          // Hide loading screen and show intro
-          progressContainer.style.display = "none";
+          // Hide loading screen and show intro only on initial load
+          if (this.isInitialLoad) {
+            progressContainer.style.display = "none";
 
-          // Show intro screen
-          const introScreen = document.getElementById('intro-screen');
-          if (introScreen) {
-            introScreen.style.display = 'flex';
+            // Show intro screen only on first model load
+            const introScreen = document.getElementById('intro-screen');
+            if (introScreen) {
+              introScreen.style.display = 'flex';
+            }
+            this.isInitialLoad = false;
           }
         },
         (xhr) => {
