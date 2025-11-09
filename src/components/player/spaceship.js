@@ -184,11 +184,11 @@ export const spaceship = (() => {
 
           tempObjectGroup.add(loadedModel);
 
-          // Reduce light distance for better performance
-          const cockpitGlow = new THREE.PointLight(0x00ffff, 5, 20); // Reduced from 30
-          cockpitGlow.position.set(0, 2, 8);
-          tempObjectGroup.add(cockpitGlow);
-          this.cockpitGlow = cockpitGlow; // Store reference for pulsing
+          // Cockpit glow light removed for cleaner visual
+          // const cockpitGlow = new THREE.PointLight(0x00ffff, 5, 20);
+          // cockpitGlow.position.set(0, 2, 8);
+          // tempObjectGroup.add(cockpitGlow);
+          // this.cockpitGlow = cockpitGlow;
 
           // Remove ambient light - not needed with scene ambient light
           // const ambientLight = new THREE.PointLight(0x660099, 1, 50);
@@ -917,6 +917,44 @@ export const spaceship = (() => {
       }
     }
 
+    checkPlanetCollisions(planetLoader) {
+      if (!planetLoader || !planetLoader.planets) return;
+
+      for (const planetGroup of planetLoader.planets) {
+        const distanceToPlanet = this.mesh.position.distanceTo(planetGroup.position);
+
+        // Planets range from 250-600 units, kill player if within 200 units of center
+        if (distanceToPlanet < 200) {
+          console.log('💥 CRASHED INTO PLANET! GAME OVER');
+          this.gameOver();
+          return;
+        }
+      }
+    }
+
+    gameOver() {
+      // Set health to 0
+      this.health = 0;
+
+      // Play death sound
+      if (this.deadSound) {
+        this.deadSound.currentTime = 0;
+        this.deadSound.volume = 0.5;
+        this.deadSound.play();
+      }
+
+      // Show intro screen after short delay
+      setTimeout(() => {
+        const introScreen = document.getElementById('intro-screen');
+        if (introScreen) {
+          introScreen.style.display = 'flex';
+        }
+
+        // Reload the page to restart game
+        window.location.reload();
+      }, 2000);
+    }
+
     userHit(damage) {
       console.log("HIT USER");
       this.damageShip(damage);
@@ -954,7 +992,7 @@ export const spaceship = (() => {
         for (const laserData of enemyLoader.activeLasers) {
           const { laserBeam } = laserData;
           if (this.checkCollision(this.mesh, laserBeam)) {
-            this.userHit(23);
+            this.userHit(35); // Increased from 23 to 35 for more challenging combat
             this.lastEnemyLaserCollisionCheck = currentTimestamp + 300; // Add cooldown after hit
             return;
           }
@@ -968,7 +1006,8 @@ export const spaceship = (() => {
       timeElapsed,
       audioManager,
       asteroidLoader,
-      enemyLoader
+      enemyLoader,
+      planetLoader
     ) {
       this.calculateRotation();
       this.calculateVelocity(
@@ -984,6 +1023,7 @@ export const spaceship = (() => {
       );
       this.checkAsteroidCollisions(asteroidLoader);
       this.checkEnemyLaserCollisions(enemyLoader);
+      this.checkPlanetCollisions(planetLoader);
 
       // Particle effects - spawn when moving at any speed
       // if (this.forwardVelocity > 0.1) {

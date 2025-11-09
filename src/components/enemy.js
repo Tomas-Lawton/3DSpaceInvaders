@@ -142,7 +142,7 @@ export const enemy = (() => {
         enemyObject.marker = markerSprite;
 
         // Add variance to enemy properties
-        enemyObject.speedMultiplier = 0.8 + Math.random() * 0.6; // 0.8 to 1.4x speed variance
+        enemyObject.speedMultiplier = 1.0 + Math.random() * 0.6; // 1.0 to 1.6x speed variance (increased)
         enemyObject.turnSpeed = 0.015 + Math.random() * 0.01; // 0.015 to 0.025 turn speed
 
         // Store planet center for collision avoidance
@@ -333,7 +333,7 @@ export const enemy = (() => {
       enemy,
       playerCurrentPosition,
       alternateTarget = null,
-      inRangeDistance = 350, // Reduced to 350 - closer engagement range
+      inRangeDistance = 200, // Reduced to 200 - enemies prioritize planet unless player very close
       maxPlanetDistance = 1500
     ) {
       if (enemy) {
@@ -349,10 +349,10 @@ export const enemy = (() => {
 
         let chosenTargetPosition;
 
-        // Behavior-based target selection with reduced detection range (350 units)
+        // Behavior-based target selection with reduced detection range (200 units)
         if (enemy.behavior === 'patrol') {
-          // Attack player when close (350 units)
-          if (playerDistance < 350) {
+          // Attack player when close (200 units)
+          if (playerDistance < 200) {
             chosenTargetPosition = playerCurrentPosition;
           } else {
             // Check if reached patrol target
@@ -371,8 +371,8 @@ export const enemy = (() => {
             chosenTargetPosition = enemy.patrolTarget;
           }
         } else if (enemy.behavior === 'orbit') {
-          // Attack player when close (350 units)
-          if (playerDistance < 350) {
+          // Attack player when close (200 units)
+          if (playerDistance < 200) {
             chosenTargetPosition = playerCurrentPosition;
           } else if (alternateTarget) {
             // Calculate orbit position
@@ -386,8 +386,8 @@ export const enemy = (() => {
             chosenTargetPosition = playerCurrentPosition;
           }
         } else if (enemy.behavior === 'attack_planet') {
-          // Attack player when close (350 units), otherwise attack planet
-          if (playerDistance < 350) {
+          // Attack player when close (200 units), otherwise attack planet
+          if (playerDistance < 200) {
             chosenTargetPosition = playerCurrentPosition;
           } else if (alternateTarget) {
             // Circle around planet at attack distance, shooting at it
@@ -404,8 +404,8 @@ export const enemy = (() => {
             chosenTargetPosition = playerCurrentPosition;
           }
         } else if (enemy.behavior === 'arc') {
-          // Attack player when close (350 units)
-          if (playerDistance < 350) {
+          // Attack player when close (200 units)
+          if (playerDistance < 200) {
             chosenTargetPosition = playerCurrentPosition;
           } else {
             // Wide arcing flight pattern
@@ -417,8 +417,8 @@ export const enemy = (() => {
             );
           }
         } else if (enemy.behavior === 'dive') {
-          // Attack player when close (350 units)
-          if (playerDistance < 350) {
+          // Attack player when close (200 units)
+          if (playerDistance < 200) {
             chosenTargetPosition = playerCurrentPosition;
           } else if (alternateTarget) {
             // Dive in and out from planet
