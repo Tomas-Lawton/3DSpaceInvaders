@@ -41,9 +41,9 @@ export const asteroids = (() => {
       try {
         let asteroidGroup = new THREE.Group();
         asteroidGroup.position.set(
-            (Math.random() - 0.5) * 3000,
-            (Math.random() - 0.5) * 3000,
-            (Math.random() - 0.5) * 3000
+            (Math.random() - 0.5) * 8000,
+            (Math.random() - 0.5) * 8000,
+            (Math.random() - 0.5) * 8000
         );
         this.scene.add(asteroidGroup);
         // Reduced to fewer asteroids for better gameplay
@@ -184,9 +184,9 @@ export const asteroids = (() => {
             });
           }
 
-          // check group distance
+          // check group distance - increased threshold to reduce frequent respawning
           const distance = playerCurrentPosition.distanceTo(system.position);
-          if (distance > 1000) {
+          if (distance > 6000) {
             reposition(system.position, playerCurrentPosition);
           }
         })

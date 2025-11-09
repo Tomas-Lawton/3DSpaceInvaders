@@ -114,18 +114,19 @@ export const enemy = (() => {
         fillLight.castShadow = false;
         enemyObject.add(fillLight);
 
-        // Add red marker above enemy for visibility during dogfights
+        // Add red triangle marker above enemy for visibility during dogfights
         const markerCanvas = document.createElement('canvas');
         markerCanvas.width = 32;
         markerCanvas.height = 32;
         const ctx = markerCanvas.getContext('2d');
         ctx.fillStyle = '#ff0000';
         ctx.beginPath();
-        ctx.arc(16, 16, 12, 0, Math.PI * 2);
+        // Draw downward-pointing triangle
+        ctx.moveTo(16, 28); // Bottom center
+        ctx.lineTo(4, 8);   // Top left
+        ctx.lineTo(28, 8);  // Top right
+        ctx.closePath();
         ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 2;
-        ctx.stroke();
 
         const markerTexture = new THREE.CanvasTexture(markerCanvas);
         const markerMaterial = new THREE.SpriteMaterial({
@@ -135,8 +136,8 @@ export const enemy = (() => {
           opacity: 0.9
         });
         const markerSprite = new THREE.Sprite(markerMaterial);
-        markerSprite.scale.set(0.02, 0.02, 1);
-        markerSprite.position.set(0, 8, 0);
+        markerSprite.scale.set(0.025, 0.025, 1);
+        markerSprite.position.set(0, 10, 0);
         enemyObject.add(markerSprite);
         enemyObject.marker = markerSprite;
 
