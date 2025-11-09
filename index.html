@@ -33,7 +33,6 @@
       <p>Gold 0</p>
       <p>Crystal 0</p>
     </div>
-    <p id="user-position" class="hud-ui"></p>
     <p id="nearest-planet" class="hud-ui"></p>
 
     <!-- Planet Defense Status -->
@@ -72,6 +71,7 @@
         <div class="mini-map-grid"></div>
       </div>
       <div id="mini-map-info">
+        <p id="user-position"></p>
         <div class="mini-map-info-row">
           <span class="time-display">22:33</span>
           <span class="location-display">GND</span>
@@ -197,9 +197,29 @@
               <!-- Dynamically populated -->
             </div>
           </div>
+        </div>
 
-          <!-- Ship Stats (part of left column) -->
+        <!-- Messages Badge - Orange indicator (HIDDEN - not used in grid) -->
+        <div id="messages-badge">
+          <div class="message-badge-icon">📬</div>
+          <div class="message-badge-text">MESSAGES</div>
+          <div class="message-badge-subtitle">View below</div>
+        </div>
+
+        <!-- Center Section - 3D Ship Display -->
+        <div id="center-display">
+          <canvas id="ship-hanger"></canvas>
+          <div id="ship-name-display">
+            <p class="ship-name">MARS SHIP</p>
+            <p class="ship-status">AVAILABLE</p>
+          </div>
+        </div>
+
+        <!-- Right Section - Upgrades Panel -->
+        <div id="right-upgrades-section">
+          <!-- Ship Diagnostics -->
           <div id="left-stats-section">
+            <h3 class="stats-header">SHIP DIAGNOSTICS</h3>
             <div class="stat-item">
               <label class="stat-label">Inertial Velocity</label>
               <div class="stat-bar-container">
@@ -232,26 +252,7 @@
               <span class="stat-value" id="perigee-value">389.4 km</span>
             </div>
           </div>
-        </div>
 
-        <!-- Messages Badge - Orange indicator (HIDDEN - not used in grid) -->
-        <div id="messages-badge">
-          <div class="message-badge-icon">📬</div>
-          <div class="message-badge-text">MESSAGES</div>
-          <div class="message-badge-subtitle">View below</div>
-        </div>
-
-        <!-- Center Section - 3D Ship Display -->
-        <div id="center-display">
-          <canvas id="ship-hanger"></canvas>
-          <div id="ship-name-display">
-            <p class="ship-name">MARS SHIP</p>
-            <p class="ship-status">AVAILABLE</p>
-          </div>
-        </div>
-
-        <!-- Right Section - Upgrades Panel -->
-        <div id="right-upgrades-section">
           <h3 class="upgrades-header">SHIP UPGRADES</h3>
 
           <div class="upgrade-item" data-upgrade="speed">
