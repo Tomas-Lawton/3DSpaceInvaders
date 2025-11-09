@@ -73,7 +73,7 @@ class Game {
     this.world.addElements();
 
     if (this.playerEntity !== undefined && this.playerShip !== undefined) {
-      this.playerShip.setSpaceshipModel(0); // default ship 'ship-1'
+      this.playerShip.setSpaceshipModel(3); // default ship 'SOLAR PHANTOM'
       this.playerEntity.AddComponent(new player_input.PlayerInput());
       this.playerEntity.InitEntity();
     } else {
@@ -181,7 +181,8 @@ class Game {
             timeElapsed,
             this.audioManager,
             this.world.asteroidLoader,
-            this.world.planetLoader.enemyLoader
+            this.world.planetLoader.enemyLoader,
+            this.world.planetLoader
           );
           // update hud
           updateVelocityBar(

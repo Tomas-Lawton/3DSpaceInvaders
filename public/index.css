@@ -865,14 +865,14 @@ body {
 #ship-hanger-wrapper {
   position: relative;
   width: fit-content;
-  max-width: min(500px, 100%);
+  max-width: min(700px, 100%);
 }
 
 #ship-hanger {
   width: 100%;
   height: auto;
   aspect-ratio: 1;
-  max-height: 500px;
+  max-height: 700px;
   border: 3px solid transparent;
   border-image: linear-gradient(45deg, rgba(0, 255, 238, 0.5), rgba(255, 153, 0, 0.5)) 1;
   background: radial-gradient(
