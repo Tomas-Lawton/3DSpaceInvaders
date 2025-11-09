@@ -490,6 +490,9 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     indicator.style.left = `${indicatorX}px`;
     indicator.style.top = `${indicatorY}px`;
 
+    // Calculate altitude difference for all types
+    const altitudeDiff = Math.floor(dirToTarget.y);
+
     // For asteroids, create a simple blue line instead of full marker
     if (type === 'asteroid') {
       indicator.style.cssText = `
@@ -503,6 +506,33 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
         transform: translate(-50%, -50%);
         border-radius: 2px;
       `;
+
+      // Add altitude label for asteroids
+      const altitudeLabel = document.createElement('div');
+      altitudeLabel.className = 'altitude-label';
+
+      // Color code based on altitude
+      let altitudeColor = '#ffffff'; // Level
+      if (altitudeDiff > 50) {
+        altitudeColor = '#ff9900'; // Above - orange
+      } else if (altitudeDiff < -50) {
+        altitudeColor = '#0099ff'; // Below - blue
+      }
+
+      altitudeLabel.textContent = altitudeDiff > 0 ? `↑${altitudeDiff}` : altitudeDiff < 0 ? `↓${Math.abs(altitudeDiff)}` : '→';
+      altitudeLabel.style.cssText = `
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        font-weight: bold;
+        color: ${altitudeColor};
+        white-space: nowrap;
+        text-shadow: 0 0 8px ${altitudeColor}, 0 0 3px rgba(0, 0, 0, 1);
+      `;
+
+      indicator.appendChild(altitudeLabel);
       container.appendChild(indicator);
       return;
     }
@@ -538,7 +568,6 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     `;
 
     // Add altitude difference label for better vertical awareness
-    const altitudeDiff = Math.floor(dirToTarget.y);
     const altitudeLabel = document.createElement('div');
     altitudeLabel.className = 'altitude-label';
 
