@@ -32,23 +32,33 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(0, 15, 25, 0.92);
-  backdrop-filter: blur(8px);
-  border: 2px solid rgba(0, 255, 238, 0.6);
-  border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 0 30px rgba(0, 255, 238, 0.4),
-    inset 0 0 60px rgba(0, 255, 238, 0.08);
-  font-family: "Orbitron", "Courier New", monospace;
+  background:
+    linear-gradient(135deg, rgba(0, 15, 30, 0.95) 0%, rgba(0, 25, 40, 0.92) 50%, rgba(0, 15, 30, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  border: 3px solid transparent;
+  border-image: linear-gradient(135deg,
+    rgba(0, 255, 238, 0.8) 0%,
+    rgba(255, 153, 0, 0.6) 25%,
+    rgba(0, 255, 238, 0.4) 50%,
+    rgba(255, 153, 0, 0.6) 75%,
+    rgba(0, 255, 238, 0.8) 100%) 1;
+  border-radius: 0;
+  padding: 30px;
+  box-shadow:
+    0 0 50px rgba(0, 255, 238, 0.5),
+    0 0 100px rgba(255, 153, 0, 0.3),
+    inset 0 0 80px rgba(0, 255, 238, 0.05),
+    inset 0 0 40px rgba(255, 153, 0, 0.03);
+  font-family: 'Orbitron', "Courier New", monospace;
   color: #00ffee;
   pointer-events: none;
   z-index: 1000;
   overflow-y: auto;
   overflow-x: hidden;
   display: grid;
-  grid-template-columns: 320px 1fr 320px;
+  grid-template-columns: 340px 1fr 340px;
   grid-template-rows: auto 1fr auto;
-  gap: 15px;
+  gap: 20px;
   box-sizing: border-box;
 }
 
@@ -60,18 +70,46 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0, 255, 238, 0.03) 0px,
-    rgba(0, 255, 238, 0.03) 1px,
-    transparent 1px,
-    transparent 2px
-  );
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 255, 238, 0.03) 0px,
+      rgba(0, 255, 238, 0.03) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 153, 0, 0.02) 0px,
+      rgba(255, 153, 0, 0.02) 1px,
+      transparent 1px,
+      transparent 80px
+    );
   pointer-events: none;
   z-index: 10000;
 }
 
-/* Removed double border - using simple border on container instead */
+/* Corner decorations */
+#hud-container::after {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  border: 1px solid rgba(0, 255, 238, 0.15);
+  pointer-events: none;
+  z-index: 10000;
+  box-shadow:
+    /* Top-left corner */
+    inset 20px 20px 0 -18px rgba(0, 255, 238, 0.5),
+    /* Top-right corner */
+    inset -20px 20px 0 -18px rgba(255, 153, 0, 0.5),
+    /* Bottom-left corner */
+    inset 20px -20px 0 -18px rgba(255, 153, 0, 0.5),
+    /* Bottom-right corner */
+    inset -20px -20px 0 -18px rgba(0, 255, 238, 0.5);
+}
 
 #hud-container > * {
   pointer-events: auto;
