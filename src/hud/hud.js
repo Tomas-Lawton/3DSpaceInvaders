@@ -17,7 +17,7 @@ export const modelPaths = [
     name: "VOID REAPER",
     boosterColor: 0xc87dff, // Purple
     laserColor: 0xc87dff,
-    laserGlow: 0x9400ff
+    laserGlow: 0x9400ff,
   },
   {
     path: "public/ships/ship_1/",
@@ -26,7 +26,7 @@ export const modelPaths = [
     name: "NOVA STRIKER",
     boosterColor: 0x00ffee, // Cyan
     laserColor: 0x00ffee,
-    laserGlow: 0x00ccbb
+    laserGlow: 0x00ccbb,
   },
   {
     path: "public/ships/ship_2/",
@@ -35,7 +35,7 @@ export const modelPaths = [
     name: "CRIMSON FANG",
     boosterColor: 0xff3333, // Red
     laserColor: 0xff3333,
-    laserGlow: 0xff6666
+    laserGlow: 0xff6666,
   },
   {
     path: "public/ships/ship_5/",
@@ -44,7 +44,7 @@ export const modelPaths = [
     name: "SOLAR PHANTOM",
     boosterColor: 0xffaa00, // Orange
     laserColor: 0xffaa00,
-    laserGlow: 0xff8800
+    laserGlow: 0xff8800,
   },
   {
     path: "public/ships/ship_6/",
@@ -53,7 +53,7 @@ export const modelPaths = [
     name: "EMERALD FURY",
     boosterColor: 0x00ff66, // Green
     laserColor: 0x00ff66,
-    laserGlow: 0x00cc44
+    laserGlow: 0x00cc44,
   },
   {
     path: "public/ships/ship_7/",
@@ -62,7 +62,7 @@ export const modelPaths = [
     name: "GHOST BLADE",
     boosterColor: 0x6699ff, // Light Blue
     laserColor: 0x6699ff,
-    laserGlow: 0x3366cc
+    laserGlow: 0x3366cc,
   },
 ];
 
@@ -100,7 +100,6 @@ export function initHUD() {
   });
 
   animate();
-  initHUDUpdates();
   initializeUpgradeUI(); // Initialize upgrade system UI
   initializeMessageUI(); // Initialize message system UI
 }
@@ -125,7 +124,7 @@ async function loadShipModels() {
         name: modelData.name,
         boosterColor: modelData.boosterColor,
         laserColor: modelData.laserColor,
-        laserGlow: modelData.laserGlow
+        laserGlow: modelData.laserGlow,
       };
     });
 
@@ -140,7 +139,9 @@ if (shipsBar) {
   shipsBar.addEventListener("click", (e) => {
     if (e.target.classList.contains("ship-option")) {
       // Remove active class from all ships
-      document.querySelectorAll(".ship-option").forEach(el => el.classList.remove("active"));
+      document
+        .querySelectorAll(".ship-option")
+        .forEach((el) => el.classList.remove("active"));
       // Add active class to clicked ship
       e.target.classList.add("active");
 
@@ -151,7 +152,9 @@ if (shipsBar) {
     }
   });
 } else {
-  console.warn("Ship selector bar not found - ships-bar element missing from DOM");
+  console.warn(
+    "Ship selector bar not found - ships-bar element missing from DOM"
+  );
 }
 
 let previousModelId = null;
@@ -181,7 +184,7 @@ function switchModel(shipId) {
   scene.add(currentModel.model);
 
   // Update ship name display
-  const shipNameElem = document.querySelector('.ship-name');
+  const shipNameElem = document.querySelector(".ship-name");
   if (shipNameElem && currentModel.name) {
     shipNameElem.textContent = currentModel.name;
   }
@@ -216,41 +219,31 @@ export function normalizeModelPosition(model) {
   model.position.y -= offsetY;
 }
 
-// Initialize HUD dynamic updates
-function initHUDUpdates() {
-  // Update time display every second
-  setInterval(() => {
-    const now = new Date();
-    const timeDisplay = document.querySelector('.time-display');
-    if (timeDisplay) {
-      timeDisplay.textContent = now.toTimeString().slice(0, 5);
-    }
-  }, 1000);
-}
-
 // Export function to update stats from game
 export function updateHUDStats(stats) {
   const { velocity, altitude, apogee, perigee } = stats;
-  
+
   // Update stat values
-  const velocityValue = document.getElementById('velocity-value');
-  const altitudeValue = document.getElementById('altitude-value');
-  const apogeeValue = document.getElementById('apogee-value');
-  const perigeeValue = document.getElementById('perigee-value');
-  
+  const velocityValue = document.getElementById("velocity-value");
+  const altitudeValue = document.getElementById("altitude-value");
+  const apogeeValue = document.getElementById("apogee-value");
+  const perigeeValue = document.getElementById("perigee-value");
+
   if (velocityValue) velocityValue.textContent = `${velocity.toFixed(2)} km/s`;
   if (altitudeValue) altitudeValue.textContent = `${altitude.toFixed(1)} km`;
   if (apogeeValue) apogeeValue.textContent = `${apogee.toFixed(1)} km`;
   if (perigeeValue) perigeeValue.textContent = `${perigee.toFixed(1)} km`;
-  
+
   // Update progress bars (0-100%)
-  const velocityStat = document.getElementById('velocity-stat');
-  const altitudeStat = document.getElementById('altitude-stat');
-  const apogeeStat = document.getElementById('apogee-stat');
-  const perigeeStat = document.getElementById('perigee-stat');
-  
-  if (velocityStat) velocityStat.style.width = `${Math.min(velocity * 10, 100)}%`;
-  if (altitudeStat) altitudeStat.style.width = `${Math.min(altitude / 10, 100)}%`;
+  const velocityStat = document.getElementById("velocity-stat");
+  const altitudeStat = document.getElementById("altitude-stat");
+  const apogeeStat = document.getElementById("apogee-stat");
+  const perigeeStat = document.getElementById("perigee-stat");
+
+  if (velocityStat)
+    velocityStat.style.width = `${Math.min(velocity * 10, 100)}%`;
+  if (altitudeStat)
+    altitudeStat.style.width = `${Math.min(altitude / 10, 100)}%`;
   if (apogeeStat) apogeeStat.style.width = `${Math.min(apogee / 10, 100)}%`;
   if (perigeeStat) perigeeStat.style.width = `${Math.min(perigee / 10, 100)}%`;
 }
@@ -258,33 +251,34 @@ export function updateHUDStats(stats) {
 // Update ship health status in HUD
 export function updateShipHealth(health, maxHealth) {
   const healthPercentage = (health / maxHealth) * 100;
-  
+
   // Update status items based on health
-  const statusItems = document.querySelectorAll('.status-item');
-  
+  const statusItems = document.querySelectorAll(".status-item");
+
   if (healthPercentage < 30) {
     // Critical health - show warnings
     statusItems.forEach((item, index) => {
-      if (index === 0) { // Thermal Shield
-        item.classList.remove('status-complete');
-        item.classList.add('status-pending');
-        item.querySelector('.status-subtitle').textContent = 'Critical';
+      if (index === 0) {
+        // Thermal Shield
+        item.classList.remove("status-complete");
+        item.classList.add("status-pending");
+        item.querySelector(".status-subtitle").textContent = "Critical";
       }
     });
   } else if (healthPercentage < 60) {
     // Medium health - show caution
     statusItems.forEach((item, index) => {
       if (index === 0) {
-        item.querySelector('.status-subtitle').textContent = 'Damaged';
+        item.querySelector(".status-subtitle").textContent = "Damaged";
       }
     });
   } else {
     // Healthy
     statusItems.forEach((item, index) => {
       if (index === 0) {
-        item.classList.add('status-complete');
-        item.classList.remove('status-pending');
-        item.querySelector('.status-subtitle').textContent = 'Applied';
+        item.classList.add("status-complete");
+        item.classList.remove("status-pending");
+        item.querySelector(".status-subtitle").textContent = "Applied";
       }
     });
   }
@@ -292,7 +286,7 @@ export function updateShipHealth(health, maxHealth) {
 
 // Update location display
 export function updateLocation(locationName) {
-  const locationDisplay = document.querySelector('.location-display');
+  const locationDisplay = document.querySelector(".location-display");
   if (locationDisplay) {
     locationDisplay.textContent = locationName.toUpperCase();
   }
@@ -300,12 +294,13 @@ export function updateLocation(locationName) {
 
 // Update ship name display
 export function updateShipName(shipName, availability = "AVAILABLE") {
-  const shipNameElem = document.querySelector('.ship-name');
-  const shipStatusElem = document.querySelector('.ship-status');
-  
+  const shipNameElem = document.querySelector(".ship-name");
+  const shipStatusElem = document.querySelector(".ship-status");
+
   if (shipNameElem) shipNameElem.textContent = shipName.toUpperCase();
   if (shipStatusElem) {
     shipStatusElem.textContent = availability.toUpperCase();
-    shipStatusElem.style.color = availability === "AVAILABLE" ? "#00ff00" : "#ff0000";
+    shipStatusElem.style.color =
+      availability === "AVAILABLE" ? "#00ff00" : "#ff0000";
   }
 }

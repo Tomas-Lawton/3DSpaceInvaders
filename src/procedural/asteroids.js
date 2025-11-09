@@ -47,7 +47,7 @@ export const asteroids = (() => {
         );
         this.scene.add(asteroidGroup);
         // Reduced to fewer asteroids for better gameplay
-        const numberOfAsteroids = Math.floor(Math.random() * 15) + 5; // 5-20 asteroids per system
+        const numberOfAsteroids = Math.floor(Math.random() * 15) + 10; // 10-25 asteroids per system
         let entropyCoefficient = (Math.random() - 0.5);
     
         // Choose a formation type: 'circle', 'spiral', 'cluster'

@@ -31,16 +31,6 @@ function updateResourceDisplay() {
     }
   }
 
-  const resourceDisplay = document.querySelector('.resource-display');
-  if (resourceDisplay) {
-    resourceDisplay.textContent = `${(iron + gold + crystal).toFixed(2)}`;
-  }
-
-  const xpDisplay = document.querySelector('.xp-display');
-  if (xpDisplay) {
-    xpDisplay.textContent = `XP: ${xp}`;
-  }
-
   // Update pause menu resources
   updatePauseMenuResources();
 }
@@ -166,11 +156,11 @@ export function updateCloestPlanet(xyz) {
     nearestPlanet.textContent = `NEAREST PLANET:\n------------\nX:${xyz.x.toFixed(1)}\nY:${xyz.y.toFixed(1)}\nZ:${xyz.z.toFixed(1)}`;
   }
 
-  const locationDisplay = document.querySelector('.location-display');
-  if (locationDisplay) {
-    const distance = Math.sqrt(xyz.x ** 2 + xyz.y ** 2 + xyz.z ** 2);
-    locationDisplay.textContent = `${distance.toFixed(0)}km`;
-  }
+  // const locationDisplay = document.querySelector('.location-display');
+  // if (locationDisplay) {
+  //   const distance = Math.sqrt(xyz.x ** 2 + xyz.y ** 2 + xyz.z ** 2);
+  //   locationDisplay.textContent = `${distance.toFixed(0)}km`;
+  // }
 }
 
 export function updateVelocityBar(vel, maxVelocity) {
