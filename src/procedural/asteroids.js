@@ -149,10 +149,23 @@ export const asteroids = (() => {
         // }
 
 
-        // LIGHT THE GROUP - reduced intensity and range for better performance
-        const pointLight = new THREE.PointLight(0xCC5500, 400, 200);
+        // LIGHT THE GROUP - brighter for better visibility
+        const pointLight = new THREE.PointLight(0xCC5500, 800, 400);
         pointLight.position.set(0, 0, 0);
-        asteroidGroup.add(pointLight); 
+        asteroidGroup.add(pointLight);
+
+        // Add height indicator line (initially hidden)
+        const lineGeometry = new THREE.BufferGeometry();
+        const lineMaterial = new THREE.LineBasicMaterial({
+          color: 0x00ffee,
+          transparent: true,
+          opacity: 0.6,
+          linewidth: 2
+        });
+        const heightLine = new THREE.Line(lineGeometry, lineMaterial);
+        heightLine.visible = false;
+        asteroidGroup.add(heightLine);
+        asteroidGroup.heightLine = heightLine;
 
         return asteroidGroup;
       } catch (error) {
@@ -186,6 +199,33 @@ export const asteroids = (() => {
 
           // check group distance - increased threshold to reduce frequent respawning
           const distance = playerCurrentPosition.distanceTo(system.position);
+
+          // Update height indicator line when close
+          if (system.heightLine) {
+            const proximityThreshold = 2000; // Show line when within 2000 units
+
+            if (distance < proximityThreshold) {
+              system.heightLine.visible = true;
+
+              // Calculate height difference
+              const heightDiff = system.position.y - playerCurrentPosition.y;
+
+              // Create line from asteroid field position to player's height level
+              const positions = new Float32Array([
+                0, 0, 0, // Start at asteroid field center (local coords)
+                0, -heightDiff, 0 // End at player's height level
+              ]);
+
+              system.heightLine.geometry.setAttribute(
+                'position',
+                new THREE.BufferAttribute(positions, 3)
+              );
+              system.heightLine.geometry.attributes.position.needsUpdate = true;
+            } else {
+              system.heightLine.visible = false;
+            }
+          }
+
           if (distance > 6000) {
             reposition(system.position, playerCurrentPosition);
           }
