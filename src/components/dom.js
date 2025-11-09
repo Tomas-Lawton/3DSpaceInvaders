@@ -258,7 +258,7 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
   // Clear existing targets
   miniMapTargets.innerHTML = '';
 
-  const mapSize = 210; // Size of the mini-map content area (updated from 140)
+  const mapSize = 280; // Size of the mini-map content area (matches CSS)
   const maxDistance = 5000; // Max distance to show on map (increased for better visibility)
   const center = mapSize / 2;
 
