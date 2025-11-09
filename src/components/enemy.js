@@ -114,6 +114,32 @@ export const enemy = (() => {
         fillLight.castShadow = false;
         enemyObject.add(fillLight);
 
+        // Add red marker above enemy for visibility during dogfights
+        const markerCanvas = document.createElement('canvas');
+        markerCanvas.width = 32;
+        markerCanvas.height = 32;
+        const ctx = markerCanvas.getContext('2d');
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(16, 16, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        const markerTexture = new THREE.CanvasTexture(markerCanvas);
+        const markerMaterial = new THREE.SpriteMaterial({
+          map: markerTexture,
+          sizeAttenuation: false,
+          transparent: true,
+          opacity: 0.9
+        });
+        const markerSprite = new THREE.Sprite(markerMaterial);
+        markerSprite.scale.set(0.02, 0.02, 1);
+        markerSprite.position.set(0, 8, 0);
+        enemyObject.add(markerSprite);
+        enemyObject.marker = markerSprite;
+
         // Add variance to enemy properties
         enemyObject.speedMultiplier = 0.8 + Math.random() * 0.6; // 0.8 to 1.4x speed variance
         enemyObject.turnSpeed = 0.015 + Math.random() * 0.01; // 0.015 to 0.025 turn speed
