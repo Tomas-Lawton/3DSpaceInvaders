@@ -157,7 +157,7 @@ export const planets = (() => {
 
 
 
-    animatePlanets(playerCurrentPosition, reposition, playerForwardDirection = null, playerShip = null, audioManager = null, asteroidLoader = null) {
+    animatePlanets(playerCurrentPosition, reposition, playerForwardDirection = null, playerShip = null, audioManager = null, asteroidLoader = null, starLoader = null) {
       if (this.enemyLoader) {
         this.enemyLoader.animateEnemies(playerCurrentPosition);
         // Check for enemy laser collisions with planets
@@ -431,12 +431,14 @@ export const planets = (() => {
         if (playerForwardDirection) {
           const enemyArray = (this.enemyLoader && this.enemyLoader.enemies) ? this.enemyLoader.enemies : [];
           const asteroidArray = asteroidLoader && asteroidLoader.asteroidSystem ? asteroidLoader.asteroidSystem : [];
+          const starArray = starLoader && starLoader.stars ? starLoader.stars : [];
           updateDirectionalIndicators(
             playerCurrentPosition,
             playerForwardDirection,
             this.planets,
             enemyArray,
-            asteroidArray
+            asteroidArray,
+            starArray
           );
 
           // Update mini-map (need player rotation and asteroid fields)
@@ -450,7 +452,8 @@ export const planets = (() => {
             enemyArray,
             playerRotation,
             asteroidLoader && asteroidLoader.asteroidSystem ? asteroidLoader.asteroidSystem : [],
-            this.currentPlanet
+            this.currentPlanet,
+            starLoader && starLoader.stars ? starLoader.stars : []
           );
         }
       }

@@ -188,6 +188,18 @@ export function updateHealthBar(health, maxHealth) {
     let maxHeight = 300;
     let h = mapValue(health, 0, maxHealth, 0, maxHeight);
     healthBar.style.height = `${h}px`;
+
+    // Calculate health percentage
+    const healthPercent = (health / maxHealth) * 100;
+
+    // Transition from green (100%) to red (0%)
+    // Green at 100%: rgb(0, 255, 0)
+    // Red at 0%: rgb(255, 0, 0)
+    const red = Math.floor(255 * (1 - healthPercent / 100));
+    const green = Math.floor(255 * (healthPercent / 100));
+
+    healthBar.style.backgroundColor = `rgb(${red}, ${green}, 0)`;
+    healthBar.style.boxShadow = `0 0 20px rgba(${red}, ${green}, 0, 0.8)`;
   }
 }
 
@@ -246,7 +258,7 @@ export function hidePlanetDefenseStatus() {
 let miniMapFrameCounter = 0;
 const MINI_MAP_UPDATE_INTERVAL = 5; // Update every 5 frames (~12 times per second)
 
-export function updateMiniMap(playerPosition, planets, enemies, playerRotation = 0, asteroidFields = [], currentPlanet = null) {
+export function updateMiniMap(playerPosition, planets, enemies, playerRotation = 0, asteroidFields = [], currentPlanet = null, stars = []) {
   miniMapFrameCounter++;
   if (miniMapFrameCounter < MINI_MAP_UPDATE_INTERVAL) return; // Skip this frame
   miniMapFrameCounter = 0;
@@ -363,13 +375,35 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
   } else {
     console.log('[MINIMAP] No asteroid fields to render');
   }
+
+  // Add stars to mini-map
+  if (stars && stars.length > 0) {
+    stars.forEach((star, index) => {
+      const dx = star.position.x - playerPosition.x;
+      const dz = star.position.z - playerPosition.z;
+      const distance = Math.sqrt(dx * dx + dz * dz);
+
+      if (distance < maxDistance) {
+        // Direct mapping - no flips, rotation handles orientation
+        const x = center + (dx / maxDistance) * (mapSize / 2);
+        const y = center + (dz / maxDistance) * (mapSize / 2);
+
+        const starDot = document.createElement('div');
+        starDot.className = 'mini-map-star';
+        starDot.style.left = `${x}px`;
+        starDot.style.top = `${y}px`;
+        starDot.title = `Star ${Math.floor(distance)}u`;
+        miniMapTargets.appendChild(starDot);
+      }
+    });
+  }
 }
 
 // Throttle directional indicators updates
 let indicatorFrameCounter = 0;
 const INDICATOR_UPDATE_INTERVAL = 3; // Update every 3 frames (~20 times per second)
 
-export function updateDirectionalIndicators(playerPosition, playerForwardDirection, planets, enemies, asteroidFields = []) {
+export function updateDirectionalIndicators(playerPosition, playerForwardDirection, planets, enemies, asteroidFields = [], stars = []) {
   indicatorFrameCounter++;
   if (indicatorFrameCounter < INDICATOR_UPDATE_INTERVAL) return; // Skip this frame
   indicatorFrameCounter = 0;
@@ -616,6 +650,13 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
   if (asteroidFields && asteroidFields.length > 0) {
     asteroidFields.forEach(field => {
       createIndicator(field.position, 'asteroid');
+    });
+  }
+
+  // Create indicators for stars
+  if (stars && stars.length > 0) {
+    stars.forEach(star => {
+      createIndicator(star.position, 'star');
     });
   }
 }

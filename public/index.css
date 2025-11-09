@@ -2022,6 +2022,49 @@ body {
   }
 }
 
+.direction-arrow.star {
+  color: #ffee00;
+  filter: drop-shadow(0 0 12px rgba(255, 238, 0, 1))
+          drop-shadow(0 0 20px rgba(255, 170, 0, 0.7));
+  animation: starArrowPulse 1.5s ease-in-out infinite;
+}
+
+.direction-arrow.star.above {
+  color: #ffaa00;
+  filter: drop-shadow(0 0 15px rgba(255, 170, 0, 1))
+          drop-shadow(0 0 30px rgba(255, 170, 0, 0.9));
+  animation: starVerticalPulse 1.3s ease-in-out infinite;
+}
+
+.direction-arrow.star.below {
+  color: #ffe066;
+  filter: drop-shadow(0 0 15px rgba(255, 224, 102, 1))
+          drop-shadow(0 0 30px rgba(255, 224, 102, 0.9));
+  animation: starVerticalPulse 1.3s ease-in-out infinite;
+}
+
+@keyframes starArrowPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.25);
+    opacity: 1;
+  }
+}
+
+@keyframes starVerticalPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.35);
+    opacity: 1;
+  }
+}
+
 @keyframes verticalPulse {
   0%, 100% {
     transform: translate(-50%, -50%) scale(1);
@@ -2496,6 +2539,31 @@ body {
   transform: translate(-50%, -50%);
   opacity: 1;
   z-index: 5;
+}
+
+.mini-map-star {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: radial-gradient(circle, #ffee00, #ffaa00);
+  border: 2px solid rgba(255, 238, 0, 0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(255, 238, 0, 1), 0 0 25px rgba(255, 170, 0, 0.6);
+  transform: translate(-50%, -50%);
+  opacity: 1;
+  z-index: 6;
+  animation: starPulse 2s ease-in-out infinite;
+}
+
+@keyframes starPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    box-shadow: 0 0 15px rgba(255, 238, 0, 1), 0 0 25px rgba(255, 170, 0, 0.6);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    box-shadow: 0 0 20px rgba(255, 238, 0, 1), 0 0 35px rgba(255, 170, 0, 0.8);
+  }
 }
 
 @keyframes miniMapPulse {

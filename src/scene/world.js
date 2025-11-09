@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { Ring } from "../procedural/ring.js";
 import { asteroids } from "../procedural/asteroids.js";
 import { planets } from "../procedural/planets.js";
+import { stars } from "../procedural/stars.js";
 
 // import { getRandomDeepColor } from "../utils/utils.js";
 
@@ -22,7 +23,7 @@ export const gameworld = (() => {
         this.createStarfield(500); //procedural - increased to 500 for richer starfield
         this.createAsteroidSystems(1); //procedural - reduced to 1 system for performance
         this.createPlanets(1); //procedural
-        // this.createStar();
+        this.createStars(1 + Math.floor(Math.random() * 3)); // 1-3 stars
         // this.addGround(); // Removed ground for performance - not needed in space
 
         // Removed axes helper for performance
@@ -44,7 +45,16 @@ export const gameworld = (() => {
           playerForwardDirection,
           playerShip,
           audioManager,
-          this.asteroidLoader
+          this.asteroidLoader,
+          this.starLoader
+        );
+      }
+
+      if (this.starLoader) {
+        this.starLoader.animateStars(
+          playerCurrentPosition,
+          this.repositionObj,
+          playerShip
         );
       }
 
@@ -69,6 +79,13 @@ export const gameworld = (() => {
       const planetsLoader = new planets.PlanetLoader(this.scene);
       planetsLoader.initialisePlanets(planetNum);
       this.planetLoader = planetsLoader;
+    }
+
+    async createStars(starNum) {
+      const starsLoader = new stars.StarLoader(this.scene);
+      await starsLoader.initialiseStars(starNum);
+      console.log(`Loaded ${starNum} star(s).`);
+      this.starLoader = starsLoader;
     }
 
     async createAsteroidSystems(systems) {
