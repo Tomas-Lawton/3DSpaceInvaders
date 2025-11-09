@@ -442,7 +442,8 @@ export const planets = (() => {
             this.planets,
             enemyArray,
             playerRotation,
-            this.asteroidFields || []
+            this.asteroidFields || [],
+            this.currentPlanet
           );
         }
       }
