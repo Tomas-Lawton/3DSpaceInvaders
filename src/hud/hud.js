@@ -72,7 +72,7 @@ export function initHUD() {
   camera.position.set(0, 10, 100);
 
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setSize(700, 700);
+  renderer.setSize(600, 600);
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setClearColor(0x000000, 0);
 
