@@ -95,6 +95,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 #right-upgrades-section {
@@ -104,6 +106,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  max-height: 100%;
 }
 
 #bottom-ships-bar {
@@ -119,13 +122,15 @@ body {
   flex-direction: column;
   gap: 15px;
   overflow-y: auto;
+  max-height: 100%;
 }
 
 #messages-badge {
   display: none;
 }
 
-#bottom-right-info {
+/* Removed - bottom-right-info moved to minimap */
+/* #bottom-right-info {
   grid-column: 3;
   grid-row: 1;
   display: flex;
@@ -134,7 +139,7 @@ body {
   justify-content: flex-end;
   flex-wrap: wrap;
   font-size: 11px;
-}
+} */
 
 /* Scrollbar styling for pause menu */
 #hud-container::-webkit-scrollbar {
@@ -1172,11 +1177,11 @@ body {
   text-transform: uppercase;
 }
 
-#bottom-right-info {
-  /* Positioned by grid - see above */
+/* Removed - bottom-right-info moved to minimap */
+/* #bottom-right-info {
   text-align: right;
   pointer-events: none;
-}
+} */
 
 .time-display {
   font-size: 14px;
@@ -2132,10 +2137,10 @@ body {
   text-shadow: 0 0 6px rgba(255, 153, 0, 0.6);
 }
 
-/* Adjust other sections to make room for header */
-#top-left-section {
+/* Removed - breaks grid layout */
+/* #top-left-section {
   top: 200px !important;
-}
+} */
 
 /* ========================================
    COMBO SYSTEM
@@ -2229,8 +2234,8 @@ body {
   position: fixed;
   bottom: 20px;
   left: 20px;
-  width: 260px;
-  height: 260px;
+  width: 320px;
+  height: auto;
   background: linear-gradient(135deg, rgba(20, 10, 0, 0.9) 0%, rgba(0, 20, 40, 0.95) 100%);
   border: 2px solid rgba(255, 153, 0, 0.6);
   border-radius: 12px;
@@ -2254,8 +2259,8 @@ body {
 
 .mini-map-content {
   position: relative;
-  width: 210px;
-  height: 210px;
+  width: 280px;
+  height: 280px;
   margin: 0 auto;
   background: radial-gradient(circle at center, rgba(0, 100, 150, 0.1) 0%, rgba(0, 30, 60, 0.2) 50%, rgba(0, 0, 0, 0.4) 100%);
   border: 1px solid rgba(0, 255, 238, 0.4);
@@ -2410,6 +2415,30 @@ body {
     transform: translate(-50%, -50%) scale(1.3);
     opacity: 0.8;
   }
+}
+
+/* Mini-map info section */
+#mini-map-info {
+  margin-top: 10px;
+  padding: 8px;
+  background: rgba(0, 20, 40, 0.6);
+  border: 1px solid rgba(0, 255, 238, 0.3);
+  border-radius: 6px;
+}
+
+.mini-map-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 11px;
+  color: #00ffee;
+  text-shadow: 0 0 5px rgba(0, 255, 238, 0.5);
+}
+
+.mini-map-info-row span {
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 1px;
 }
 
 /* ========================================

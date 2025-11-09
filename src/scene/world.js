@@ -43,7 +43,8 @@ export const gameworld = (() => {
           this.repositionObj,
           playerForwardDirection,
           playerShip,
-          audioManager
+          audioManager,
+          this.asteroidLoader
         );
       }
 

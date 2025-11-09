@@ -152,7 +152,7 @@ export const planets = (() => {
 
 
 
-    animatePlanets(playerCurrentPosition, reposition, playerForwardDirection = null, playerShip = null, audioManager = null) {
+    animatePlanets(playerCurrentPosition, reposition, playerForwardDirection = null, playerShip = null, audioManager = null, asteroidLoader = null) {
       if (this.enemyLoader) {
         this.enemyLoader.animateEnemies(playerCurrentPosition);
         // Check for enemy laser collisions with planets
@@ -442,7 +442,7 @@ export const planets = (() => {
             this.planets,
             enemyArray,
             playerRotation,
-            this.asteroidFields || [],
+            asteroidLoader && asteroidLoader.asteroidSystem ? asteroidLoader.asteroidSystem : [],
             this.currentPlanet
           );
         }
