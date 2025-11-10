@@ -25,12 +25,12 @@ export const enemy = (() => {
     }
 
     // Initialise enemies without promises, using callback in the loader
-    initaliseEnemies(numEnemies, aroundPoint) {
+    initaliseEnemies(numEnemies, aroundPoint, planetRadius = 300) {
       // HARD CAP: Never allow more than 5 enemies total
       const maxEnemies = 5;
       const currentEnemyCount = this.enemies.length;
 
-      console.log(`[ENEMY SPAWN] Called with ${numEnemies} requested. Current count: ${currentEnemyCount}`);
+      console.log(`[ENEMY SPAWN] Called with ${numEnemies} requested. Current count: ${currentEnemyCount}. Planet radius: ${planetRadius}`);
 
       if (currentEnemyCount >= maxEnemies) {
         console.error(`[ENEMY SPAWN] ❌ BLOCKED! Already at cap: ${currentEnemyCount}/${maxEnemies}`);
@@ -42,8 +42,9 @@ export const enemy = (() => {
       console.log(`[ENEMY SPAWN] ✅ Spawning ${enemiesToSpawn} enemies (Current: ${currentEnemyCount}, Requested: ${numEnemies})`);
 
       this.target = aroundPoint;
+      this.currentPlanetRadius = planetRadius; // Store for use in createEnemy
       for (let i = 0; i < enemiesToSpawn; i++) {
-        this.createEnemy(aroundPoint, (enemyObject) => {
+        this.createEnemy(aroundPoint, planetRadius, (enemyObject) => {
           // CRITICAL: Double-check cap before adding (async callback protection)
           if (this.enemies.length < maxEnemies) {
             enemyObject.lastShotTime = 0;
@@ -61,7 +62,7 @@ export const enemy = (() => {
       }
     }
 
-    createEnemy(aroundPoint, callback) {
+    createEnemy(aroundPoint, planetRadius, callback) {
       // Function to create enemy from cached or newly loaded model
       const createEnemyFromModel = (gltf) => {
         const enemyObject = new THREE.Group();
@@ -147,14 +148,16 @@ export const enemy = (() => {
 
         // Store planet center for collision avoidance
         enemyObject.planetCenter = aroundPoint.clone();
-        enemyObject.minSafeDistance = 380; // Planet radius + safety margin
+        // Calculate safe distance based on actual planet size + generous margin
+        enemyObject.planetRadius = planetRadius;
+        enemyObject.minSafeDistance = planetRadius + 150; // Planet radius + safety margin
 
         // Assign random behavior pattern with more variety
         const behaviors = ['patrol', 'chase', 'orbit', 'attack_planet', 'arc', 'dive'];
         enemyObject.behavior = behaviors[Math.floor(Math.random() * behaviors.length)];
 
-        // SAFETY: Minimum distance from planet center (planets can be up to ~300 radius)
-        const minSafeDistance = 380; // Planet radius + safety margin
+        // SAFETY: Minimum distance from planet center based on actual planet size
+        const minSafeDistance = planetRadius + 150; // Planet radius + generous safety margin
 
         // Set initial patrol target for patrol behavior
         if (enemyObject.behavior === 'patrol') {
@@ -358,7 +361,7 @@ export const enemy = (() => {
             // Check if reached patrol target
             if (enemy.patrolTarget && enemy.position.distanceTo(enemy.patrolTarget) < 50) {
               // Set new patrol target with safe distance from planet
-              const minSafeDistance = 380; // Planet radius + safety margin
+              const minSafeDistance = enemy.minSafeDistance || (enemy.planetRadius + 150); // Use stored safe distance
               const patrolAngle = Math.random() * Math.PI * 2;
               const patrolDistance = minSafeDistance + Math.random() * 150;
               const center = alternateTarget || enemy.position;
@@ -468,30 +471,44 @@ export const enemy = (() => {
         enemy.getWorldDirection(direction); // Get the direction the ship is facing
         direction.multiplyScalar(speed);
 
-        // PLANET COLLISION AVOIDANCE with orbital movement
+        // PLANET COLLISION AVOIDANCE with orbital movement - NEVER fly through planet
         if (enemy.planetCenter && enemy.minSafeDistance) {
           const currentDistanceToPlanet = enemy.position.distanceTo(enemy.planetCenter);
+          const planetRadius = enemy.planetRadius || 300; // Get actual planet radius
+
+          // CRITICAL: If we're inside the planet sphere, push out immediately!
+          if (currentDistanceToPlanet < planetRadius) {
+            const awayFromPlanet = new THREE.Vector3()
+              .subVectors(enemy.position, enemy.planetCenter)
+              .normalize()
+              .multiplyScalar(speed * 2); // Strong push away
+            enemy.position.add(awayFromPlanet);
+            console.warn(`🚨 Enemy penetrated planet! Pushing out. Distance: ${currentDistanceToPlanet.toFixed(0)}/${planetRadius}`);
+            return;
+          }
+
+          // Check if movement would take us too close
           const newPosition = enemy.position.clone().add(direction);
           const distanceToPlanet = newPosition.distanceTo(enemy.planetCenter);
 
-          // If moving would take us too close to planet, orbit around it instead
+          // If too close to safe distance or planet surface, orbit around it
           if (distanceToPlanet < enemy.minSafeDistance || currentDistanceToPlanet < enemy.minSafeDistance) {
             // Calculate perpendicular direction for orbiting
             const toPlanet = new THREE.Vector3()
               .subVectors(enemy.planetCenter, enemy.position)
               .normalize();
 
-            // Cross product with up vector to get tangent direction
+            // Cross product with up vector to get tangent direction (orbit)
             const orbitDirection = new THREE.Vector3()
               .crossVectors(toPlanet, new THREE.Vector3(0, 1, 0))
               .normalize()
               .multiplyScalar(speed);
 
-            // Also push slightly away from planet to maintain safe distance
+            // Push away from planet to maintain safe distance
             const awayFromPlanet = new THREE.Vector3()
               .subVectors(enemy.position, enemy.planetCenter)
               .normalize()
-              .multiplyScalar(speed * 0.3);
+              .multiplyScalar(speed * 0.5); // Increased push force
 
             enemy.position.add(orbitDirection).add(awayFromPlanet);
             return;
