@@ -1949,7 +1949,7 @@ body {
   color: #00ffee;
   white-space: pre;
   letter-spacing: 0.5px;
-  text-align: center;
+  text-align: left;
   line-height: 1.5;
   text-shadow: 0 0 5px rgba(0, 255, 238, 0.3);
 }
