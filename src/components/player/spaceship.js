@@ -348,7 +348,7 @@ export const spaceship = (() => {
 
       this.boosterFlame.position.set(
         0,
-        8, // Raised up a bit (adjust this value to move it higher/lower)
+        2, // Lowered to proper position behind ship
         -flameLength / 2 - 5
       );
 
