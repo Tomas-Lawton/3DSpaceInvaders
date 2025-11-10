@@ -114,21 +114,14 @@ export const planets = (() => {
 
     // Creates a fog sphere around the planet model
     createFog(position, color, scale) {
-      const fogGeometry = new THREE.SphereGeometry(scale * 1.3, 64, 64); // Increased segments for smoother appearance
-      const fogMaterial = new THREE.MeshPhysicalMaterial({
+      const fogGeometry = new THREE.SphereGeometry(scale * 1.3, 32, 32); // Optimized segments for performance
+      const fogMaterial = new THREE.MeshBasicMaterial({
         color: color,
-        opacity: 0.4, // Reduced opacity for more subtle atmospheric effect
+        opacity: 0.25, // Lighter opacity for better performance and visibility
         transparent: true,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
         side: THREE.BackSide, // Only render from outside for better atmosphere
-        metalness: 0,
-        roughness: 1,
-        transmission: 0.3, // Add some light transmission
-        thickness: scale * 0.1, // Simulate atmospheric depth
-        ior: 1.2, // Index of refraction for subtle bending
-        clearcoat: 0.3,
-        clearcoatRoughness: 0.8,
       });
 
       const fogSphere = new THREE.Mesh(fogGeometry, fogMaterial);
