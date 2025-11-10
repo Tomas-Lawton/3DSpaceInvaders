@@ -355,7 +355,7 @@ export const enemy = (() => {
         // Behavior-based target selection with reduced detection range (200 units)
         if (enemy.behavior === 'patrol') {
           // Attack player when close (200 units)
-          if (playerDistance < 200) {
+          if (playerDistance < 800) {
             chosenTargetPosition = playerCurrentPosition;
           } else {
             // Check if reached patrol target
@@ -464,7 +464,7 @@ export const enemy = (() => {
 
     animateForwardMovement(enemy) {
       if (enemy) {
-        const baseSpeed = 0.5; // Increased from 0.35 for faster, more challenging enemies
+        const baseSpeed = .7; // Increased from 0.35 for faster, more challenging enemies
         const speedMultiplier = enemy.speedMultiplier || 1.0;
         let speed = baseSpeed * speedMultiplier; // Apply individual speed variance
         let direction = new THREE.Vector3();
