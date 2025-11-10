@@ -306,7 +306,9 @@ export const planets = (() => {
 
                 // Now spawn exactly 7 enemies
                 console.log(`[PLANET] Calling initaliseEnemies(${enemyCount})`);
-                this.enemyLoader.initaliseEnemies(enemyCount, planet.position);
+                // Pass planet size (stored as negative, so use absolute value)
+                const planetRadius = Math.abs(planet.planetSize);
+                this.enemyLoader.initaliseEnemies(enemyCount, planet.position, planetRadius);
 
                 // Start dogfight music
                 if (audioManager) {

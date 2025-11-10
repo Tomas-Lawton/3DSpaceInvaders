@@ -930,9 +930,12 @@ export const spaceship = (() => {
       for (const planetGroup of planetLoader.planets) {
         const distanceToPlanet = this.mesh.position.distanceTo(planetGroup.position);
 
-        // Planets range from 250-600 units, kill player if within 200 units of center
-        if (distanceToPlanet < 200) {
-          console.log('💥 CRASHED INTO PLANET! GAME OVER');
+        // Get actual planet radius (planetSize is stored as negative)
+        const planetRadius = Math.abs(planetGroup.planetSize || 300);
+
+        // Kill player if they hit the planet surface (within planet radius)
+        if (distanceToPlanet < planetRadius) {
+          console.log(`💥 CRASHED INTO PLANET! Distance: ${distanceToPlanet.toFixed(0)} < Radius: ${planetRadius.toFixed(0)} - GAME OVER`);
           this.gameOver();
           return;
         }
