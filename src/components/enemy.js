@@ -468,19 +468,32 @@ export const enemy = (() => {
         enemy.getWorldDirection(direction); // Get the direction the ship is facing
         direction.multiplyScalar(speed);
 
-        // PLANET COLLISION AVOIDANCE
+        // PLANET COLLISION AVOIDANCE with orbital movement
         if (enemy.planetCenter && enemy.minSafeDistance) {
+          const currentDistanceToPlanet = enemy.position.distanceTo(enemy.planetCenter);
           const newPosition = enemy.position.clone().add(direction);
           const distanceToPlanet = newPosition.distanceTo(enemy.planetCenter);
 
-          // If moving would take us too close to planet, don't move
-          if (distanceToPlanet < enemy.minSafeDistance) {
-            // Push away from planet instead
+          // If moving would take us too close to planet, orbit around it instead
+          if (distanceToPlanet < enemy.minSafeDistance || currentDistanceToPlanet < enemy.minSafeDistance) {
+            // Calculate perpendicular direction for orbiting
+            const toPlanet = new THREE.Vector3()
+              .subVectors(enemy.planetCenter, enemy.position)
+              .normalize();
+
+            // Cross product with up vector to get tangent direction
+            const orbitDirection = new THREE.Vector3()
+              .crossVectors(toPlanet, new THREE.Vector3(0, 1, 0))
+              .normalize()
+              .multiplyScalar(speed);
+
+            // Also push slightly away from planet to maintain safe distance
             const awayFromPlanet = new THREE.Vector3()
               .subVectors(enemy.position, enemy.planetCenter)
               .normalize()
-              .multiplyScalar(speed);
-            enemy.position.add(awayFromPlanet);
+              .multiplyScalar(speed * 0.3);
+
+            enemy.position.add(orbitDirection).add(awayFromPlanet);
             return;
           }
         }

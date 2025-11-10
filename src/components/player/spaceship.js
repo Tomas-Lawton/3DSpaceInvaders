@@ -12,6 +12,9 @@ import {
 } from "../../hud/hud.js";
 
 export const spaceship = (() => {
+  // Static model cache shared across all ship instances
+  const modelCache = {};
+
   class Spaceship {
     constructor(scene, camera, health = 100) {
       this.scene = scene;
@@ -29,6 +32,7 @@ export const spaceship = (() => {
       this.thirdPersonCamera = null; // follow cam
 
       this.shipGroup = null;
+      this.modelCache = modelCache; // Reference to static cache
 
       // this.boosterFlame = new THREE.Mesh(
       //   new THREE.BoxGeometry(0.15, 0.15, 0.15),
@@ -159,87 +163,21 @@ export const spaceship = (() => {
         this.mesh.clear();
       }
 
+      // Check if model is cached
+      if (this.modelCache[shipId]) {
+        console.log(`Using cached model for ship ${shipId}`);
+        this.applyModel(this.modelCache[shipId].clone(), selectedModel);
+        return;
+      }
+
+      // Load model and cache it
       this.loader.setPath(selectedModel.path).load(
         "scene.gltf",
         (gltf) => {
-          this.mesh = new THREE.Group();
-          const tempObjectGroup = new THREE.Group();
-          this.shipGroup = tempObjectGroup;
-          const loadedModel = gltf.scene;
-
-          loadedModel.traverse((child) => {
-            if (child.isMesh) {
-              child.castShadow = true;
-              child.receiveShadow = true;
-            }
-          });
-
-          loadedModel.rotation.set(
-            selectedModel.rotation.x,
-            selectedModel.rotation.y - Math.PI / 2,
-            selectedModel.rotation.z
-          );
-
-          // Normalize model if needed
-          if (!selectedModel.isNormalized) {
-            normalizeModelSize(loadedModel, 55);
-            normalizeModelPosition(loadedModel);
-            selectedModel.isNormalized = true;
-          }
-
-          tempObjectGroup.add(loadedModel);
-
-          // Add soft ambient light around the ship
-          const shipLight = new THREE.PointLight(0xffffff, 2, 30);
-          shipLight.position.set(0, 5, 0);
-          tempObjectGroup.add(shipLight);
-          this.shipLight = shipLight;
-
-          // Remove ambient light - not needed with scene ambient light
-          // const ambientLight = new THREE.PointLight(0x660099, 1, 50);
-          // ambientLight.position.set(0, 5, 0);
-          // tempObjectGroup.add(ambientLight);
-
-          // Remove spotlight - emissive materials provide enough glow
-          // const spotLight = new THREE.SpotLight(
-          //   0xff6600,
-          //   3,
-          //   5,
-          //   Math.PI * 1.1,
-          //   0.2
-          // );
-          // spotLight.position.copy(tempObjectGroup.position);
-          // tempObjectGroup.add(spotLight);
-
-          // Update booster flame color for this ship
-          this.boosterFlame.material.emissive.setHex(this.boosterColor);
-          this.boosterFlame.material.color.setHex(this.boosterColor);
-
-          tempObjectGroup.add(this.boosterFlame);
-
-          this.mesh.add(tempObjectGroup);
-          this.mesh.rotation.y = Math.PI;
-
-          this.scene.add(this.mesh);
-
-          this.thirdPersonCamera = new third_person_camera.ThirdPersonCamera({
-            camera: this.camera,
-            target: this.mesh,
-          });
-
-          this.updateSpaceshipPosition();
-
-          // Hide loading screen and show intro only on initial load
-          if (this.isInitialLoad) {
-            progressContainer.style.display = "none";
-
-            // Show intro screen only on first model load
-            const introScreen = document.getElementById('intro-screen');
-            if (introScreen) {
-              introScreen.style.display = 'flex';
-            }
-            this.isInitialLoad = false;
-          }
+          // Cache the loaded model for future use
+          this.modelCache[shipId] = gltf.scene.clone();
+          console.log(`Cached model for ship ${shipId}`);
+          this.applyModel(gltf.scene, selectedModel);
         },
         (xhr) => {
           let progressAmount = (xhr.loaded / xhr.total) * 100;
@@ -247,6 +185,84 @@ export const spaceship = (() => {
         },
         (error) => console.error("Error loading model:", error)
       );
+    }
+
+    applyModel(loadedModel, selectedModel) {
+      this.mesh = new THREE.Group();
+      const tempObjectGroup = new THREE.Group();
+      this.shipGroup = tempObjectGroup;
+
+      loadedModel.traverse((child) => {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+
+      loadedModel.rotation.set(
+        selectedModel.rotation.x,
+        selectedModel.rotation.y - Math.PI / 2,
+        selectedModel.rotation.z
+      );
+
+      // Normalize model if needed
+      if (!selectedModel.isNormalized) {
+        normalizeModelSize(loadedModel, 55);
+        normalizeModelPosition(loadedModel);
+        selectedModel.isNormalized = true;
+      }
+
+      tempObjectGroup.add(loadedModel);
+
+      // Add multiple lights for better ship visibility
+      const mainLight = new THREE.PointLight(0xffffff, 8, 40);
+      mainLight.position.set(0, 8, 0);
+      tempObjectGroup.add(mainLight);
+      this.mainLight = mainLight;
+
+      // Add fill lights from sides
+      const fillLight1 = new THREE.PointLight(0xaaddff, 3, 25);
+      fillLight1.position.set(-5, 2, 5);
+      tempObjectGroup.add(fillLight1);
+
+      const fillLight2 = new THREE.PointLight(0xaaddff, 3, 25);
+      fillLight2.position.set(5, 2, 5);
+      tempObjectGroup.add(fillLight2);
+
+      // Back light for rim lighting effect
+      const backLight = new THREE.PointLight(0xffffff, 4, 20);
+      backLight.position.set(0, 3, -8);
+      tempObjectGroup.add(backLight);
+
+      // Update booster flame color for this ship
+      this.boosterFlame.material.emissive.setHex(this.boosterColor);
+      this.boosterFlame.material.color.setHex(this.boosterColor);
+
+      tempObjectGroup.add(this.boosterFlame);
+
+      this.mesh.add(tempObjectGroup);
+      this.mesh.rotation.y = Math.PI;
+
+      this.scene.add(this.mesh);
+
+      this.thirdPersonCamera = new third_person_camera.ThirdPersonCamera({
+        camera: this.camera,
+        target: this.mesh,
+      });
+
+      this.updateSpaceshipPosition();
+
+      // Hide loading screen and show intro only on initial load
+      if (this.isInitialLoad) {
+        progressContainer.style.display = "none";
+
+        // Show intro screen only on first model load
+        const introScreen = document.getElementById('intro-screen');
+        if (introScreen) {
+          introScreen.style.display = 'flex';
+        }
+        this.isInitialLoad = false;
+      }
     }
     updateSpaceshipPosition() {
       if (this.mesh) {
