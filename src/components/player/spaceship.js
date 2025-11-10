@@ -214,25 +214,11 @@ export const spaceship = (() => {
 
       tempObjectGroup.add(loadedModel);
 
-      // Add multiple lights for better ship visibility
-      const mainLight = new THREE.PointLight(0xffffff, 8, 40);
-      mainLight.position.set(0, 8, 0);
-      tempObjectGroup.add(mainLight);
-      this.mainLight = mainLight;
-
-      // Add fill lights from sides
-      const fillLight1 = new THREE.PointLight(0xaaddff, 3, 25);
-      fillLight1.position.set(-5, 2, 5);
-      tempObjectGroup.add(fillLight1);
-
-      const fillLight2 = new THREE.PointLight(0xaaddff, 3, 25);
-      fillLight2.position.set(5, 2, 5);
-      tempObjectGroup.add(fillLight2);
-
-      // Back light for rim lighting effect
-      const backLight = new THREE.PointLight(0xffffff, 4, 20);
-      backLight.position.set(0, 3, -8);
-      tempObjectGroup.add(backLight);
+      // Add single red light
+      const shipLight = new THREE.PointLight(0xff0000, 2, 30);
+      shipLight.position.set(0, 5, 0);
+      tempObjectGroup.add(shipLight);
+      this.shipLight = shipLight;
 
       // Update booster flame color for this ship
       this.boosterFlame.material.emissive.setHex(this.boosterColor);
