@@ -39,7 +39,7 @@ export const planets = (() => {
     // Creates a group of planet objects, including model and fog sphere
     createPlanetGroup(gltf, playerPosition = null) {
       const planetGroup = new THREE.Group();
-      const scale = 500 + Math.random() * 500; // Range: 500-1000 (increased minimum size)
+      const scale = 300 + Math.random() * 300; // Range: 300-600 (increased minimum size)
       const model = this.createPlanetModel(gltf, scale);
 
       const randomColor = getRandomDeepColor();
