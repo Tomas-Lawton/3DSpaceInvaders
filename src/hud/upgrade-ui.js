@@ -39,6 +39,29 @@ export function initializeUpgradeUI() {
     selectButton.addEventListener('click', handleSelectShip);
   }
 
+  // Set up confirmation dialog buttons
+  const confirmYes = document.getElementById('confirm-yes');
+  const confirmNo = document.getElementById('confirm-no');
+  const confirmDialog = document.getElementById('ship-confirm-dialog');
+
+  if (confirmYes) {
+    confirmYes.addEventListener('click', () => {
+      const selectButton = document.getElementById('select-ship');
+      const shipId = selectButton?.dataset.shipId || 'ship-1';
+      console.log(`Ship ${shipId} selected for gameplay!`);
+      // Hide dialog
+      if (confirmDialog) confirmDialog.style.display = 'none';
+      // This will be handled by the existing ship selection logic in hud.js
+    });
+  }
+
+  if (confirmNo) {
+    confirmNo.addEventListener('click', () => {
+      // Just close the dialog
+      if (confirmDialog) confirmDialog.style.display = 'none';
+    });
+  }
+
   // Initial update
   updateAllUI();
 
@@ -306,22 +329,42 @@ function handleSelectShip() {
   const shipId = selectButton?.dataset.shipId || 'ship-1';
 
   const ship = UPGRADE_SYSTEM.ships[shipId];
+
+  // Show confirmation dialog
+  const dialog = document.getElementById('ship-confirm-dialog');
+  const confirmMessage = document.getElementById('confirm-message');
+
   if (!ship || !ship.unlocked) {
-    // Visual feedback - flash the select button red
-    if (selectButton) {
-      selectButton.style.borderColor = 'rgba(255, 0, 0, 0.8)';
-      selectButton.style.boxShadow = '0 0 20px rgba(255, 0, 0, 0.6)';
-      setTimeout(() => {
-        selectButton.style.borderColor = '';
-        selectButton.style.boxShadow = '';
-      }, 500);
+    // Show insufficient resources message
+    confirmMessage.innerHTML = `
+      <strong style="color: #ff4444;">SHIP LOCKED!</strong><br><br>
+      This ship must be unlocked first.<br>
+      Resources needed: ${ship?.cost.iron || 0}🔩 ${ship?.cost.gold || 0}🏆 ${ship?.cost.crystal || 0}💎<br>
+      XP needed: ${ship?.cost.xp || 0}⭐
+    `;
+
+    if (dialog) {
+      dialog.style.display = 'flex';
+      // Hide yes button, only show no button
+      document.getElementById('confirm-yes').style.display = 'none';
+      document.getElementById('confirm-no').textContent = 'OK';
     }
+
     console.log('Cannot select locked ship - unlock it first!');
     return;
   }
 
-  console.log(`Ship ${shipId} selected for gameplay!`);
-  // This will be handled by the existing ship selection logic in hud.js
+  // Ship is unlocked, show confirmation
+  confirmMessage.innerHTML = `
+    Select <strong style="color: #00ffee;">${ship.name}</strong> as your active ship?
+  `;
+
+  if (dialog) {
+    dialog.style.display = 'flex';
+    // Show both buttons
+    document.getElementById('confirm-yes').style.display = 'inline-block';
+    document.getElementById('confirm-no').textContent = 'NO';
+  }
 }
 
 // Function to be called when pause menu opens

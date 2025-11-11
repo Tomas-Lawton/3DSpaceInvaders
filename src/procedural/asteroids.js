@@ -149,8 +149,8 @@ export const asteroids = (() => {
         // }
 
 
-        // LIGHT THE GROUP - brighter for better visibility
-        const pointLight = new THREE.PointLight(0xCC5500, 800, 400);
+        // LIGHT THE GROUP - reduced intensity for better performance
+        const pointLight = new THREE.PointLight(0xCC5500, 200, 200);
         pointLight.position.set(0, 0, 0);
         asteroidGroup.add(pointLight);
 

@@ -412,16 +412,6 @@
             <span class="ship-lock-icon">🚀</span>
             <span class="ship-name-label">STARTER</span>
           </div>
-          <div id="ship-2" class="ship-option locked" data-ship="ship-2">
-            <span class="ship-lock-icon">🔒</span>
-            <span class="ship-name-label">STRIKER</span>
-            <div class="ship-cost-detail">
-              <span>🔩 2</span>
-              <span>🏆 1</span>
-              <span>💎 1</span>
-            </div>
-            <div class="ship-xp-detail">⭐ XP: 20</div>
-          </div>
           <div id="ship-3" class="ship-option locked" data-ship="ship-3">
             <span class="ship-lock-icon">🔒</span>
             <span class="ship-name-label">REAPER</span>
@@ -469,6 +459,18 @@
 
     <div class="cursor small"></div>
     <div class="cursor big"></div>
+
+    <!-- Ship Selection Confirmation Dialog -->
+    <div id="ship-confirm-dialog" style="display: none;">
+      <div class="confirm-dialog-content">
+        <h2 class="confirm-title">CONFIRM SHIP SELECTION</h2>
+        <p class="confirm-message" id="confirm-message">Select this ship?</p>
+        <div class="confirm-buttons">
+          <button id="confirm-yes" class="confirm-btn yes-btn">YES</button>
+          <button id="confirm-no" class="confirm-btn no-btn">NO</button>
+        </div>
+      </div>
+    </div>
 
     <div id="progress-container">
       <h1 id="progress">LOADING 0/100</h1>

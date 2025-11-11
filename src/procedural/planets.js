@@ -138,7 +138,7 @@ export const planets = (() => {
       ];
 
       return lightPositions.map((pos) => {
-        const light = new THREE.PointLight(color, 10, 1000);
+        const light = new THREE.PointLight(color, 8, 600);
         light.position.set(
           (pos.x * scale) / 2 + position.x,
           (pos.y * scale) / 2 + position.y,

@@ -103,17 +103,11 @@ export const enemy = (() => {
         loadedModel.scale.set(0.3, 0.3, 0.3); // Reduced from 0.5 for smaller enemies
         enemyObject.add(loadedModel);
 
-        // Brighter red light for better visibility
-        const enemyLight = new THREE.PointLight(0xff2200, 20, 60); // Red, increased intensity and range
+        // Optimized red light for better performance
+        const enemyLight = new THREE.PointLight(0xff2200, 12, 40);
         enemyLight.position.set(0, 2, 0);
         enemyLight.castShadow = false;
         enemyObject.add(enemyLight);
-
-        // Add subtle fill light to make ship more visible
-        const fillLight = new THREE.PointLight(0xffffff, 5, 30);
-        fillLight.position.set(0, -1, 0);
-        fillLight.castShadow = false;
-        enemyObject.add(fillLight);
 
         // Add red triangle marker above enemy for visibility during dogfights
         const markerCanvas = document.createElement('canvas');
