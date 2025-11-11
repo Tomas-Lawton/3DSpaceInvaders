@@ -91,26 +91,26 @@
         <!-- Player Stats Summary Header - Compact Single Line -->
         <div id="player-stats-header">
           <div class="stat-card">
-            <span class="stat-icon">💚</span>
+            <!-- <span class="stat-icon">💚</span> -->
             <div class="stat-info">
               <span class="stat-label">HP:</span>
               <span class="stat-value-large" id="header-health">100</span>
             </div>
           </div>
           <div class="stat-card">
-            <span class="stat-icon">🚀</span>
+            <!-- <span class="stat-icon">🚀</span> -->
             <div class="stat-info">
               <span class="stat-label">SPEED:</span>
               <span class="stat-value-large" id="header-speed">8.5</span>
             </div>
           </div>
-          <div class="stat-card">
+          <!-- <div class="stat-card">
             <span class="stat-icon">🎯</span>
             <div class="stat-info">
               <span class="stat-label">AGILITY:</span>
               <span class="stat-value-large" id="header-agility">7.2</span>
             </div>
-          </div>
+          </div> -->
           <div class="stat-card">
             <span class="stat-icon">⭐</span>
             <div class="stat-info">
@@ -220,6 +220,58 @@
             <button id="select-ship">SELECT SHIP</button>
 
             <div id="select-ship-label">SELECT SHIP</div>
+
+            <!-- Bottom Section - Ship Selector Bar -->
+            <div id="bottom-ships-bar">
+              <div
+                id="ship-1"
+                class="ship-option active unlocked"
+                data-ship="ship-1"
+              >
+                <span class="ship-lock-icon">🚀</span>
+                <span class="ship-name-label">STARTER</span>
+              </div>
+              <div id="ship-3" class="ship-option locked" data-ship="ship-3">
+                <span class="ship-lock-icon">🔒</span>
+                <span class="ship-name-label">REAPER</span>
+                <div class="ship-cost-detail">
+                  <span>🔩 3</span>
+                  <span>🏆 2</span>
+                  <span>💎 1</span>
+                </div>
+                <div class="ship-xp-detail">⭐ XP: 40</div>
+              </div>
+              <div id="ship-4" class="ship-option locked" data-ship="ship-4">
+                <span class="ship-lock-icon">🔒</span>
+                <span class="ship-name-label">FURY</span>
+                <div class="ship-cost-detail">
+                  <span>🔩 4</span>
+                  <span>🏆 3</span>
+                  <span>💎 2</span>
+                </div>
+                <div class="ship-xp-detail">⭐ XP: 60</div>
+              </div>
+              <div id="ship-5" class="ship-option locked" data-ship="ship-5">
+                <span class="ship-lock-icon">🔒</span>
+                <span class="ship-name-label">BLADE</span>
+                <div class="ship-cost-detail">
+                  <span>🔩 5</span>
+                  <span>🏆 4</span>
+                  <span>💎 2</span>
+                </div>
+                <div class="ship-xp-detail">⭐ XP: 80</div>
+              </div>
+              <div id="ship-6" class="ship-option locked" data-ship="ship-6">
+                <span class="ship-lock-icon">🔒</span>
+                <span class="ship-name-label">UNLOCKS</span>
+                <div class="ship-cost-detail">
+                  <span>🔩 6</span>
+                  <span>🏆 5</span>
+                  <span>💎 3</span>
+                </div>
+                <div class="ship-xp-detail">⭐ XP: 100</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -404,57 +456,6 @@
           </div>
         </div>
 
-        <!-- Bottom Section - Ship Selector Bar -->
-        <div id="bottom-ships-bar">
-          <div
-            id="ship-1"
-            class="ship-option active unlocked"
-            data-ship="ship-1"
-          >
-            <span class="ship-lock-icon">🚀</span>
-            <span class="ship-name-label">STARTER</span>
-          </div>
-          <div id="ship-3" class="ship-option locked" data-ship="ship-3">
-            <span class="ship-lock-icon">🔒</span>
-            <span class="ship-name-label">REAPER</span>
-            <div class="ship-cost-detail">
-              <span>🔩 3</span>
-              <span>🏆 2</span>
-              <span>💎 1</span>
-            </div>
-            <div class="ship-xp-detail">⭐ XP: 40</div>
-          </div>
-          <div id="ship-4" class="ship-option locked" data-ship="ship-4">
-            <span class="ship-lock-icon">🔒</span>
-            <span class="ship-name-label">FURY</span>
-            <div class="ship-cost-detail">
-              <span>🔩 4</span>
-              <span>🏆 3</span>
-              <span>💎 2</span>
-            </div>
-            <div class="ship-xp-detail">⭐ XP: 60</div>
-          </div>
-          <div id="ship-5" class="ship-option locked" data-ship="ship-5">
-            <span class="ship-lock-icon">🔒</span>
-            <span class="ship-name-label">BLADE</span>
-            <div class="ship-cost-detail">
-              <span>🔩 5</span>
-              <span>🏆 4</span>
-              <span>💎 2</span>
-            </div>
-            <div class="ship-xp-detail">⭐ XP: 80</div>
-          </div>
-          <div id="ship-6" class="ship-option locked" data-ship="ship-6">
-            <span class="ship-lock-icon">🔒</span>
-            <span class="ship-name-label">UNLOCKS</span>
-            <div class="ship-cost-detail">
-              <span>🔩 6</span>
-              <span>🏆 5</span>
-              <span>💎 3</span>
-            </div>
-            <div class="ship-xp-detail">⭐ XP: 100</div>
-          </div>
-        </div>
         <button id="unlock-ship" style="display: none">UNLOCK SHIP</button>
       </div>
     </div>
@@ -463,7 +464,7 @@
     <div class="cursor big"></div>
 
     <!-- Ship Selection Confirmation Dialog -->
-    <div id="ship-confirm-dialog" style="display: none;">
+    <div id="ship-confirm-dialog" style="display: none">
       <div class="confirm-dialog-content">
         <h2 class="confirm-title">CONFIRM SHIP SELECTION</h2>
         <p class="confirm-message" id="confirm-message">Select this ship?</p>
@@ -539,7 +540,9 @@
         <div class="intro-footer">
           <button id="start-game-btn" class="intro-start-button" disabled>
             <span class="button-text">LOADING SHIPS...</span>
-            <span class="button-subtitle" style="display: none;">Press ENTER or SPACE</span>
+            <span class="button-subtitle" style="display: none"
+              >Press ENTER or SPACE</span
+            >
           </button>
         </div>
       </div>
