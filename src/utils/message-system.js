@@ -29,7 +29,7 @@ export const MESSAGES = {
   welcome: {
     id: 'welcome',
     type: MessageType.INFO,
-    title: 'Welcome, Pilot',
+    title: 'MISSION INFO',
     lines: [
       'Welcome to the Space Defense Force.',
       'Your mission: Save planets from invasion.',

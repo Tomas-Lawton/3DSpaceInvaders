@@ -353,7 +353,7 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
 
   // Add asteroid fields to mini-map
   if (asteroidFields && asteroidFields.length > 0) {
-    console.log(`[MINIMAP] Rendering ${asteroidFields.length} asteroid fields`);
+    // console.log(`[MINIMAP] Rendering ${asteroidFields.length} asteroid fields`);
     asteroidFields.forEach((field, index) => {
       const dx = field.position.x - playerPosition.x;
       const dz = field.position.z - playerPosition.z;
@@ -369,11 +369,11 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
         asteroidDot.style.left = `${x}px`;
         asteroidDot.style.top = `${y}px`;
         miniMapTargets.appendChild(asteroidDot);
-        console.log(`[MINIMAP] Asteroid ${index}: distance=${distance.toFixed(0)}u, pos=(${x.toFixed(1)}, ${y.toFixed(1)})`);
+        // console.log(`[MINIMAP] Asteroid ${index}: distance=${distance.toFixed(0)}u, pos=(${x.toFixed(1)}, ${y.toFixed(1)})`);
       }
     });
   } else {
-    console.log('[MINIMAP] No asteroid fields to render');
+    // console.log('[MINIMAP] No asteroid fields to render');
   }
 
   // Add stars to mini-map
@@ -527,21 +527,25 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     // Calculate altitude difference for all types
     const altitudeDiff = Math.floor(dirToTarget.y);
 
-    // For asteroids, create a simple blue line instead of full marker
-    if (type === 'asteroid') {
+    // For asteroids and stars, create a simple line instead of full marker
+    if (type === 'asteroid' || type === 'star') {
+      // Different colors for different types
+      const lineColor = type === 'asteroid' ? '#0099ff' : '#ffcc00'; // Blue for asteroids, yellow for stars
+      const glowColor = type === 'asteroid' ? 'rgba(0, 153, 255, 0.8)' : 'rgba(255, 204, 0, 0.8)';
+
       indicator.style.cssText = `
         position: absolute;
         left: ${indicatorX}px;
         top: ${indicatorY}px;
         width: 3px;
         height: 16px;
-        background: #0099ff;
-        box-shadow: 0 0 8px rgba(0, 153, 255, 0.8);
+        background: ${lineColor};
+        box-shadow: 0 0 8px ${glowColor};
         transform: translate(-50%, -50%);
         border-radius: 2px;
       `;
 
-      // Add altitude label for asteroids
+      // Add altitude label for asteroids and stars
       const altitudeLabel = document.createElement('div');
       altitudeLabel.className = 'altitude-label';
 
@@ -550,7 +554,7 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
       if (altitudeDiff > 50) {
         altitudeColor = '#ff9900'; // Above - orange
       } else if (altitudeDiff < -50) {
-        altitudeColor = '#0099ff'; // Below - blue
+        altitudeColor = type === 'asteroid' ? '#0099ff' : '#ffcc00'; // Blue for asteroids, yellow for stars
       }
 
       altitudeLabel.textContent = altitudeDiff > 0 ? `↑${altitudeDiff}` : altitudeDiff < 0 ? `↓${Math.abs(altitudeDiff)}` : '→';

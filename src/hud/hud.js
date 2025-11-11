@@ -18,15 +18,17 @@ export const modelPaths = [
     boosterColor: 0xffaa00, // Orange
     laserColor: 0xffaa00,
     laserGlow: 0xff8800,
+    boosterOffset: { x: 0, y: 2, z: -5 }, // Default position
   },
   {
-    path: "public/ships/ship_1/",
+    path: "public/ships/ship_2/",
     rotation: { x: 0, y: Math.PI / 2, z: 0 },
     isNormalized: false,
-    name: "NOVA STRIKER",
-    boosterColor: 0x00ffee, // Cyan
-    laserColor: 0x00ffee,
-    laserGlow: 0x00ccbb,
+    name: "STORM SCOUT",
+    boosterColor: 0xff6600, // Red-Orange
+    laserColor: 0xff6600,
+    laserGlow: 0xff3300,
+    boosterOffset: { x: 0, y: 6, z: -5 }, // Default position
   },
   {
     path: "public/ships/ship_0/",
@@ -36,6 +38,7 @@ export const modelPaths = [
     boosterColor: 0xc87dff, // Purple
     laserColor: 0xc87dff,
     laserGlow: 0x9400ff,
+    boosterOffset: { x: 0, y: 8, z: -5 }, // Fighter - raised booster
   },
   {
     path: "public/ships/ship_6/",
@@ -45,15 +48,17 @@ export const modelPaths = [
     boosterColor: 0x00ff66, // Green
     laserColor: 0x00ff66,
     laserGlow: 0x00cc44,
+    boosterOffset: { x: 0, y: 2, z: -5 }, // Default position
   },
   {
     path: "public/ships/ship_7/",
     rotation: { x: 0, y: 2 * Math.PI, z: 0 },
     isNormalized: false,
-    name: "GHOST BLADE",
+    name: "GHOST INTERCEPTOR",
     boosterColor: 0x6699ff, // Light Blue
     laserColor: 0x6699ff,
     laserGlow: 0x3366cc,
+    boosterOffset: { x: 0, y: 4, z: -5 }, // Default position
   },
 ];
 
@@ -105,10 +110,22 @@ async function loadShipModels() {
   const loader = new GLTFLoader();
 
   try {
+    // Map modelPaths array to correct ship IDs
+    // Available ships in folder: 0, 2, 5, 6, 7
+    // HTML has: ship-1, ship-2, ship-3, ship-4, ship-6
+    const shipMapping = [
+      'ship-1', // index 0: ship_5 folder -> ship-1 (SOLAR PHANTOM - STARTER)
+      'ship-2', // index 1: ship_2 folder -> ship-2 (STORM SCOUT)
+      'ship-3', // index 2: ship_0 folder -> ship-3 (VOID REAPER)
+      'ship-4', // index 3: ship_6 folder -> ship-4 (EMERALD FURY)
+      'ship-6'  // index 4: ship_7 folder -> ship-6 (GHOST INTERCEPTOR)
+    ];
+
     const modelPromises = modelPaths.map(async (modelData, index) => {
       const gltf = await loader.setPath(modelData.path).loadAsync("scene.gltf");
       const model = gltf.scene.clone();
-      models[`ship-${index + 1}`] = {
+      const shipId = shipMapping[index];
+      models[shipId] = {
         model,
         rotation: modelData.rotation,
         isNormalized: false,
@@ -116,43 +133,37 @@ async function loadShipModels() {
         boosterColor: modelData.boosterColor,
         laserColor: modelData.laserColor,
         laserGlow: modelData.laserGlow,
+        boosterOffset: modelData.boosterOffset,
       };
+      console.log(`Loaded ${modelData.path} as ${shipId} (${modelData.name})`);
     });
 
     await Promise.all(modelPromises);
+    console.log('All ship models loaded:', Object.keys(models));
   } catch (error) {
     console.error("Error loading models:", error);
   }
 }
 
-const shipsBar = document.getElementById("bottom-ships-bar");
-if (shipsBar) {
-  shipsBar.addEventListener("click", (e) => {
-    if (e.target.classList.contains("ship-option")) {
-      // Remove active class from all ships
-      document
-        .querySelectorAll(".ship-option")
-        .forEach((el) => el.classList.remove("active"));
-      // Add active class to clicked ship
-      e.target.classList.add("active");
-
-      const shipId = e.target.id;
-      console.log("Switching to model: ", shipId);
-      document.getElementById("select-ship").dataset.shipId = shipId;
-      switchModel(shipId);
-    }
-  });
-} else {
-  console.warn(
-    "Ship selector bar not found - ships-bar element missing from DOM"
-  );
-}
+// Ship selection is now handled by upgrade-ui.js
+// Export switchModel so it can be called from upgrade-ui.js
+export { switchModel };
 
 let previousModelId = null;
 
 function switchModel(shipId) {
-  if (!models[shipId]) return;
-  if (previousModelId === shipId) return;
+  console.log(`switchModel called with: ${shipId}`);
+  console.log(`Available models:`, Object.keys(models));
+
+  if (!models[shipId]) {
+    console.warn(`Model not found for ${shipId}`);
+    return;
+  }
+
+  if (previousModelId === shipId) {
+    console.log(`Already showing ${shipId}`);
+    return;
+  }
 
   if (currentModel) {
     scene.remove(currentModel.model);
@@ -181,6 +192,7 @@ function switchModel(shipId) {
   }
 
   previousModelId = shipId;
+  console.log(`Successfully switched to ${shipId}`);
 }
 
 export function normalizeModelSize(model, targetSize = 1) {

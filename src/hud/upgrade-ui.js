@@ -4,12 +4,13 @@
 import {
   UPGRADE_SYSTEM,
   loadUpgradeState,
-  saveUpgradeState,
   canAfford,
   purchaseUpgrade,
-  unlockShip
+  unlockShip,
+  FREE_SHIPS_MODE
 } from '../utils/upgrade-system.js';
 import { getOres, getXP, setOres, deductXP } from '../components/dom.js';
+import { switchModel } from './hud.js';
 
 let currentlySelectedShip = 'ship-1';
 
@@ -61,6 +62,9 @@ export function initializeUpgradeUI() {
       if (confirmDialog) confirmDialog.style.display = 'none';
     });
   }
+
+  // Set up keyboard navigation for ship selection
+  document.addEventListener('keydown', handleShipNavigationKeys);
 
   // Initial update
   updateAllUI();
@@ -155,24 +159,33 @@ function updateShipStates() {
     }
   });
 
-  // Update unlock button visibility
+  // Update select/unlock button visibility based on selected ship
   const selectedShip = UPGRADE_SYSTEM.ships[currentlySelectedShip];
   const unlockButton = document.getElementById('unlock-ship');
+  const selectButton = document.getElementById('select-ship');
 
-  if (unlockButton && selectedShip) {
+  if (selectedShip) {
     if (selectedShip.unlocked) {
-      unlockButton.style.display = 'none';
+      // Show select button, hide unlock button
+      if (unlockButton) unlockButton.style.display = 'none';
+      if (selectButton) selectButton.style.display = 'block';
     } else {
-      unlockButton.style.display = 'block';
-      const resources = getOres();
-      const xp = getXP();
-      const affordable = canAfford(selectedShip.cost, resources, xp);
-      unlockButton.disabled = !affordable;
+      // Show unlock button, hide select button
+      if (selectButton) selectButton.style.display = 'none';
+      if (unlockButton) {
+        unlockButton.style.display = 'block';
+        const resources = getOres();
+        const xp = getXP();
+        const affordable = canAfford(selectedShip.cost, resources, xp);
+        unlockButton.disabled = !affordable;
 
-      if (affordable) {
-        unlockButton.textContent = `UNLOCK - ${selectedShip.cost.iron}🔩 ${selectedShip.cost.gold}🏆 ${selectedShip.cost.crystal}💎`;
-      } else {
-        unlockButton.textContent = 'INSUFFICIENT RESOURCES';
+        if (FREE_SHIPS_MODE) {
+          unlockButton.textContent = 'UNLOCK - FREE';
+        } else if (affordable) {
+          unlockButton.textContent = `UNLOCK - ${selectedShip.cost.iron}🔩 ${selectedShip.cost.gold}🏆 ${selectedShip.cost.crystal}💎`;
+        } else {
+          unlockButton.textContent = 'INSUFFICIENT RESOURCES';
+        }
       }
     }
   }
@@ -238,36 +251,18 @@ function handleShipClick(event) {
   const shipEl = event.currentTarget;
   const shipId = shipEl.id;
 
+  selectShipById(shipId);
+}
+
+// Select ship by ID (can be called from keyboard or click)
+function selectShipById(shipId) {
   const ship = UPGRADE_SYSTEM.ships[shipId];
   if (!ship) return;
 
-  // If locked, check if user can afford it before allowing selection
-  if (!ship.unlocked) {
-    const resources = getOres();
-    const xp = getXP();
-    const affordable = canAfford(ship.cost, resources, xp);
+  const shipEl = document.getElementById(shipId);
+  if (!shipEl) return;
 
-    if (!affordable) {
-      // Visual feedback that they can't afford it
-      shipEl.style.borderColor = 'rgba(255, 0, 0, 0.8)';
-      shipEl.style.boxShadow = '0 0 20px rgba(255, 0, 0, 0.6)';
-      setTimeout(() => {
-        shipEl.style.borderColor = '';
-        shipEl.style.boxShadow = '';
-      }, 500);
-      console.log(`Cannot select ${ship.name} - insufficient resources`);
-      return; // Don't allow selection
-    }
-
-    // If affordable, allow selection to show unlock button
-    currentlySelectedShip = shipId;
-    document.querySelectorAll('.ship-option').forEach(el => el.classList.remove('active'));
-    shipEl.classList.add('active');
-    updateShipStates();
-    return;
-  }
-
-  // Select the unlocked ship
+  // Allow selecting any ship to view it in the hangar
   currentlySelectedShip = shipId;
 
   // Update active state
@@ -279,6 +274,10 @@ function handleShipClick(event) {
   if (selectButton) {
     selectButton.dataset.shipId = shipId;
   }
+
+  // Switch the 3D model in the hangar
+  console.log(`Switching to model: ${shipId}`);
+  switchModel(shipId);
 
   updateShipStates();
 
@@ -330,12 +329,11 @@ function handleSelectShip() {
 
   const ship = UPGRADE_SYSTEM.ships[shipId];
 
-  // Show confirmation dialog
-  const dialog = document.getElementById('ship-confirm-dialog');
-  const confirmMessage = document.getElementById('confirm-message');
-
   if (!ship || !ship.unlocked) {
     // Show insufficient resources message
+    const dialog = document.getElementById('ship-confirm-dialog');
+    const confirmMessage = document.getElementById('confirm-message');
+
     confirmMessage.innerHTML = `
       <strong style="color: #ff4444;">SHIP LOCKED!</strong><br><br>
       This ship must be unlocked first.<br>
@@ -354,7 +352,17 @@ function handleSelectShip() {
     return;
   }
 
-  // Ship is unlocked, show confirmation
+  // Skip confirmation for ship-1 (first ship)
+  if (shipId === 'ship-1') {
+    console.log(`Ship ${shipId} selected for gameplay!`);
+    // This will be handled by the existing ship selection logic in hud.js
+    return;
+  }
+
+  // Show confirmation dialog for other ships
+  const dialog = document.getElementById('ship-confirm-dialog');
+  const confirmMessage = document.getElementById('confirm-message');
+
   confirmMessage.innerHTML = `
     Select <strong style="color: #00ffee;">${ship.name}</strong> as your active ship?
   `;
@@ -364,6 +372,48 @@ function handleSelectShip() {
     // Show both buttons
     document.getElementById('confirm-yes').style.display = 'inline-block';
     document.getElementById('confirm-no').textContent = 'NO';
+  }
+}
+
+// Handle keyboard navigation for ship selection
+function handleShipNavigationKeys(event) {
+  // Only handle keys when pause menu is visible
+  const controlUI = document.getElementById('control-ui');
+  if (!controlUI || controlUI.style.display === 'none') {
+    return;
+  }
+
+  // Get all ship options
+  const shipOptions = Array.from(document.querySelectorAll('.ship-option'));
+  if (shipOptions.length === 0) return;
+
+  const currentIndex = shipOptions.findIndex(el => el.classList.contains('active'));
+
+  if (event.key === 'ArrowLeft') {
+    event.preventDefault();
+    // Move to previous ship
+    if (currentIndex > 0) {
+      const prevShip = shipOptions[currentIndex - 1];
+      selectShipById(prevShip.id);
+    }
+  } else if (event.key === 'ArrowRight') {
+    event.preventDefault();
+    // Move to next ship
+    if (currentIndex < shipOptions.length - 1) {
+      const nextShip = shipOptions[currentIndex + 1];
+      selectShipById(nextShip.id);
+    }
+  } else if (event.key === 'Enter') {
+    event.preventDefault();
+    // Trigger select or unlock button based on ship state
+    const selectedShip = UPGRADE_SYSTEM.ships[currentlySelectedShip];
+    if (selectedShip) {
+      if (selectedShip.unlocked) {
+        handleSelectShip();
+      } else {
+        handleUnlockShip();
+      }
+    }
   }
 }
 

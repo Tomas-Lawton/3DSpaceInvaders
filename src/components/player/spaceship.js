@@ -151,8 +151,17 @@ export const spaceship = (() => {
 
       let selectShip = document.getElementById("select-ship");
       selectShip.addEventListener("click", () => {
-        const updatedShipId =
-          parseInt(selectShip.dataset.shipId.replace("ship-", ""), 10) - 1;
+        // Map ship IDs to modelPaths indices
+        // ship-1 -> 0, ship-2 -> 1, ship-3 -> 2, ship-4 -> 3, ship-6 -> 4
+        const shipIdMapping = {
+          'ship-1': 0,
+          'ship-2': 1,
+          'ship-3': 2,
+          'ship-4': 3,
+          'ship-6': 4
+        };
+        const shipId = selectShip.dataset.shipId;
+        const updatedShipId = shipIdMapping[shipId];
         console.log("Updating, ", updatedShipId);
         this.setSpaceshipModel(updatedShipId);
       });
@@ -192,11 +201,12 @@ export const spaceship = (() => {
       const selectedModel = modelPaths[shipId];
       console.log(selectedModel);
 
-      // Store ship colors for lasers and booster
+      // Store ship colors and booster offset for lasers and booster
       this.currentShipId = shipId;
       this.boosterColor = selectedModel.boosterColor || 0xc87dff;
       this.laserColor = selectedModel.laserColor || 0xc87dff;
       this.laserGlow = selectedModel.laserGlow || 0x9400ff;
+      this.boosterOffset = selectedModel.boosterOffset || { x: 0, y: 2, z: -5 };
 
       // Remove previous model if it exists
       if (this.mesh) {
@@ -408,10 +418,12 @@ export const spaceship = (() => {
         8 // segments (8 is good for performance)
       );
 
+      // Use ship-specific booster offset
+      const offset = this.boosterOffset || { x: 0, y: 2, z: -5 };
       this.boosterFlame.position.set(
-        0,
-        2, // Lowered to proper position behind ship
-        -flameLength / 2 - 5
+        offset.x,
+        offset.y,
+        -flameLength / 2 + offset.z
       );
 
       this.boosterFlame.rotation.x = -Math.PI / 2;

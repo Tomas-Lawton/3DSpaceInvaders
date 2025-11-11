@@ -137,8 +137,8 @@ export const enemy = (() => {
         enemyObject.marker = markerSprite;
 
         // Add variance to enemy properties
-        enemyObject.speedMultiplier = 1.0 + Math.random() * 0.6; // 1.0 to 1.6x speed variance (increased)
-        enemyObject.turnSpeed = 0.015 + Math.random() * 0.01; // 0.015 to 0.025 turn speed
+        enemyObject.speedMultiplier = 0.8 + Math.random() * 0.4; // 0.8 to 1.2x speed variance (reduced for better chase gameplay)
+        enemyObject.turnSpeed = 0.008 + Math.random() * 0.005; // 0.008 to 0.013 turn speed (reduced for smoother arcing)
 
         // Store planet center for collision avoidance
         enemyObject.planetCenter = aroundPoint.clone();
@@ -458,7 +458,7 @@ export const enemy = (() => {
 
     animateForwardMovement(enemy) {
       if (enemy) {
-        const baseSpeed = .7; // Increased from 0.35 for faster, more challenging enemies
+        const baseSpeed = 0.5; // Reduced for better chase gameplay and dogfighting
         const speedMultiplier = enemy.speedMultiplier || 1.0;
         let speed = baseSpeed * speedMultiplier; // Apply individual speed variance
         let direction = new THREE.Vector3();

@@ -1,6 +1,11 @@
 // Upgrade System for Space Invaders
 // Manages ship upgrades and unlocks
 
+// ========================================
+// TESTING TOGGLE - Set to true to unlock all ships for free
+// ========================================
+export const FREE_SHIPS_MODE = true;
+
 export const UPGRADE_SYSTEM = {
   // Ship unlock costs (XP and resources required)
   ships: {
@@ -140,6 +145,11 @@ export function saveUpgradeState() {
 
 // Check if player can afford an upgrade
 export function canAfford(cost, resources, xp) {
+  // In FREE_SHIPS_MODE, all costs are considered free
+  if (FREE_SHIPS_MODE) {
+    return true;
+  }
+
   return cost.iron <= resources.iron &&
          cost.gold <= resources.gold &&
          cost.crystal <= resources.crystal &&
@@ -186,9 +196,14 @@ export function unlockShip(shipId, resources, xp) {
   ship.unlocked = true;
   saveUpgradeState();
 
+  // In FREE_SHIPS_MODE, return zero cost so no resources are deducted
+  const actualCost = FREE_SHIPS_MODE
+    ? { iron: 0, gold: 0, crystal: 0, xp: 0 }
+    : ship.cost;
+
   return {
     success: true,
-    cost: ship.cost
+    cost: actualCost
   };
 }
 

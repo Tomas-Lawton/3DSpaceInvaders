@@ -89,86 +89,86 @@
     <div id="control-ui">
       <div id="hud-container">
         <!-- Player Stats Summary Header - Compact Single Line -->
-        <div id="player-stats-header">
-          <div class="stat-card">
-            <!-- <span class="stat-icon">💚</span> -->
-            <div class="stat-info">
-              <span class="stat-label">HP:</span>
-              <span class="stat-value-large" id="header-health">100</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <!-- <span class="stat-icon">🚀</span> -->
-            <div class="stat-info">
-              <span class="stat-label">SPEED:</span>
-              <span class="stat-value-large" id="header-speed">8.5</span>
-            </div>
-          </div>
-          <!-- <div class="stat-card">
-            <span class="stat-icon">🎯</span>
-            <div class="stat-info">
-              <span class="stat-label">AGILITY:</span>
-              <span class="stat-value-large" id="header-agility">7.2</span>
-            </div>
-          </div> -->
-          <div class="stat-card">
-            <span class="stat-icon">⭐</span>
-            <div class="stat-info">
-              <span class="stat-label">XP:</span>
-              <span class="stat-value-large" id="header-xp">0</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon">🔩</span>
-            <div class="stat-info">
-              <span class="stat-label">IRON:</span>
-              <span class="stat-value-large" id="header-iron">0</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon">🏆</span>
-            <div class="stat-info">
-              <span class="stat-label">GOLD:</span>
-              <span class="stat-value-large" id="header-gold">0</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon">💎</span>
-            <div class="stat-info">
-              <span class="stat-label">CRYSTAL:</span>
-              <span class="stat-value-large" id="header-crystal">0</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon">🌍</span>
-            <div class="stat-info">
-              <span class="stat-label">SAVED:</span>
-              <span class="stat-value-large" id="planets-saved">0</span>
-            </div>
-          </div>
-          <div class="stat-card">
-            <span class="stat-icon">💀</span>
-            <div class="stat-info">
-              <span class="stat-label">KILLS:</span>
-              <span class="stat-value-large" id="enemies-killed">0</span>
-            </div>
-          </div>
-        </div>
 
         <!-- Top Left Section - Info & Radar -->
         <div id="top-left-section">
           <!-- Pilot Status -->
           <div id="pilot-status">
             <p class="pilot-status-text">
-              <span class="pilot-status-label">PILOT:</span>
+              <span class="pilot-status-label">PILOT STATUS:</span>
               <span class="pilot-status-value">ACTIVE</span>
             </p>
+            <div id="player-stats-header">
+              <div class="stat-card">
+                <!-- <span class="stat-icon">💚</span> -->
+                <div class="stat-info">
+                  <span class="stat-label">HP:</span>
+                  <span class="stat-value-large" id="header-health">100</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <!-- <span class="stat-icon">🚀</span> -->
+                <div class="stat-info">
+                  <span class="stat-label">SPEED:</span>
+                  <span class="stat-value-large" id="header-speed">8.5</span>
+                </div>
+              </div>
+              <!-- <div class="stat-card">
+            <span class="stat-icon">🎯</span>
+            <div class="stat-info">
+              <span class="stat-label">AGILITY:</span>
+              <span class="stat-value-large" id="header-agility">7.2</span>
+            </div>
+          </div> -->
+              <div class="stat-card">
+                <span class="stat-icon">⭐</span>
+                <div class="stat-info">
+                  <span class="stat-label">XP:</span>
+                  <span class="stat-value-large" id="header-xp">0</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="stat-icon">🔩</span>
+                <div class="stat-info">
+                  <span class="stat-label">IRON:</span>
+                  <span class="stat-value-large" id="header-iron">0</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="stat-icon">🏆</span>
+                <div class="stat-info">
+                  <span class="stat-label">GOLD:</span>
+                  <span class="stat-value-large" id="header-gold">0</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="stat-icon">💎</span>
+                <div class="stat-info">
+                  <span class="stat-label">CRYSTAL:</span>
+                  <span class="stat-value-large" id="header-crystal">0</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="stat-icon">🌍</span>
+                <div class="stat-info">
+                  <span class="stat-label">SAVED:</span>
+                  <span class="stat-value-large" id="planets-saved">0</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="stat-icon">💀</span>
+                <div class="stat-info">
+                  <span class="stat-label">KILLS:</span>
+                  <span class="stat-value-large" id="enemies-killed">0</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div id="info-box">
             <div class="message-header">
-              <span class="message-icon">🚀</span>
-              <span class="message-title">Welcome, Pilot</span>
+              <!-- <span class="message-icon">🚀</span> -->
+              <span class="message-title">MISSION INFO</span>
             </div>
             <div class="message-body" id="message-body">
               <p class="info-text">Loading mission data...</p>
@@ -218,7 +218,7 @@
               <p class="ship-status">AVAILABLE</p>
             </div>
             <button id="select-ship">SELECT SHIP</button>
-
+            <button id="unlock-ship" style="display: none">UNLOCK SHIP</button>
             <div id="select-ship-label">SELECT SHIP</div>
 
             <!-- Bottom Section - Ship Selector Bar -->
@@ -251,19 +251,19 @@
                 </div>
                 <div class="ship-xp-detail">⭐ XP: 60</div>
               </div>
-              <div id="ship-5" class="ship-option locked" data-ship="ship-5">
+              <div id="ship-2" class="ship-option locked" data-ship="ship-2">
                 <span class="ship-lock-icon">🔒</span>
-                <span class="ship-name-label">BLADE</span>
+                <span class="ship-name-label">SCOUT</span>
                 <div class="ship-cost-detail">
-                  <span>🔩 5</span>
-                  <span>🏆 4</span>
-                  <span>💎 2</span>
+                  <span>🔩 2</span>
+                  <span>🏆 1</span>
+                  <span>💎 1</span>
                 </div>
-                <div class="ship-xp-detail">⭐ XP: 80</div>
+                <div class="ship-xp-detail">⭐ XP: 20</div>
               </div>
               <div id="ship-6" class="ship-option locked" data-ship="ship-6">
                 <span class="ship-lock-icon">🔒</span>
-                <span class="ship-name-label">UNLOCKS</span>
+                <span class="ship-name-label">INTERCEPTOR</span>
                 <div class="ship-cost-detail">
                   <span>🔩 6</span>
                   <span>🏆 5</span>
@@ -455,8 +455,6 @@
             </button>
           </div>
         </div>
-
-        <button id="unlock-ship" style="display: none">UNLOCK SHIP</button>
       </div>
     </div>
 
@@ -484,6 +482,7 @@
       <div class="intro-container">
         <div class="intro-header">
           <h1 class="intro-title">3D SPACE INVADERS</h1>
+          <div class="intro-year">YEAR 2063</div>
           <p class="intro-subtitle">
             Defend Planets <span class="orange-text">•</span> Collect Resources
             <span class="orange-text">•</span> Upgrade Ships
@@ -491,48 +490,81 @@
         </div>
 
         <div class="intro-content">
-          <div class="intro-section">
-            <h2 class="intro-section-title orange-text">CONTROLS</h2>
-            <div class="intro-controls-grid">
-              <div class="intro-control">
-                <span class="intro-key">WASD</span>
-                <span class="intro-label">Fly</span>
-              </div>
-              <div class="intro-control">
-                <span class="intro-key">MOUSE</span>
-                <span class="intro-label">Aim</span>
-              </div>
-              <div class="intro-control">
-                <span class="intro-key orange-text">SPACE</span>
-                <span class="intro-label">Fire</span>
-              </div>
-              <div class="intro-control">
-                <span class="intro-key orange-text">ESC</span>
-                <span class="intro-label">Menu</span>
-              </div>
+          <!-- Story Section -->
+          <div class="intro-section story-section">
+            <h2 class="intro-section-title orange-text">YOUR MISSION</h2>
+            <div class="story-text">
+              <p class="story-paragraph">
+                You escaped imprisonment on your home planet by stealing the
+                prototype fighter
+                <span class="cyan-text ship-highlight">SOLAR PHANTOM</span> — a
+                ship designed for the Empire's elite guard. Now branded a
+                <span class="orange-text">renegade pilot</span>, you've
+                intercepted distress signals from independent colonies across
+                the sector. The Empire's invasion fleet is overwhelming these
+                worlds, and you're their only hope.
+              </p>
+
+              <!-- <p class="story-paragraph story-emphasis">
+                Defend the planets. Collect resources. Upgrade your arsenal.
+                <span class="glow-text">Fight back against the Empire.</span>
+              </p> -->
             </div>
           </div>
 
-          <div class="intro-section">
-            <h2 class="intro-section-title orange-text">QUICK TIPS</h2>
-            <div class="intro-tips">
-              <p class="intro-tip">
-                <span class="orange-text">▸</span> Defend planets from enemy
-                waves (< 1500km)
-              </p>
-              <p class="intro-tip">
-                <span class="orange-text">▸</span> Follow
-                <strong class="cyan-text">cyan arrows</strong> to planets,
-                <strong class="orange-text">red arrows</strong> to enemies
-              </p>
-              <p class="intro-tip">
-                <span class="orange-text">▸</span> Destroy asteroids for
-                resources (Iron, Gold, Crystal)
-              </p>
-              <p class="intro-tip">
-                <span class="orange-text">▸</span> Press
-                <strong class="orange-text">ESC</strong> to upgrade your ship
-              </p>
+          <!-- Controls and Tips Grid -->
+          <div class="intro-grid">
+            <div class="intro-section">
+              <h2 class="intro-section-title orange-text">CONTROLS</h2>
+              <div class="intro-controls-grid">
+                <div class="intro-control">
+                  <span class="intro-key">WS + Space/Shift</span>
+                  <span class="intro-label">Fly Spaceship</span>
+                </div>
+                <div class="intro-control">
+                  <span class="intro-key">MOUSE</span>
+                  <span class="intro-label">Aim</span>
+                </div>
+                <div class="intro-control">
+                  <span class="intro-key orange-key">CLICK</span>
+                  <span class="intro-label">Fire Weapons</span>
+                </div>
+                <div class="intro-control">
+                  <span class="intro-key orange-key">ESC</span>
+                  <span class="intro-label">Pause / Upgrade</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="intro-section">
+              <h2 class="intro-section-title orange-text">OBJECTIVES</h2>
+              <div class="intro-tips">
+                <p class="intro-tip">
+                  <span class="tip-icon cyan-text">◆</span>
+                  <span
+                    >Defend planets within
+                    <strong class="orange-text">1500km</strong> range</span
+                  >
+                </p>
+                <p class="intro-tip">
+                  <span class="tip-icon cyan-text">◆</span>
+                  <span
+                    >Follow <strong class="cyan-text">cyan arrows</strong> to
+                    planets</span
+                  >
+                </p>
+                <p class="intro-tip">
+                  <span class="tip-icon cyan-text">◆</span>
+                  <span
+                    >Target <strong class="orange-text">red arrows</strong> for
+                    enemies</span
+                  >
+                </p>
+                <p class="intro-tip">
+                  <span class="tip-icon cyan-text">◆</span>
+                  <span>Destroy asteroids for resources</span>
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -541,7 +573,7 @@
           <button id="start-game-btn" class="intro-start-button" disabled>
             <span class="button-text">LOADING SHIPS...</span>
             <span class="button-subtitle" style="display: none"
-              >Press ENTER or SPACE</span
+              >Press ENTER or SPACE to begin</span
             >
           </button>
         </div>

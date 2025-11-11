@@ -191,15 +191,16 @@ export const planets = (() => {
             playerShip.updatePauseStats();
           }
 
-          // Reset ALL flags (but keep enemyLoader for reuse)
+          // Mark planet as permanently cleared - enemies will NEVER respawn here
           this.currentPlanet.hasEnemies = false;
+          this.currentPlanet.cleared = true; // NEW: Permanent flag
           this.currentPlanet.spawnTriggeredThisSession = false;
           this.currentPlanet = null;
           // DO NOT null enemyLoader - reuse it for next planet
           this.enemiesSpawned = false;
           this.currentlySpawning = false; // Reset spawn lock
 
-          console.log(`[PLANET] 🛡️ Planet saved - enemies will respawn if you leave and return`);
+          console.log(`[PLANET] 🛡️ Planet permanently cleared - enemies will NEVER respawn here`);
 
           // Hide planet defense status
           hidePlanetDefenseStatus();
@@ -271,7 +272,13 @@ export const planets = (() => {
               planet.spawnTriggeredThisSession = false; // Initialize flag
             }
 
-            if (!planet.hasEnemies && !hasActiveEnemies && !this.currentlySpawning && !planet.spawnTriggeredThisSession) {
+            // Initialize cleared flag if not set
+            if (planet.cleared === undefined) {
+              planet.cleared = false;
+            }
+
+            // Don't spawn if planet has been cleared
+            if (!planet.cleared && !planet.hasEnemies && !hasActiveEnemies && !this.currentlySpawning && !planet.spawnTriggeredThisSession) {
                 console.log(`[PLANET] ✅ Player within 1500. Spawning enemies... (hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning})`);
 
                 // Set ALL flags IMMEDIATELY to prevent ANY re-entry
@@ -502,7 +509,7 @@ export const planets = (() => {
 
           if (laserBox.intersectsBox(planetBox)) {
             // Damage the planet
-            planet.health -= 5; // Reduced from 10 to 5 since planet health is now 5000
+            planet.health -= 15; // Increased damage to make planet defense more challenging
 
             // Remove the laser and dispose resources
             this.scene.remove(laserBeam);
