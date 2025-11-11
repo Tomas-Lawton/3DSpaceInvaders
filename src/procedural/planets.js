@@ -86,7 +86,6 @@ export const planets = (() => {
       planetGroup.maxHealth = this.defaultHealth;
       planetGroup.planetSize = scale * -1;
       planetGroup.hasEnemies = false; // Track if enemies are spawned for this planet
-      planetGroup.enemiesDefeatedOnce = false; // Permanent flag - never respawn enemies once defeated
 
       this.scene.add(planetGroup);
       this.planets.push(planetGroup);
@@ -192,9 +191,6 @@ export const planets = (() => {
             playerShip.updatePauseStats();
           }
 
-          // PERMANENT: Mark this planet as having defeated enemies (never respawn)
-          this.currentPlanet.enemiesDefeatedOnce = true;
-
           // Reset ALL flags (but keep enemyLoader for reuse)
           this.currentPlanet.hasEnemies = false;
           this.currentPlanet.spawnTriggeredThisSession = false;
@@ -203,7 +199,7 @@ export const planets = (() => {
           this.enemiesSpawned = false;
           this.currentlySpawning = false; // Reset spawn lock
 
-          console.log(`[PLANET] 🛡️ Planet permanently safe - enemies will never respawn here`);
+          console.log(`[PLANET] 🛡️ Planet saved - enemies will respawn if you leave and return`);
 
           // Hide planet defense status
           hidePlanetDefenseStatus();
@@ -267,12 +263,6 @@ export const planets = (() => {
           }
 
           if (playerDistance < 1500) { //  closer than 1500: spawn enemy group
-            // PERMANENT CHECK: Never spawn enemies on a planet that has been saved
-            if (planet.enemiesDefeatedOnce) {
-              // This planet is permanently safe - skip spawn logic
-              return;
-            }
-
             // ROBUST CHECK: Only spawn if no enemies exist AND not currently spawning
             const hasActiveEnemies = this.enemyLoader && this.enemyLoader.enemies && this.enemyLoader.enemies.length > 0;
 

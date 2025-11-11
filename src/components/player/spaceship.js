@@ -265,6 +265,11 @@ export const spaceship = (() => {
 
       tempObjectGroup.add(loadedModel);
 
+      // Add ambient light for better ship visibility
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+      tempObjectGroup.add(ambientLight);
+      this.ambientLight = ambientLight;
+
       // Add single red light with increased brightness
       const shipLight = new THREE.PointLight(0xff0000, 8, 40);
       shipLight.position.set(0, 5, 0);

@@ -182,13 +182,27 @@ export function updateHealthBar(health, maxHealth) {
     // Calculate health percentage
     const healthPercent = (health / maxHealth) * 100;
 
-    // Transition from green (100%) to red (0%)
-    // Green at 100%: rgb(0, 255, 0)
-    // Red at 0%: rgb(255, 0, 0)
-    const red = Math.floor(255 * (1 - healthPercent / 100));
-    const green = Math.floor(255 * (healthPercent / 100));
+    // Transition from green (100%) to orange (50%) to red (0%)
+    let red, green;
+
+    if (healthPercent > 50) {
+      // Green to orange transition (100% to 50%)
+      // At 100%: rgb(0, 255, 0)
+      // At 50%: rgb(255, 165, 0) - orange
+      const t = (healthPercent - 50) / 50; // 0 at 50%, 1 at 100%
+      red = Math.floor(255 * (1 - t));
+      green = Math.floor(165 + (255 - 165) * t);
+    } else {
+      // Orange to red transition (50% to 0%)
+      // At 50%: rgb(255, 165, 0)
+      // At 0%: rgb(255, 0, 0)
+      const t = healthPercent / 50; // 0 at 0%, 1 at 50%
+      red = 255;
+      green = Math.floor(165 * t);
+    }
 
     healthBar.style.backgroundColor = `rgb(${red}, ${green}, 0)`;
+    healthBar.style.borderColor = `rgba(${red}, ${green}, 0, 0.8)`;
     healthBar.style.boxShadow = `0 0 20px rgba(${red}, ${green}, 0, 0.8)`;
   }
 }
@@ -297,18 +311,14 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
         const y = center + (dz / maxDistance) * (mapSize / 2);
 
         const planetDot = document.createElement('div');
-        // Orange if under attack, green if saved, blue if safe
+        // Orange if under attack, blue if safe
         const isUnderAttack = currentPlanet && planet === currentPlanet;
-        const isSaved = planet.enemiesDefeatedOnce === true;
         let className = 'mini-map-planet'; // Blue for safe
         let status = '';
 
         if (isUnderAttack) {
           className = 'mini-map-planet-attack'; // Orange for under attack
           status = ' - UNDER ATTACK!';
-        } else if (isSaved) {
-          className = 'mini-map-planet-saved'; // Green for saved
-          status = ' - SAVED';
         }
 
         planetDot.className = className;
