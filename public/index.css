@@ -114,6 +114,36 @@ body {
   min-height: 0;
 }
 
+/* Pilot Status */
+#pilot-status {
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(0, 255, 238, 0.05) 0%, rgba(255, 153, 0, 0.05) 100%);
+  border: 1px solid rgba(0, 255, 238, 0.3);
+  border-radius: 8px;
+  pointer-events: auto;
+}
+
+.pilot-status-text {
+  margin: 0;
+  font-size: 11px;
+  color: #00ffee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pilot-status-label {
+  color: #ff9900;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.pilot-status-value {
+  color: #00ffee;
+  font-weight: normal;
+  text-shadow: 0 0 8px rgba(0, 255, 238, 0.6);
+}
+
 #center-display {
   grid-column: 2;
   grid-row: 2;
@@ -902,28 +932,25 @@ body {
 #ship-hanger-wrapper {
   position: relative;
   width: fit-content;
-  max-width: min(600, 100%);
+  max-width: min(700px, 100%);
 }
 
 #ship-hanger {
   width: 100%;
   height: auto;
   aspect-ratio: 1;
-  max-height: 600;
-  border: 3px solid transparent;
-  border-image: linear-gradient(
-      45deg,
-      rgba(0, 255, 238, 0.5),
-      rgba(255, 153, 0, 0.5)
-    )
-    1;
+  max-height: 700px;
+  border: 3px solid rgba(0, 255, 238, 0.5);
+  border-radius: 15px;
   background: radial-gradient(
     circle,
     rgba(0, 255, 238, 0.05) 0%,
     rgba(255, 153, 0, 0.02) 30%,
     transparent 70%
   );
-  box-shadow: 0 0 40px rgba(0, 255, 238, 0.3), 0 0 20px rgba(255, 153, 0, 0.2),
+  box-shadow:
+    0 0 40px rgba(0, 255, 238, 0.3),
+    0 0 20px rgba(255, 153, 0, 0.2),
     inset 0 0 60px rgba(0, 255, 238, 0.05);
   pointer-events: auto;
   position: relative;

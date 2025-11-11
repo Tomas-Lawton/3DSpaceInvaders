@@ -69,20 +69,48 @@ class Game {
     // Load upgrade state from localStorage
     loadUpgradeState();
 
+    // Preload all ship models before starting
+    console.log('[GAME] Preloading all ship models...');
+    await spaceship.preloadAllModels();
+    console.log('[GAME] All ship models preloaded successfully!');
+
     await this.setupAudio();
     this.world.addElements();
 
     if (this.playerEntity !== undefined && this.playerShip !== undefined) {
-      this.playerShip.setSpaceshipModel(3); // default ship 'SOLAR PHANTOM'
+      this.playerShip.setSpaceshipModel(0); // default ship 'SOLAR PHANTOM'
       this.playerEntity.AddComponent(new player_input.PlayerInput());
       this.playerEntity.InitEntity();
     } else {
       progressContainer.style.display = "none";
     }
 
+    // Mark game as ready and update intro button
+    this.markGameReady();
+
     // setupGUI({ audioManager: this.audioManager });
 
     this.animate();
+  }
+
+  markGameReady() {
+    // Update the start button to show it's ready
+    const startButton = document.getElementById('start-game-btn');
+    const buttonText = startButton.querySelector('.button-text');
+    const buttonSubtitle = startButton.querySelector('.button-subtitle');
+
+    if (buttonText) {
+      buttonText.textContent = 'START MISSION';
+      buttonText.classList.add('ready');
+    }
+    if (buttonSubtitle) {
+      buttonSubtitle.textContent = 'Press ENTER or SPACE';
+      buttonSubtitle.style.display = 'block';
+    }
+
+    // Enable the button
+    startButton.disabled = false;
+    startButton.classList.add('ready');
   }
 
   setupPauseListener() {

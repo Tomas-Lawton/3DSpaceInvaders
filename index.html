@@ -155,13 +155,14 @@
           </div>
         </div>
 
-        <!-- Top Left Section - Radar & Info (HIDDEN - not used in grid) -->
+        <!-- Top Left Section - Info & Radar -->
         <div id="top-left-section">
-          <div id="radar-display">
-            <div class="radar-ring"></div>
-            <div class="radar-ring-2"></div>
-            <div class="radar-center"></div>
-            <div class="radar-sweep"></div>
+          <!-- Pilot Status -->
+          <div id="pilot-status">
+            <p class="pilot-status-text">
+              <span class="pilot-status-label">PILOT:</span>
+              <span class="pilot-status-value">ACTIVE</span>
+            </p>
           </div>
 
           <div id="info-box">
@@ -188,6 +189,14 @@
             <div class="quest-list" id="quest-list">
               <!-- Dynamically populated -->
             </div>
+          </div>
+
+          <!-- Radar moved to bottom -->
+          <div id="radar-display">
+            <div class="radar-ring"></div>
+            <div class="radar-ring-2"></div>
+            <div class="radar-center"></div>
+            <div class="radar-sweep"></div>
           </div>
         </div>
 
@@ -405,7 +414,7 @@
           </div>
           <div id="ship-2" class="ship-option locked" data-ship="ship-2">
             <span class="ship-lock-icon">🔒</span>
-            <span class="ship-name-label">SCOUT</span>
+            <span class="ship-name-label">STRIKER</span>
             <div class="ship-cost-detail">
               <span>🔩 2</span>
               <span>🏆 1</span>
@@ -415,7 +424,7 @@
           </div>
           <div id="ship-3" class="ship-option locked" data-ship="ship-3">
             <span class="ship-lock-icon">🔒</span>
-            <span class="ship-name-label">FIGHTER</span>
+            <span class="ship-name-label">REAPER</span>
             <div class="ship-cost-detail">
               <span>🔩 3</span>
               <span>🏆 2</span>
@@ -425,7 +434,7 @@
           </div>
           <div id="ship-4" class="ship-option locked" data-ship="ship-4">
             <span class="ship-lock-icon">🔒</span>
-            <span class="ship-name-label">HEAVY</span>
+            <span class="ship-name-label">FURY</span>
             <div class="ship-cost-detail">
               <span>🔩 4</span>
               <span>🏆 3</span>
@@ -435,7 +444,7 @@
           </div>
           <div id="ship-5" class="ship-option locked" data-ship="ship-5">
             <span class="ship-lock-icon">🔒</span>
-            <span class="ship-name-label">INTER</span>
+            <span class="ship-name-label">BLADE</span>
             <div class="ship-cost-detail">
               <span>🔩 5</span>
               <span>🏆 4</span>
@@ -445,7 +454,7 @@
           </div>
           <div id="ship-6" class="ship-option locked" data-ship="ship-6">
             <span class="ship-lock-icon">🔒</span>
-            <span class="ship-name-label">CAPITAL</span>
+            <span class="ship-name-label">UNLOCKS</span>
             <div class="ship-cost-detail">
               <span>🔩 6</span>
               <span>🏆 5</span>
@@ -524,9 +533,9 @@
         </div>
 
         <div class="intro-footer">
-          <button id="start-game-btn" class="intro-start-button">
-            <span class="button-text">START MISSION</span>
-            <span class="button-subtitle">Press ENTER or SPACE</span>
+          <button id="start-game-btn" class="intro-start-button" disabled>
+            <span class="button-text">LOADING SHIPS...</span>
+            <span class="button-subtitle" style="display: none;">Press ENTER or SPACE</span>
           </button>
         </div>
       </div>

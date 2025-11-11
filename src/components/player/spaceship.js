@@ -15,6 +15,57 @@ export const spaceship = (() => {
   // Static model cache shared across all ship instances
   const modelCache = {};
 
+  // Preload all ship models
+  const preloadAllModels = () => {
+    return new Promise((resolve) => {
+      const loader = new GLTFLoader();
+      let loadedCount = 0;
+      const totalModels = modelPaths.length;
+
+      console.log(`[PRELOAD] Starting preload of ${totalModels} ship models...`);
+
+      modelPaths.forEach((modelData, index) => {
+        loader.setPath(modelData.path).load(
+          "scene.gltf",
+          (gltf) => {
+            const loadedModel = gltf.scene.clone();
+
+            // Apply rotation
+            loadedModel.rotation.set(
+              modelData.rotation.x,
+              modelData.rotation.y - Math.PI / 2,
+              modelData.rotation.z
+            );
+
+            // Normalize model
+            normalizeModelSize(loadedModel, 55);
+            normalizeModelPosition(loadedModel);
+            modelData.isNormalized = true;
+
+            // Cache the model
+            modelCache[index] = loadedModel;
+            loadedCount++;
+
+            console.log(`[PRELOAD] Loaded ${index}: ${modelData.name} (${loadedCount}/${totalModels})`);
+
+            if (loadedCount === totalModels) {
+              console.log('[PRELOAD] All ship models loaded!');
+              resolve();
+            }
+          },
+          undefined,
+          (error) => {
+            console.error(`[PRELOAD] Error loading model ${index}:`, error);
+            loadedCount++;
+            if (loadedCount === totalModels) {
+              resolve();
+            }
+          }
+        );
+      });
+    });
+  };
+
   class Spaceship {
     constructor(scene, camera, health = 100) {
       this.scene = scene;
@@ -199,14 +250,14 @@ export const spaceship = (() => {
         }
       });
 
-      loadedModel.rotation.set(
-        selectedModel.rotation.x,
-        selectedModel.rotation.y - Math.PI / 2,
-        selectedModel.rotation.z
-      );
-
-      // Normalize model if needed
+      // Rotation needs to be applied from cache since cloning resets rotation
+      // But only if not already normalized (normalized models have rotation baked in)
       if (!selectedModel.isNormalized) {
+        loadedModel.rotation.set(
+          selectedModel.rotation.x,
+          selectedModel.rotation.y - Math.PI / 2,
+          selectedModel.rotation.z
+        );
         normalizeModelSize(loadedModel, 55);
         normalizeModelPosition(loadedModel);
         selectedModel.isNormalized = true;
@@ -214,8 +265,8 @@ export const spaceship = (() => {
 
       tempObjectGroup.add(loadedModel);
 
-      // Add single red light
-      const shipLight = new THREE.PointLight(0xff0000, 2, 30);
+      // Add single red light with increased brightness
+      const shipLight = new THREE.PointLight(0xff0000, 8, 40);
       shipLight.position.set(0, 5, 0);
       tempObjectGroup.add(shipLight);
       this.shipLight = shipLight;
@@ -1149,6 +1200,7 @@ export const spaceship = (() => {
 
   return {
     Spaceship: Spaceship,
+    preloadAllModels: preloadAllModels,
   };
 })();
 

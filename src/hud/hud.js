@@ -11,13 +11,13 @@ const canvas = document.getElementById("ship-hanger");
 
 export const modelPaths = [
   {
-    path: "public/ships/ship_0/",
-    rotation: { x: 0, y: 0, z: 0 },
+    path: "public/ships/ship_5/",
+    rotation: { x: 0, y: Math.PI / 2, z: 0 },
     isNormalized: false,
-    name: "VOID REAPER",
-    boosterColor: 0xc87dff, // Purple
-    laserColor: 0xc87dff,
-    laserGlow: 0x9400ff,
+    name: "SOLAR PHANTOM",
+    boosterColor: 0xffaa00, // Orange
+    laserColor: 0xffaa00,
+    laserGlow: 0xff8800,
   },
   {
     path: "public/ships/ship_1/",
@@ -29,22 +29,13 @@ export const modelPaths = [
     laserGlow: 0x00ccbb,
   },
   {
-    path: "public/ships/ship_2/",
-    rotation: { x: 0, y: Math.PI / 2, z: 0 },
+    path: "public/ships/ship_0/",
+    rotation: { x: 0, y: 0, z: 0 },
     isNormalized: false,
-    name: "CRIMSON FANG",
-    boosterColor: 0xff3333, // Red
-    laserColor: 0xff3333,
-    laserGlow: 0xff6666,
-  },
-  {
-    path: "public/ships/ship_5/",
-    rotation: { x: 0, y: Math.PI / 2, z: 0 },
-    isNormalized: false,
-    name: "SOLAR PHANTOM",
-    boosterColor: 0xffaa00, // Orange
-    laserColor: 0xffaa00,
-    laserGlow: 0xff8800,
+    name: "VOID REAPER",
+    boosterColor: 0xc87dff, // Purple
+    laserColor: 0xc87dff,
+    laserGlow: 0x9400ff,
   },
   {
     path: "public/ships/ship_6/",
@@ -72,7 +63,7 @@ export function initHUD() {
   camera.position.set(0, 10, 100);
 
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  renderer.setSize(600, 600);
+  renderer.setSize(700, 700);
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setClearColor(0x000000, 0);
 
