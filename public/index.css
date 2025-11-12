@@ -2642,7 +2642,7 @@ body {
 .cursor {
   position: fixed;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 10002;
   border-radius: 50%;
 }
 
