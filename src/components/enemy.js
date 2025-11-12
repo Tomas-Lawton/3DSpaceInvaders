@@ -18,7 +18,7 @@ export const enemy = (() => {
       this.enemies = [];
       this.loader = new GLTFLoader().setPath("public/ships/ship_5/");
       this.activeLasers = [];
-      this.shootCooldown = 150; // Reduced from 200 for more aggressive shooting
+      this.shootCooldown = 300; // Increased from 80 to 300ms for better balance (3.3 shots/sec)
       this.lightSound = new Audio("public/audio/enemy_pew.mp3");
       this.firingDistance = 100;
       this.updateCounter = 0; // For LOD optimization
@@ -548,7 +548,8 @@ export const enemy = (() => {
 
       const currentTime = performance.now(); // For laser cooldown
 
-      const distanceThreshold = 200; // Increased from 150 for more aggressive long-range attacks
+      const playerDistanceThreshold = 200; // Distance for shooting at player
+      const planetDistanceThreshold = 800; // Much larger distance for shooting at planet (enemies orbit far away)
       const angleThreshold = Math.PI / 3; // Increased from PI/4 to PI/3 (60 degrees) for easier shooting
 
       // Get the current facing direction of the enemy
@@ -557,7 +558,7 @@ export const enemy = (() => {
 
       const distanceToPlayer = enemy.position.distanceTo(playerCurrentPosition);
 
-      // PRIORITIZE PLANET ATTACK: Only shoot player if very close AND planet exists
+      // PRIORITIZE PLANET ATTACK: Enemies ALWAYS attack planet if it exists (regardless of player distance)
       if (alternateTarget) {
         // Planet exists - attack it primarily
         const directionToTarget = new THREE.Vector3();
@@ -568,19 +569,20 @@ export const enemy = (() => {
         const distanceToTarget = enemy.position.distanceTo(alternateTarget);
         const angleToTarget = enemyDirection.angleTo(directionToTarget);
 
+        // Shoot at planet if within range and facing it (ALWAYS prioritize planet over player)
         if (
-          distanceToTarget < distanceThreshold &&
+          distanceToTarget < planetDistanceThreshold &&
           angleToTarget < angleThreshold &&
           currentTime - enemy.lastShotTime > this.shootCooldown
         ) {
           this.fireLaser(enemy, true); // Pass true to indicate planet damage
           enemy.lastShotTime = currentTime;
-          return; // Planet attack takes priority
+          return; // Planet attack takes absolute priority - don't check player
         }
       }
 
-      // Only shoot at player if planet doesn't exist OR player is very close
-      if (!alternateTarget || distanceToPlayer < inRangeDistance) {
+      // ONLY shoot at player if NO planet exists (player is only fallback target)
+      if (!alternateTarget) {
         const directionToPlayer = new THREE.Vector3();
         directionToPlayer
           .subVectors(playerCurrentPosition, enemy.position)
@@ -589,7 +591,7 @@ export const enemy = (() => {
         const angleToPlayer = enemyDirection.angleTo(directionToPlayer);
 
         if (
-          distanceToPlayer < distanceThreshold &&
+          distanceToPlayer < playerDistanceThreshold &&
           angleToPlayer < angleThreshold &&
           currentTime - enemy.lastShotTime > this.shootCooldown
         ) {
@@ -601,7 +603,7 @@ export const enemy = (() => {
 
     shootAtPlanet(enemy) {
       const currentTime = performance.now();
-      const planetShootCooldown = 1500; // Shoot planet every 1.5 seconds
+      const planetShootCooldown = 500; // Reduced from 1500 to 500 for much more aggressive planet attacks
 
       if (currentTime - (enemy.lastPlanetShotTime || 0) > planetShootCooldown) {
         // Check if facing roughly toward planet

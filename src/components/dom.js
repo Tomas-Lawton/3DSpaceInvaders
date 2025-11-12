@@ -233,21 +233,38 @@ export function updatePlanetDefenseStatus(planet, enemyCount) {
 
   // Update health bar
   const healthPercent = (planet.health / planet.maxHealth) * 100;
-  healthFill.style.width = `${healthPercent}%`;
+
+  // Debug logging
+  console.log(`📊 [DEFENSE HUD] Planet HP: ${Math.floor(planet.health)}/${planet.maxHealth} (${healthPercent.toFixed(1)}%) | Enemies: ${enemyCount}`);
+
+  if (healthFill) {
+    healthFill.style.width = `${healthPercent}%`;
+    console.log(`📊 [DEFENSE HUD] Health bar width set to: ${healthPercent}%`);
+  } else {
+    console.error('❌ [DEFENSE HUD] planet-health-fill element not found!');
+  }
 
   // Update health text
-  healthText.textContent = `${Math.max(0, Math.floor(planet.health))} / ${planet.maxHealth}`;
+  if (healthText) {
+    healthText.textContent = `${Math.max(0, Math.floor(planet.health))} / ${planet.maxHealth}`;
+  } else {
+    console.error('❌ [DEFENSE HUD] planet-health-text element not found!');
+  }
 
   // Update enemies remaining
-  enemiesText.textContent = `Enemies: ${enemyCount}`;
+  if (enemiesText) {
+    enemiesText.textContent = `Enemies: ${enemyCount}`;
+  }
 
   // Change color based on health percentage
-  if (healthPercent > 60) {
-    healthFill.style.background = 'linear-gradient(90deg, #00ff00 0%, #88ff00 100%)';
-  } else if (healthPercent > 30) {
-    healthFill.style.background = 'linear-gradient(90deg, #ffff00 0%, #ff8800 100%)';
-  } else {
-    healthFill.style.background = 'linear-gradient(90deg, #ff0000 0%, #cc0000 100%)';
+  if (healthFill) {
+    if (healthPercent > 60) {
+      healthFill.style.background = 'linear-gradient(90deg, #00ff00 0%, #88ff00 100%)';
+    } else if (healthPercent > 30) {
+      healthFill.style.background = 'linear-gradient(90deg, #ffff00 0%, #ff8800 100%)';
+    } else {
+      healthFill.style.background = 'linear-gradient(90deg, #ff0000 0%, #cc0000 100%)';
+    }
   }
 }
 

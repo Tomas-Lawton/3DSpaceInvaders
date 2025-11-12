@@ -236,9 +236,13 @@ export const planets = (() => {
               }
             }
 
-            // Show planet destroyed notification
+            // Show planet destroyed notification and trigger Game Over
             if (playerShip) {
               playerShip.showNotification('💥 Planet Destroyed!', 'danger');
+              // Trigger Game Over after short delay
+              setTimeout(() => {
+                playerShip.gameOver();
+              }, 1000);
             }
 
             this.scene.remove(planet);
@@ -512,7 +516,11 @@ export const planets = (() => {
 
           if (laserBox.intersectsBox(planetBox)) {
             // Damage the planet
-            planet.health -= 30; // Increased from 15 to 30 for much more challenging planet defense
+            const damage = 7; // Increased from 5 to 10 (planet has 2000 HP = 200 hits to destroy)
+            planet.health -= damage;
+
+            // Log planet damage for debugging
+            console.log(`🎯 Planet hit! -${damage} HP. Planet health: ${Math.floor(planet.health)}/${planet.maxHealth} (${Math.floor((planet.health/planet.maxHealth)*100)}%)`);
 
             // Remove the laser and dispose resources
             this.scene.remove(laserBeam);

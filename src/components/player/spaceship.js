@@ -201,12 +201,15 @@ export const spaceship = (() => {
       this.health -= damage;
 
       if (this.health <= 0) {
+        this.health = 0; // Ensure health doesn't go negative
         if (this.deadSound) {
           this.deadSound.currentTime = 0;
           this.deadSound.volume = 0.5;
           this.deadSound.play();
         }
         console.log("You Died");
+        // Trigger Game Over
+        this.gameOver();
       }
     }
 
@@ -1050,16 +1053,82 @@ export const spaceship = (() => {
         this.deadSound.play();
       }
 
-      // Show intro screen after short delay
-      setTimeout(() => {
-        const introScreen = document.getElementById('intro-screen');
-        if (introScreen) {
-          introScreen.style.display = 'flex';
-        }
+      // Create and show Game Over overlay
+      const gameOverOverlay = document.createElement('div');
+      gameOverOverlay.id = 'game-over-overlay';
+      gameOverOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        animation: fadeIn 0.5s ease-out;
+      `;
 
-        // Reload the page to restart game
+      const gameOverText = document.createElement('div');
+      gameOverText.textContent = 'GAME OVER';
+      gameOverText.style.cssText = `
+        font-size: 80px;
+        font-weight: bold;
+        color: #ff0000;
+        text-shadow: 0 0 30px rgba(255, 0, 0, 0.8), 0 0 60px rgba(255, 0, 0, 0.5);
+        margin-bottom: 30px;
+        animation: pulse 1s ease-in-out infinite;
+      `;
+
+      const statsText = document.createElement('div');
+      statsText.style.cssText = `
+        font-size: 24px;
+        color: #00ffee;
+        text-align: center;
+        margin-bottom: 40px;
+        line-height: 1.8;
+      `;
+      statsText.innerHTML = `
+        <div>Enemies Killed: ${this.totalKills || 0}</div>
+        <div>Planets Saved: ${this.planetsSaved || 0}</div>
+      `;
+
+      const restartText = document.createElement('div');
+      restartText.textContent = 'Returning to start...';
+      restartText.style.cssText = `
+        font-size: 20px;
+        color: #ffffff;
+        opacity: 0.7;
+      `;
+
+      gameOverOverlay.appendChild(gameOverText);
+      gameOverOverlay.appendChild(statsText);
+      gameOverOverlay.appendChild(restartText);
+      document.body.appendChild(gameOverOverlay);
+
+      // Add CSS animations if they don't exist
+      if (!document.getElementById('game-over-styles')) {
+        const style = document.createElement('style');
+        style.id = 'game-over-styles';
+        style.textContent = `
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      // Reload the page after showing the game over screen
+      setTimeout(() => {
         window.location.reload();
-      }, 2000);
+      }, 3000);
     }
 
     userHit(damage) {
@@ -1099,7 +1168,7 @@ export const spaceship = (() => {
         for (const laserData of enemyLoader.activeLasers) {
           const { laserBeam } = laserData;
           if (this.checkCollision(this.mesh, laserBeam)) {
-            this.userHit(50); // Increased from 35 to 50 for more challenging combat
+            this.userHit(25); // Reduced from 50 to 25 for better balance
             this.lastEnemyLaserCollisionCheck = currentTimestamp + 300; // Add cooldown after hit
             return;
           }
