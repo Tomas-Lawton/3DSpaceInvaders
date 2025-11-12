@@ -2480,6 +2480,7 @@ body {
   letter-spacing: 1.5px;
   transition: all 0.3s ease;
   pointer-events: auto;
+  margin-top: 12px
 }
 
 .restart-button:hover {
