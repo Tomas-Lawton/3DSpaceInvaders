@@ -359,7 +359,8 @@ const cursorBig = document.querySelector('.big');
 const cursorSmall = document.querySelector('.small');
 
 window.addEventListener("mousedown", () => {
-  if (!game.isPaused) {
+  // Only allow firing if game has started and is not paused
+  if (!game.isPaused && game.gameStarted) {
     if (game.playerShip) {
       game.playerShip.fireLaser();
 

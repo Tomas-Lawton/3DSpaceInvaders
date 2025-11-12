@@ -1886,17 +1886,23 @@ body {
 
 /* Tab Content */
 .intro-tab-content {
+  height: calc(100vh - 450px);
   min-height: 400px;
+  max-height: 500px;
   position: relative;
+  overflow: hidden;
 }
 
 .tab-panel {
   display: none;
   animation: tabFadeIn 0.5s ease-out;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .tab-panel.active {
-  display: block;
+  display: flex;
+  flex-direction: column;
 }
 
 @keyframes tabFadeIn {
@@ -2011,6 +2017,10 @@ body {
     0 0 20px rgba(0, 255, 238, 0.15),
     inset 0 0 30px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
 
 .intro-section:hover {
@@ -2018,7 +2028,6 @@ body {
   box-shadow:
     0 0 30px rgba(0, 255, 238, 0.25),
     inset 0 0 30px rgba(0, 0, 0, 0.3);
-  transform: translateY(-2px);
 }
 
 .intro-section-title {
@@ -2039,6 +2048,27 @@ body {
   line-height: 1.8;
   margin: 8px 0;
   opacity: 0.9;
+}
+
+/* 2-Column Layout for Controls Tab */
+.controls-objectives-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  flex: 1;
+}
+
+.controls-column,
+.objectives-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.intro-controls-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 15px;
 }
 
 .intro-controls-grid {
@@ -2146,13 +2176,13 @@ body {
 .intro-tip {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 10px;
   color: #00ffee;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.5;
   margin: 0;
   opacity: 0.9;
-  padding: 8px 0;
+  padding: 6px 0;
   border-left: 2px solid rgba(0, 255, 238, 0.2);
   padding-left: 12px;
   transition: all 0.3s ease;
@@ -2355,6 +2385,10 @@ body {
 .credit-link:hover {
   color: #ff9900;
   text-shadow: 0 0 10px rgba(255, 153, 0, 0.6);
+}
+
+.support-link {
+  cursor: pointer !important;
 }
 
 /* Buy Me a Coffee Link */
