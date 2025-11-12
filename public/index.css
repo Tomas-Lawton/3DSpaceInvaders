@@ -1691,12 +1691,8 @@ body {
   overflow-y: auto;
   padding: 40px 20px;
   position: relative;
-  cursor: auto !important; /* Enable custom cursor on intro screen */
 }
 
-#intro-screen * {
-  cursor: auto !important; /* Enable custom cursor for all intro screen elements */
-}
 
 /* Animated starfield background */
 #intro-screen::before {
