@@ -1,0 +1,11 @@
+Model Information:
+* title:	Drop ship v2
+* source:	https://sketchfab.com/3d-models/drop-ship-v2-f090d29c86f5429e9f0b78b077ab4cd0
+* author:	marsmotion (https://sketchfab.com/marsmotion)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Drop ship v2" (https://sketchfab.com/3d-models/drop-ship-v2-f090d29c86f5429e9f0b78b077ab4cd0) by marsmotion (https://sketchfab.com/marsmotion) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

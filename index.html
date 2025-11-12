@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Space Invaders 2063</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="public/index.css" />
+    <script
+      async
+      src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"
+    ></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@v0.169.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@v0.153.0/examples/jsm/",
+          "dat.gui": "https://unpkg.com/dat.gui@0.7.7/build/dat.gui.module.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <canvas id="three-canvas"></canvas>
+
+    <div id="health-bar-background" class="hud-ui"></div>
+    <div id="health-bar" class="hud-ui"></div>
+    <div id="velocity-bar-background" class="hud-ui"></div>
+    <div id="velocity-bar" class="hud-ui"></div>
+    <div id="ores" class="hud-ui">
+      <p>Iron 0</p>
+      <p>Gold 0</p>
+      <p>Crystal 0</p>
+    </div>
+    <p id="nearest-planet" class="hud-ui"></p>
+
+    <!-- Planet Defense Status -->
+    <div id="planet-defense-status" class="hud-ui" style="display: none">
+      <div class="defense-header">🌍 PLANET DEFENSE</div>
+      <div class="defense-health-bar">
+        <div id="planet-health-fill"></div>
+      </div>
+      <div class="defense-info">
+        <span id="planet-health-text">2000 / 2000</span>
+        <span id="enemies-remaining">Enemies: 5</span>
+      </div>
+    </div>
+
+    <!-- Combo Counter -->
+    <div id="combo-counter" class="hud-ui" style="display: none">
+      <div class="combo-content">
+        <span class="combo-multiplier" id="combo-multiplier">2</span>
+        <span class="combo-text">COMBO!</span>
+      </div>
+      <div class="combo-bar">
+        <div id="combo-timer-fill"></div>
+      </div>
+    </div>
+
+    <!-- Mini-Map Display -->
+    <div id="mini-map" class="hud-ui">
+      <div class="mini-map-header">SECTOR MAP</div>
+      <div class="mini-map-content">
+        <div class="mini-map-north">N</div>
+        <div class="mini-map-player">
+          <div class="player-ship-icon">▲</div>
+          <div class="player-direction-line"></div>
+        </div>
+        <div id="mini-map-targets"></div>
+        <div class="mini-map-grid"></div>
+      </div>
+      <div id="mini-map-info">
+        <p id="user-position"></p>
+      </div>
+    </div>
+
+    <!-- Directional Indicators -->
+    <div id="direction-indicators" class="hud-ui">
+      <!-- Visual circle guide -->
+      <div id="indicator-circle"></div>
+      <!-- Container for dynamic indicators -->
+      <div id="indicators-container"></div>
+    </div>
+
+    <div id="control-ui">
+      <div id="hud-container">
+        <!-- Player Stats Summary Header - Compact Single Line -->
+
+        <!-- Top Left Section - Info & Radar -->
+        <div id="top-left-section">
+          <!-- Pilot Status -->
+          <div id="pilot-status">
+            <p class="pilot-status-text">
+              <span class="pilot-status-label">PILOT STATUS:</span>
+              <span class="pilot-status-value">ACTIVE</span>
+            </p>
+            <div id="player-stats-header">
+              <div class="stat-card">
+                <!-- <span class="stat-icon">💚</span> -->
+                <div class="stat-info">
+                  <span class="stat-label">HP:</span>
+                  <span class="stat-value-large" id="header-health">100</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <!-- <span class="stat-icon">🚀</span> -->
+                <div class="stat-info">
+                  <span class="stat-label">SPEED:</span>
+                  <span class="stat-value-large" id="header-speed">8.5</span>
+                </div>
+              </div>
+              <!-- <div class="stat-card">
+            <span class="stat-icon">🎯</span>
+            <div class="stat-info">
+              <span class="stat-label">AGILITY:</span>
+              <span class="stat-value-large" id="header-agility">7.2</span>
+            </div>
+          </div> -->
+              <div class="stat-card">
+                <span class="stat-icon">⭐</span>
+                <div class="stat-info">
+                  <span class="stat-label">XP:</span>
+                  <span class="stat-value-large" id="header-xp">0</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="stat-icon">🔩</span>
+                <div class="stat-info">
+                  <span class="stat-label">IRON:</span>
+                  <span class="stat-value-large" id="header-iron">0</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="stat-icon">🏆</span>
+                <div class="stat-info">
+                  <span class="stat-label">GOLD:</span>
+                  <span class="stat-value-large" id="header-gold">0</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="stat-icon">💎</span>
+                <div class="stat-info">
+                  <span class="stat-label">CRYSTAL:</span>
+                  <span class="stat-value-large" id="header-crystal">0</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="stat-icon">🌍</span>
+                <div class="stat-info">
+                  <span class="stat-label">SAVED:</span>
+                  <span class="stat-value-large" id="planets-saved">0</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <span class="stat-icon">💀</span>
+                <div class="stat-info">
+                  <span class="stat-label">KILLS:</span>
+                  <span class="stat-value-large" id="enemies-killed">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="info-box">
+            <div class="message-header">
+              <!-- <span class="message-icon">🚀</span> -->
+              <span class="message-title">MISSION INFO</span>
+            </div>
+            <div class="message-body" id="message-body">
+              <p class="info-text">Loading mission data...</p>
+            </div>
+            <div class="message-footer">
+              <button class="message-nav-btn" id="prev-message">◀ Prev</button>
+              <span class="message-counter" id="message-counter">1 / 1</span>
+              <button class="message-nav-btn" id="next-message">Next ▶</button>
+            </div>
+          </div>
+
+          <!-- Quest Tracker (Below info box) -->
+          <div id="quest-tracker" style="display: none">
+            <div class="quest-header">
+              <span class="quest-icon">📋</span>
+              <span class="quest-title">Active Quests</span>
+            </div>
+            <div class="quest-list" id="quest-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Radar moved to bottom -->
+          <div id="radar-container">
+            <div id="radar-display">
+              <div class="radar-ring"></div>
+              <div class="radar-ring-2"></div>
+              <div class="radar-center"></div>
+              <div class="radar-sweep"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages Badge - Orange indicator (HIDDEN - not used in grid) -->
+        <div id="messages-badge">
+          <div class="message-badge-icon">📬</div>
+          <div class="message-badge-text">MESSAGES</div>
+          <div class="message-badge-subtitle">View below</div>
+        </div>
+
+        <!-- Center Section - 3D Ship Display -->
+        <div id="center-display">
+          <div id="ship-hanger-wrapper">
+            <canvas id="ship-hanger"></canvas>
+            <div id="ship-name-display">
+              <p class="ship-name">MARS SHIP</p>
+              <p class="ship-status">AVAILABLE</p>
+            </div>
+            <button id="select-ship">SELECT SHIP</button>
+            <button id="unlock-ship" style="display: none">UNLOCK SHIP</button>
+            <div id="select-ship-label">SELECT SHIP</div>
+
+            <!-- Bottom Section - Ship Selector Bar -->
+            <div id="bottom-ships-bar">
+              <div
+                id="ship-1"
+                class="ship-option active unlocked"
+                data-ship="ship-1"
+              >
+                <span class="ship-lock-icon">🚀</span>
+                <span class="ship-name-label">STARTER</span>
+              </div>
+              <div id="ship-3" class="ship-option locked" data-ship="ship-3">
+                <span class="ship-lock-icon">🔒</span>
+                <span class="ship-name-label">REAPER</span>
+                <div class="ship-cost-detail">
+                  <span>🔩 3</span>
+                  <span>🏆 2</span>
+                  <span>💎 1</span>
+                </div>
+                <div class="ship-xp-detail">⭐ XP: 40</div>
+              </div>
+              <div id="ship-4" class="ship-option locked" data-ship="ship-4">
+                <span class="ship-lock-icon">🔒</span>
+                <span class="ship-name-label">FURY</span>
+                <div class="ship-cost-detail">
+                  <span>🔩 4</span>
+                  <span>🏆 3</span>
+                  <span>💎 2</span>
+                </div>
+                <div class="ship-xp-detail">⭐ XP: 60</div>
+              </div>
+              <div id="ship-2" class="ship-option locked" data-ship="ship-2">
+                <span class="ship-lock-icon">🔒</span>
+                <span class="ship-name-label">SCOUT</span>
+                <div class="ship-cost-detail">
+                  <span>🔩 2</span>
+                  <span>🏆 1</span>
+                  <span>💎 1</span>
+                </div>
+                <div class="ship-xp-detail">⭐ XP: 20</div>
+              </div>
+              <div id="ship-6" class="ship-option locked" data-ship="ship-6">
+                <span class="ship-lock-icon">🔒</span>
+                <span class="ship-name-label">INTERCEPTOR</span>
+                <div class="ship-cost-detail">
+                  <span>🔩 6</span>
+                  <span>🏆 5</span>
+                  <span>💎 3</span>
+                </div>
+                <div class="ship-xp-detail">⭐ XP: 100</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Section - Upgrades Panel -->
+        <div id="right-upgrades-section">
+          <!-- Ship Diagnostics -->
+          <div id="left-stats-section">
+            <h3 class="stats-header">SHIP DIAGNOSTICS</h3>
+            <div class="stat-item">
+              <label class="stat-label">Speed Rating</label>
+              <div class="stat-bar-container">
+                <div
+                  class="stat-bar stat-bar-base"
+                  id="velocity-stat"
+                  style="width: 45%"
+                ></div>
+                <div
+                  class="stat-bar stat-bar-bonus"
+                  id="velocity-stat-bonus"
+                  style="width: 0%"
+                ></div>
+              </div>
+              <span class="stat-value" id="velocity-value">65</span>
+            </div>
+
+            <div class="stat-item">
+              <label class="stat-label">Armor Rating</label>
+              <div class="stat-bar-container">
+                <div
+                  class="stat-bar stat-bar-base"
+                  id="altitude-stat"
+                  style="width: 30%"
+                ></div>
+                <div
+                  class="stat-bar stat-bar-bonus"
+                  id="altitude-stat-bonus"
+                  style="width: 0%"
+                ></div>
+              </div>
+              <span class="stat-value" id="altitude-value">50</span>
+            </div>
+
+            <div class="stat-item">
+              <label class="stat-label">Firepower Rating</label>
+              <div class="stat-bar-container">
+                <div class="stat-bar stat-bar-base" id="apogee-stat" style="width: 35%"></div>
+                <div class="stat-bar stat-bar-bonus" id="apogee-stat-bonus" style="width: 0%"></div>
+              </div>
+              <span class="stat-value" id="apogee-value">55</span>
+            </div>
+
+            <div class="stat-item">
+              <label class="stat-label">Agility Rating</label>
+              <div class="stat-bar-container">
+                <div
+                  class="stat-bar stat-bar-base"
+                  id="perigee-stat"
+                  style="width: 40%"
+                ></div>
+                <div
+                  class="stat-bar stat-bar-bonus"
+                  id="perigee-stat-bonus"
+                  style="width: 0%"
+                ></div>
+              </div>
+              <span class="stat-value" id="perigee-value">70</span>
+            </div>
+          </div>
+
+          <h3 class="upgrades-header">SHIP UPGRADES</h3>
+
+          <div class="upgrade-item" data-upgrade="speed">
+            <div class="upgrade-header">
+              <span class="upgrade-icon">⚡</span>
+              <div class="upgrade-info">
+                <p class="upgrade-name">Engine Boost</p>
+                <p class="upgrade-desc">+15% max velocity</p>
+              </div>
+            </div>
+            <div class="upgrade-level">
+              <span class="level-display"
+                >Lv <span class="current-level">0</span>/5</span
+              >
+              <div class="level-bar">
+                <div class="level-progress" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="upgrade-button" data-upgrade="speed">
+              <span class="cost-display">
+                <span class="cost-item"
+                  >🔩<span class="iron-cost">20</span></span
+                >
+                <span class="cost-item"
+                  >🏆<span class="gold-cost">10</span></span
+                >
+                <span class="cost-item"
+                  >💎<span class="crystal-cost">5</span></span
+                >
+              </span>
+              <span class="xp-cost">XP: 200</span>
+            </button>
+          </div>
+
+          <div class="upgrade-item" data-upgrade="health">
+            <div class="upgrade-header">
+              <span class="upgrade-icon">🛡️</span>
+              <div class="upgrade-info">
+                <p class="upgrade-name">Hull Reinforcement</p>
+                <p class="upgrade-desc">+20 max health</p>
+              </div>
+            </div>
+            <div class="upgrade-level">
+              <span class="level-display"
+                >Lv <span class="current-level">0</span>/5</span
+              >
+              <div class="level-bar">
+                <div class="level-progress" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="upgrade-button" data-upgrade="health">
+              <span class="cost-display">
+                <span class="cost-item"
+                  >🔩<span class="iron-cost">30</span></span
+                >
+                <span class="cost-item"
+                  >🏆<span class="gold-cost">15</span></span
+                >
+                <span class="cost-item"
+                  >💎<span class="crystal-cost">5</span></span
+                >
+              </span>
+              <span class="xp-cost">XP: 300</span>
+            </button>
+          </div>
+
+          <div class="upgrade-item" data-upgrade="fireRate">
+            <div class="upgrade-header">
+              <span class="upgrade-icon">🔫</span>
+              <div class="upgrade-info">
+                <p class="upgrade-name">Weapon System</p>
+                <p class="upgrade-desc">+10% fire rate</p>
+              </div>
+            </div>
+            <div class="upgrade-level">
+              <span class="level-display"
+                >Lv <span class="current-level">0</span>/5</span
+              >
+              <div class="level-bar">
+                <div class="level-progress" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="upgrade-button" data-upgrade="fireRate">
+              <span class="cost-display">
+                <span class="cost-item"
+                  >🔩<span class="iron-cost">15</span></span
+                >
+                <span class="cost-item"
+                  >🏆<span class="gold-cost">20</span></span
+                >
+                <span class="cost-item"
+                  >💎<span class="crystal-cost">10</span></span
+                >
+              </span>
+              <span class="xp-cost">XP: 250</span>
+            </button>
+          </div>
+
+          <div class="upgrade-item" data-upgrade="shields">
+            <div class="upgrade-header">
+              <span class="upgrade-icon">⚔️</span>
+              <div class="upgrade-info">
+                <p class="upgrade-name">Shield Generator</p>
+                <p class="upgrade-desc">15% damage reduction</p>
+              </div>
+            </div>
+            <div class="upgrade-level">
+              <span class="level-display"
+                >Lv <span class="current-level">0</span>/3</span
+              >
+              <div class="level-bar">
+                <div class="level-progress" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="upgrade-button" data-upgrade="shields">
+              <span class="cost-display">
+                <span class="cost-item"
+                  >🔩<span class="iron-cost">50</span></span
+                >
+                <span class="cost-item"
+                  >🏆<span class="gold-cost">50</span></span
+                >
+                <span class="cost-item"
+                  >💎<span class="crystal-cost">25</span></span
+                >
+              </span>
+              <span class="xp-cost">XP: 800</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cursor small"></div>
+    <div class="cursor big"></div>
+
+    <!-- Ship Selection Confirmation Dialog -->
+    <div id="ship-confirm-dialog" style="display: none">
+      <div class="confirm-dialog-content">
+        <h2 class="confirm-title">CONFIRM SHIP SELECTION</h2>
+        <p class="confirm-message" id="confirm-message">Select this ship?</p>
+        <div class="confirm-buttons">
+          <button id="confirm-yes" class="confirm-btn yes-btn">YES</button>
+          <button id="confirm-no" class="confirm-btn no-btn">NO</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="progress-container">
+      <h1 id="progress">LOADING 0/100</h1>
+    </div>
+
+    <!-- Intro Screen (After Loading) -->
+    <div id="intro-screen" style="display: none">
+      <div class="intro-container">
+        <div class="intro-header">
+          <h1 class="intro-title">3D SPACE INVADERS</h1>
+          <div class="intro-year">YEAR 2063</div>
+          <p class="intro-subtitle">
+            Defend Planets <span class="orange-text">•</span> Collect Resources
+            <span class="orange-text">•</span> Upgrade Ships
+          </p>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="intro-tab-content">
+          <!-- Mission Tab -->
+          <div class="tab-panel active" id="mission-panel">
+            <div class="intro-section">
+              <h2 class="intro-section-title orange-text">YOUR MISSION</h2>
+              <div class="story-text">
+                <p class="story-paragraph">
+                  The year is <span class="cyan-text">2063</span>. Earth's deep
+                  space monitoring stations detected them three weeks ago - a
+                  massive <span class="orange-text">alien armada</span>
+                  advancing through our solar system. Within days, they began
+                  their assault. Colony after colony fell silent. No warnings.
+                  No negotiations. Only <span class="orange-text">systematic destruction</span>.
+                </p>
+                <p class="story-paragraph">
+                  You were stationed on a research outpost when you intercepted
+                  a coded transmission. Your blood ran cold as you decrypted the
+                  coordinates - <span class="orange-text">Earth</span> was your next target.
+                  Your home. Your family. Everything you knew would be reduced
+                  to ash within 48 hours. The colonial defense forces were
+                  scattered, overwhelmed by the alien swarms.
+                </p>
+                <p class="story-paragraph">
+                  In a desperate gambit, you infiltrated an alien supply depot
+                  and hijacked their prototype fighter - the
+                  <span class="orange-text">SOLAR PHANTOM</span>. Its technology
+                  is unlike anything human-made: faster engines, devastating
+                  firepower, and alien shielding systems. You barely escaped
+                  with your life, but now you have a chance.
+                </p>
+                <p class="story-paragraph">
+                  Time is running out. The
+                  <span class="orange-text">invasion fleet</span> is closing in
+                  on Earth and the remaining colonies. You must defend every
+                  planet, destroy every alien ship, and buy humanity time to
+                  evacuate.  <span class="orange-text">Scavenge resources</span> from space debris, <span class="orange-text">upgrade your
+                  ship</span>, and show these invaders that humanity won't go
+                  quietly into the night. The fate of Earth - and everyone you
+                  love - rests in your hands.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls Tab -->
+          <div class="tab-panel" id="controls-panel">
+            <div class="intro-section">
+              <div class="controls-objectives-grid">
+                <!-- Controls Section -->
+                <div class="controls-column">
+                  <h2 class="intro-section-title orange-text">FLIGHT CONTROLS</h2>
+                  <div class="intro-controls-compact">
+                    <div class="intro-control">
+                      <span class="intro-key">W + SPACE</span>
+                      <span class="intro-label">Accelerate</span>
+                    </div>
+                    <div class="intro-control">
+                      <span class="intro-key">S + SHIFT</span>
+                      <span class="intro-label">Decelerate</span>
+                    </div>
+                    <div class="intro-control">
+                      <span class="intro-key">MOUSE</span>
+                      <span class="intro-label">Aim Ship</span>
+                    </div>
+                    <div class="intro-control">
+                      <span class="intro-key orange-text">CLICK</span>
+                      <span class="intro-label">Fire Lasers</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Objectives Section -->
+                <div class="objectives-column">
+                  <h2 class="intro-section-title orange-text">OBJECTIVES</h2>
+                  <div class="intro-tips">
+                    <p class="intro-tip">
+                      <span class="orange-text">▸</span> Defend planets from enemy waves (within
+                      <strong class="cyan-text">1500km</strong>)
+                    </p>
+                    <p class="intro-tip">
+                      <span class="orange-text">▸</span> Follow
+                      <strong class="cyan-text">cyan arrows</strong> to planets
+                    </p>
+                    <p class="intro-tip">
+                      <span class="orange-text">▸</span> Track
+                      <strong class="orange-text">red arrows</strong> to enemies
+                    </p>
+                    <p class="intro-tip">
+                      <span class="orange-text">▸</span> Destroy asteroids for resources
+                    </p>
+                    <p class="intro-tip">
+                      <span class="orange-text">▸</span> Press ESC for upgrades & ships
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- About Tab -->
+          <div class="tab-panel" id="about-panel">
+            <div class="intro-section">
+              <h2 class="intro-section-title orange-text">
+                CREDITS & ATTRIBUTION
+              </h2>
+              <div class="credits-section credits-grid">
+                <div class="credits-column">
+                  <h3 class="credits-subtitle cyan-text">Assets</h3>
+                  <p class="credits-item">• Skybox - <a href="#" class="credit-link" target="_blank">Skybox Credit</a></p>
+                  <p class="credits-item">• SOLAR PHANTOM - <a href="#" class="credit-link" target="_blank">Model Credit</a></p>
+                  <p class="credits-item">• STORM SCOUT - <a href="#" class="credit-link" target="_blank">Model Credit</a></p>
+                  <p class="credits-item">• VOID REAPER - <a href="#" class="credit-link" target="_blank">Model Credit</a></p>
+                  <p class="credits-item">• EMERALD FURY - <a href="#" class="credit-link" target="_blank">Model Credit</a></p>
+                  <p class="credits-item">• GHOST INTERCEPTOR - <a href="#" class="credit-link" target="_blank">Model Credit</a></p>
+                </div>
+
+                <div class="credits-column">
+                  <h3 class="credits-subtitle cyan-text">Audio</h3>
+                  <p class="credits-item">
+                    • Soundtrack -
+                    <a href="#" class="credit-link" target="_blank"
+                      >Audio Credit</a
+                    >
+                  </p>
+                  <p class="credits-item">
+                    • Ship Rumble -
+                    <a href="#" class="credit-link" target="_blank"
+                      >Audio Credit</a
+                    >
+                  </p>
+                  <p class="credits-item">
+                    • Dogfight Music -
+                    <a href="#" class="credit-link" target="_blank"
+                      >Audio Credit</a
+                    >
+                  </p>
+                  <p class="credits-item">
+                    • Sound Effects -
+                    <a href="#" class="credit-link" target="_blank"
+                      >Audio Credit</a
+                    >
+                  </p>
+                </div>
+
+                <div class="credits-column">
+                  <h3 class="credits-subtitle cyan-text">Development</h3>
+                  <p class="credits-item">• Created by Tomas Lawton</p>
+                  <p class="credits-item">• Built with Three.js & WebGL</p>
+                  <button class="support-button" onclick="window.open('https://buymeacoffee.com/tomaslawton', '_blank')">☕ Support this project</button>
+                </div>
+              </div>
+
+              <div class="restart-section">
+                <button id="restart-game-btn" class="restart-button">🔄 Restart Game & Clear Settings</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="intro-footer">
+          <div class="intro-navigation-hint">
+            <span class="nav-hint-text"
+              >Press <span class="orange-text">ENTER</span> or
+              <span class="orange-text">SPACE</span> to continue</span
+            >
+          </div>
+          <button id="start-game-btn" class="intro-start-button" disabled>
+            <span class="button-text">LOADING SHIPS...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>
