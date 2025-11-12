@@ -311,12 +311,16 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
         const y = center + (dz / maxDistance) * (mapSize / 2);
 
         const planetDot = document.createElement('div');
-        // Orange if under attack, blue if safe
+        // Determine planet status: green if saved, orange if under attack, blue if safe
         const isUnderAttack = currentPlanet && planet === currentPlanet;
+        const isSaved = planet.cleared === true;
         let className = 'mini-map-planet'; // Blue for safe
         let status = '';
 
-        if (isUnderAttack) {
+        if (isSaved) {
+          className = 'mini-map-planet-saved'; // Green for saved
+          status = ' - SAVED';
+        } else if (isUnderAttack) {
           className = 'mini-map-planet-attack'; // Orange for under attack
           status = ' - UNDER ATTACK!';
         }
