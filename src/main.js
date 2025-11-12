@@ -220,15 +220,17 @@ class Game {
       });
     }
 
-    // Hidden restart key combination: Ctrl+Shift+R
-    const restartHandler = (event) => {
-      if (event.ctrlKey && event.shiftKey && event.key === 'R') {
-        event.preventDefault();
-        console.log('🔄 Restarting game...');
-        window.location.reload();
-      }
-    };
-    window.addEventListener('keydown', restartHandler);
+    // Setup restart button with confirmation
+    const restartButton = document.getElementById('restart-game-btn');
+    if (restartButton) {
+      restartButton.addEventListener('click', () => {
+        if (confirm('Are you sure you want to restart the game and clear all settings? This cannot be undone.')) {
+          console.log('🔄 Restarting game and clearing settings...');
+          localStorage.clear();
+          window.location.reload();
+        }
+      });
+    }
 
     // Enter or Space key press for tab navigation and starting game
     const keyHandler = (event) => {

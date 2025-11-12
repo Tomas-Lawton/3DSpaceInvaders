@@ -2360,6 +2360,17 @@ body {
   margin-top: 20px;
 }
 
+.credits-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 30px;
+}
+
+.credits-column {
+  display: flex;
+  flex-direction: column;
+}
+
 .credits-subtitle {
   font-size: 16px;
   margin-top: 12;
@@ -2415,6 +2426,62 @@ body {
   background: rgba(255, 153, 0, 0.25);
   border-color: #ff9900;
   box-shadow: 0 0 20px rgba(255, 153, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Support Button */
+.support-button {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 10px 24px;
+  background: rgba(255, 153, 0, 0.15);
+  border: 2px solid rgba(255, 153, 0, 0.4);
+  border-radius: 8px;
+  color: #ff9900;
+  font-family: "Orbitron", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  cursor: pointer !important;
+}
+
+.support-button:hover {
+  background: rgba(255, 153, 0, 0.25);
+  border-color: #ff9900;
+  box-shadow: 0 0 20px rgba(255, 153, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Restart Section */
+.restart-section {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 2px solid rgba(0, 255, 238, 0.2);
+  text-align: center;
+}
+
+.restart-button {
+  padding: 12px 28px;
+  background: rgba(255, 0, 0, 0.1);
+  border: 2px solid rgba(255, 0, 0, 0.4);
+  border-radius: 8px;
+  color: #ff4444;
+  font-family: "Orbitron", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  cursor: pointer !important;
+}
+
+.restart-button:hover {
+  background: rgba(255, 0, 0, 0.2);
+  border-color: #ff4444;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
   transform: translateY(-2px);
 }
 
@@ -3673,6 +3740,28 @@ body {
   );
   box-shadow: 0 0 30px rgba(255, 153, 0, 0.6);
   transform: scale(1.05);
+}
+
+.yes-btn.focused {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 255, 100, 0.35) 0%,
+    rgba(0, 255, 238, 0.35) 100%
+  );
+  box-shadow: 0 0 35px rgba(0, 255, 238, 0.7);
+  transform: scale(1.08);
+  border: 3px solid rgba(0, 255, 238, 0.8);
+}
+
+.no-btn.focused {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 100, 100, 0.35) 0%,
+    rgba(255, 153, 0, 0.35) 100%
+  );
+  box-shadow: 0 0 35px rgba(255, 153, 0, 0.7);
+  transform: scale(1.08);
+  border: 3px solid rgba(255, 153, 0, 0.8);
 }
 
 .confirm-btn:active {

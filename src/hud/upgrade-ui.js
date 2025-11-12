@@ -63,8 +63,9 @@ export function initializeUpgradeUI() {
     });
   }
 
-  // Set up keyboard navigation for ship selection
+  // Set up keyboard navigation for ship selection and confirmation dialog
   document.addEventListener('keydown', handleShipNavigationKeys);
+  document.addEventListener('keydown', handleConfirmDialogKeys);
 
   // Initial update
   updateAllUI();
@@ -372,13 +373,26 @@ function handleSelectShip() {
   if (dialog) {
     dialog.style.display = 'flex';
     // Show both buttons
-    document.getElementById('confirm-yes').style.display = 'inline-block';
-    document.getElementById('confirm-no').textContent = 'NO';
+    const confirmYes = document.getElementById('confirm-yes');
+    const confirmNo = document.getElementById('confirm-no');
+    confirmYes.style.display = 'inline-block';
+    confirmNo.textContent = 'NO';
+
+    // Reset focus to Yes button
+    confirmDialogFocusIndex = 0;
+    confirmYes.classList.add('focused');
+    confirmNo.classList.remove('focused');
   }
 }
 
 // Handle keyboard navigation for ship selection
 function handleShipNavigationKeys(event) {
+  // Don't handle if confirm dialog is visible
+  const confirmDialog = document.getElementById('ship-confirm-dialog');
+  if (confirmDialog && confirmDialog.style.display !== 'none') {
+    return;
+  }
+
   // Only handle keys when pause menu is visible
   const controlUI = document.getElementById('control-ui');
   if (!controlUI || controlUI.style.display === 'none') {
@@ -416,6 +430,69 @@ function handleShipNavigationKeys(event) {
         handleUnlockShip();
       }
     }
+  }
+}
+
+// Track which button is currently focused in the confirmation dialog
+let confirmDialogFocusIndex = 0; // 0 for Yes, 1 for No
+
+// Handle keyboard navigation for confirmation dialog
+function handleConfirmDialogKeys(event) {
+  const confirmDialog = document.getElementById('ship-confirm-dialog');
+
+  // Only handle if dialog is visible
+  if (!confirmDialog || confirmDialog.style.display === 'none') {
+    return;
+  }
+
+  const confirmYes = document.getElementById('confirm-yes');
+  const confirmNo = document.getElementById('confirm-no');
+
+  // Check if both buttons are visible (not in "locked ship" mode)
+  const bothButtonsVisible = confirmYes && confirmNo &&
+    confirmYes.style.display !== 'none' &&
+    confirmNo.textContent === 'NO';
+
+  if (!bothButtonsVisible) {
+    // Only "OK" button visible - just handle Enter/Escape
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Escape') {
+      event.preventDefault();
+      if (confirmNo) confirmNo.click();
+    }
+    return;
+  }
+
+  // Handle arrow keys to switch focus
+  if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    event.preventDefault();
+    confirmDialogFocusIndex = confirmDialogFocusIndex === 0 ? 1 : 0;
+
+    // Update visual focus
+    if (confirmDialogFocusIndex === 0) {
+      confirmYes.classList.add('focused');
+      confirmNo.classList.remove('focused');
+    } else {
+      confirmYes.classList.remove('focused');
+      confirmNo.classList.add('focused');
+    }
+  }
+  // Handle Enter to select
+  else if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    if (confirmDialogFocusIndex === 0) {
+      confirmYes.click();
+    } else {
+      confirmNo.click();
+    }
+    // Reset focus index
+    confirmDialogFocusIndex = 0;
+  }
+  // Handle Escape to cancel
+  else if (event.key === 'Escape') {
+    event.preventDefault();
+    confirmNo.click();
+    // Reset focus index
+    confirmDialogFocusIndex = 0;
   }
 }
 
