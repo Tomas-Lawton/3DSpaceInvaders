@@ -458,7 +458,7 @@ export const enemy = (() => {
 
     animateForwardMovement(enemy) {
       if (enemy) {
-        const baseSpeed = 0.5; // Reduced for better chase gameplay and dogfighting
+        const baseSpeed = 0.8; // Increased from 0.5 for more challenging combat
         const speedMultiplier = enemy.speedMultiplier || 1.0;
         let speed = baseSpeed * speedMultiplier; // Apply individual speed variance
         let direction = new THREE.Vector3();

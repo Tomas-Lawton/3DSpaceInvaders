@@ -512,7 +512,7 @@ export const planets = (() => {
 
           if (laserBox.intersectsBox(planetBox)) {
             // Damage the planet
-            planet.health -= 15; // Increased damage to make planet defense more challenging
+            planet.health -= 30; // Increased from 15 to 30 for much more challenging planet defense
 
             // Remove the laser and dispose resources
             this.scene.remove(laserBeam);

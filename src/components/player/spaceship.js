@@ -1099,7 +1099,7 @@ export const spaceship = (() => {
         for (const laserData of enemyLoader.activeLasers) {
           const { laserBeam } = laserData;
           if (this.checkCollision(this.mesh, laserBeam)) {
-            this.userHit(35); // Increased from 23 to 35 for more challenging combat
+            this.userHit(50); // Increased from 35 to 50 for more challenging combat
             this.lastEnemyLaserCollisionCheck = currentTimestamp + 300; // Add cooldown after hit
             return;
           }
