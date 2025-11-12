@@ -166,15 +166,10 @@ export const planets = (() => {
         // Check if all enemies are cleared while planet still exists
         // CRITICAL: Don't check if currently spawning (async callbacks haven't completed yet!)
         const canCheckPlanetSaved = this.currentPlanet && this.currentPlanet.hasEnemies &&
-                                    this.enemyLoader && this.enemyLoader.enemies.length === 0;
+                                    this.enemyLoader && this.enemyLoader.enemies.length === 0 &&
+                                    !this.currentlySpawning; // FIXED: Block check during spawn
 
-        if (canCheckPlanetSaved && this.currentlySpawning) {
-          // Prevent premature "planet saved" during async enemy spawn
-          if (!this._lastSpawnBlockLog || Date.now() - this._lastSpawnBlockLog > 1000) {
-            console.log(`[PLANET] ⚠️ Skipping planet saved check - enemies still spawning (async callbacks pending)`);
-            this._lastSpawnBlockLog = Date.now();
-          }
-        } else if (canCheckPlanetSaved) {
+        if (canCheckPlanetSaved) {
           console.log(`[PLANET] 🌍 All enemies defeated! Planet saved!`);
 
           // Stop dogfight music
