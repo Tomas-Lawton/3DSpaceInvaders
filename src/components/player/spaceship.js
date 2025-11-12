@@ -156,7 +156,7 @@ export const spaceship = (() => {
       };
 
       this.setHealth(health, true);
-      this.damageAmount = 26;
+      this.damageAmount = 18; // Reduced from 26 for more challenging combat
 
       // Combo system
       this.comboCount = 0;
