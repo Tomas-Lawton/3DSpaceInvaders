@@ -22,6 +22,24 @@ export const spaceship = (() => {
       let loadedCount = 0;
       const totalModels = modelPaths.length;
 
+      // Animated progress display
+      let displayedProgress = 0;
+      const updateProgress = (targetProgress) => {
+        const animate = () => {
+          if (displayedProgress < targetProgress) {
+            displayedProgress += 2;
+            if (displayedProgress > targetProgress) {
+              displayedProgress = targetProgress;
+            }
+            progressText.innerHTML = `LOADING ${displayedProgress.toFixed(0)}/100`;
+            if (displayedProgress < targetProgress) {
+              requestAnimationFrame(animate);
+            }
+          }
+        };
+        animate();
+      };
+
       console.log(`[PRELOAD] Starting preload of ${totalModels} ship models...`);
 
       modelPaths.forEach((modelData, index) => {
@@ -46,19 +64,29 @@ export const spaceship = (() => {
             modelCache[index] = loadedModel;
             loadedCount++;
 
+            // Update progress with animation
+            const progress = Math.floor((loadedCount / totalModels) * 100);
+            updateProgress(progress);
+
             console.log(`[PRELOAD] Loaded ${index}: ${modelData.name} (${loadedCount}/${totalModels})`);
 
             if (loadedCount === totalModels) {
               console.log('[PRELOAD] All ship models loaded!');
-              resolve();
+              // Ensure we reach 100% before resolving
+              setTimeout(() => {
+                updateProgress(100);
+                setTimeout(resolve, 300);
+              }, 100);
             }
           },
           undefined,
           (error) => {
             console.error(`[PRELOAD] Error loading model ${index}:`, error);
             loadedCount++;
+            const progress = Math.floor((loadedCount / totalModels) * 100);
+            updateProgress(progress);
             if (loadedCount === totalModels) {
-              resolve();
+              setTimeout(resolve, 300);
             }
           }
         );

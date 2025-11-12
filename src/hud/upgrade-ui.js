@@ -13,6 +13,7 @@ import { getOres, getXP, setOres, deductXP } from '../components/dom.js';
 import { switchModel, refreshDiagnostics } from './hud.js';
 
 let currentlySelectedShip = 'ship-1';
+let lastConfirmedShip = null; // Track the last ship that was actually confirmed for gameplay
 
 // Initialize upgrade UI when page loads
 export function initializeUpgradeUI() {
@@ -50,6 +51,8 @@ export function initializeUpgradeUI() {
       const selectButton = document.getElementById('select-ship');
       const shipId = selectButton?.dataset.shipId || 'ship-1';
       console.log(`Ship ${shipId} selected for gameplay!`);
+      // Update last confirmed ship
+      lastConfirmedShip = shipId;
       // Hide dialog
       if (confirmDialog) confirmDialog.style.display = 'none';
       // This will be handled by the existing ship selection logic in hud.js
@@ -355,14 +358,15 @@ function handleSelectShip() {
     return;
   }
 
-  // Skip confirmation for ship-1 (first ship)
-  if (shipId === 'ship-1') {
-    console.log(`Ship ${shipId} selected for gameplay!`);
+  // Skip confirmation for ship-1 only if it's the initial selection or already using ship-1
+  if (shipId === 'ship-1' && (lastConfirmedShip === null || lastConfirmedShip === 'ship-1')) {
+    console.log(`Ship ${shipId} selected for gameplay! (initial selection or reselecting)`);
+    lastConfirmedShip = 'ship-1';
     // This will be handled by the existing ship selection logic in hud.js
     return;
   }
 
-  // Show confirmation dialog for other ships
+  // Show confirmation dialog for all ship changes
   const dialog = document.getElementById('ship-confirm-dialog');
   const confirmMessage = document.getElementById('confirm-message');
 

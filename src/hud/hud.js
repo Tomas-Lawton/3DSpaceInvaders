@@ -270,22 +270,30 @@ function updateShipDiagnostics(baseStats) {
     animateStatBar(firepowerBar, finalFirepower);
     animateStatBar(agilityBar, finalAgility);
 
-    // Update text values showing base + bonus
+    // Update text values showing base + bonus (bonus in orange)
     if (speedValue) {
       const bonus = finalSpeed - baseStats.speed;
-      speedValue.textContent = bonus > 0 ? `${finalSpeed} (+${bonus})` : `${finalSpeed}`;
+      speedValue.innerHTML = bonus > 0
+        ? `${baseStats.speed} <span style="color: #ff9900;">+${bonus}</span>`
+        : `${finalSpeed}`;
     }
     if (armorValue) {
-      const bonus = finalArmor - baseStats.armor;
-      armorValue.textContent = bonus > 0 ? `${finalArmor} (+${Math.round(bonus)})` : `${finalArmor}`;
+      const bonus = Math.round(finalArmor - baseStats.armor);
+      armorValue.innerHTML = bonus > 0
+        ? `${baseStats.armor} <span style="color: #ff9900;">+${bonus}</span>`
+        : `${finalArmor}`;
     }
     if (firepowerValue) {
       const bonus = finalFirepower - baseStats.firepower;
-      firepowerValue.textContent = bonus > 0 ? `${finalFirepower} (+${bonus})` : `${finalFirepower}`;
+      firepowerValue.innerHTML = bonus > 0
+        ? `${baseStats.firepower} <span style="color: #ff9900;">+${bonus}</span>`
+        : `${finalFirepower}`;
     }
     if (agilityValue) {
-      const bonus = finalAgility - baseStats.agility;
-      agilityValue.textContent = bonus > 0 ? `${finalAgility} (+${Math.round(bonus)})` : `${finalAgility}`;
+      const bonus = Math.round(finalAgility - baseStats.agility);
+      agilityValue.innerHTML = bonus > 0
+        ? `${baseStats.agility} <span style="color: #ff9900;">+${bonus}</span>`
+        : `${finalAgility}`;
     }
   });
 }
