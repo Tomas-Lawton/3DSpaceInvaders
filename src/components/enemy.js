@@ -18,7 +18,7 @@ export const enemy = (() => {
       this.enemies = [];
       this.loader = new GLTFLoader().setPath("public/ships/ship_5/");
       this.activeLasers = [];
-      this.shootCooldown = 200;
+      this.shootCooldown = 150; // Reduced from 200 for more aggressive shooting
       this.lightSound = new Audio("public/audio/enemy_pew.mp3");
       this.firingDistance = 100;
       this.updateCounter = 0; // For LOD optimization
@@ -138,7 +138,7 @@ export const enemy = (() => {
 
         // Add variance to enemy properties
         enemyObject.speedMultiplier = 0.8 + Math.random() * 0.4; // 0.8 to 1.2x speed variance (reduced for better chase gameplay)
-        enemyObject.turnSpeed = 0.008 + Math.random() * 0.005; // 0.008 to 0.013 turn speed (reduced for smoother arcing)
+        enemyObject.turnSpeed = 0.012 + Math.random() * 0.008; // Increased from 0.008-0.013 to 0.012-0.020 for more aggressive tracking
 
         // Store planet center for collision avoidance
         enemyObject.planetCenter = aroundPoint.clone();
@@ -330,7 +330,7 @@ export const enemy = (() => {
       enemy,
       playerCurrentPosition,
       alternateTarget = null,
-      inRangeDistance = 200, // Reduced to 200 - enemies prioritize planet unless player very close
+      inRangeDistance = 350, // Increased from 200 - enemies attack player more aggressively
       maxPlanetDistance = 1500
     ) {
       if (enemy) {
@@ -548,8 +548,8 @@ export const enemy = (() => {
 
       const currentTime = performance.now(); // For laser cooldown
 
-      const distanceThreshold = 150; // Enemies only fire when close (within 150 units)
-      const angleThreshold = Math.PI / 4; // Widened from PI/6 to PI/4 for easier shooting
+      const distanceThreshold = 200; // Increased from 150 for more aggressive long-range attacks
+      const angleThreshold = Math.PI / 3; // Increased from PI/4 to PI/3 (60 degrees) for easier shooting
 
       // Get the current facing direction of the enemy
       const enemyDirection = new THREE.Vector3();
