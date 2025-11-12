@@ -221,7 +221,7 @@ export function updatePlanetDefenseStatus(planet, enemyCount) {
   const healthText = document.getElementById('planet-health-text');
   const enemiesText = document.getElementById('enemies-remaining');
 
-  if (!statusElement || !planet || !planet.hasEnemies) {
+  if (!statusElement || !planet || !planet.hasEnemies || planet.cleared) {
     if (statusElement) {
       statusElement.style.display = 'none';
     }
@@ -640,10 +640,13 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     container.appendChild(indicator);
   };
 
-  // Create indicators for all planets
+  // Create indicators for all planets (except cleared ones)
   if (planets && planets.length > 0) {
     planets.forEach(planet => {
-      createIndicator(planet.position, 'planet');
+      // Don't show indicators for cleared planets
+      if (!planet.cleared) {
+        createIndicator(planet.position, 'planet');
+      }
     });
   }
 
