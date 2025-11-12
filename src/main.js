@@ -184,7 +184,7 @@ class Game {
         if (startButton) {
           const buttonText = startButton.querySelector('.button-text');
           if (buttonText) {
-            buttonText.textContent = 'START MISSION';
+            buttonText.textContent = 'START GAME';
           }
         }
       } else {
