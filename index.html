@@ -284,9 +284,14 @@
               <label class="stat-label">Speed Rating</label>
               <div class="stat-bar-container">
                 <div
-                  class="stat-bar"
+                  class="stat-bar stat-bar-base"
                   id="velocity-stat"
                   style="width: 45%"
+                ></div>
+                <div
+                  class="stat-bar stat-bar-bonus"
+                  id="velocity-stat-bonus"
+                  style="width: 0%"
                 ></div>
               </div>
               <span class="stat-value" id="velocity-value">65</span>
@@ -296,9 +301,14 @@
               <label class="stat-label">Armor Rating</label>
               <div class="stat-bar-container">
                 <div
-                  class="stat-bar"
+                  class="stat-bar stat-bar-base"
                   id="altitude-stat"
                   style="width: 30%"
+                ></div>
+                <div
+                  class="stat-bar stat-bar-bonus"
+                  id="altitude-stat-bonus"
+                  style="width: 0%"
                 ></div>
               </div>
               <span class="stat-value" id="altitude-value">50</span>
@@ -307,7 +317,8 @@
             <div class="stat-item">
               <label class="stat-label">Firepower Rating</label>
               <div class="stat-bar-container">
-                <div class="stat-bar" id="apogee-stat" style="width: 35%"></div>
+                <div class="stat-bar stat-bar-base" id="apogee-stat" style="width: 35%"></div>
+                <div class="stat-bar stat-bar-bonus" id="apogee-stat-bonus" style="width: 0%"></div>
               </div>
               <span class="stat-value" id="apogee-value">55</span>
             </div>
@@ -316,9 +327,14 @@
               <label class="stat-label">Agility Rating</label>
               <div class="stat-bar-container">
                 <div
-                  class="stat-bar"
+                  class="stat-bar stat-bar-base"
                   id="perigee-stat"
                   style="width: 40%"
+                ></div>
+                <div
+                  class="stat-bar stat-bar-bonus"
+                  id="perigee-stat-bonus"
+                  style="width: 0%"
                 ></div>
               </div>
               <span class="stat-value" id="perigee-value">70</span>
@@ -497,29 +513,38 @@
               <h2 class="intro-section-title orange-text">YOUR MISSION</h2>
               <div class="story-text">
                 <p class="story-paragraph">
-                  The year is <span class="cyan-text">2063</span>. You are a
-                  prisoner of the
-                  <span class="orange-text">Galactic Empire</span>, captured
-                  during the failed defense of Colony-7. In a daring escape,
-                  you've stolen the experimental fighter
-                  <span class="cyan-text">SOLAR PHANTOM</span> - a prototype
-                  ship with unmatched capabilities.
+                  The year is <span class="cyan-text">2063</span>. Earth's deep
+                  space monitoring stations detected them three weeks ago - a
+                  massive <span class="orange-text">alien armada</span>
+                  advancing through our solar system. Within days, they began
+                  their assault. Colony after colony fell silent. No warnings.
+                  No negotiations. Just systematic annihilation.
                 </p>
                 <p class="story-paragraph">
-                  The Empire's invasion fleet has already decimated the outer
-                  systems, leaving countless planets defenseless. Their swarm
-                  tactics are overwhelming colonial defenses one by one. But you
-                  possess something they don't expect - humanity's most advanced
-                  starfighter and the skill to wield it.
+                  You were stationed on a research outpost when you intercepted
+                  a coded transmission. Your blood ran cold as you decrypted the
+                  coordinates - <span class="cyan-text">Earth</span> was next.
+                  Your home. Your family. Everything you knew would be reduced
+                  to ash within 48 hours. The colonial defense forces were
+                  scattered, overwhelmed by the alien swarms.
                 </p>
                 <p class="story-paragraph">
-                  Now branded a <span class="orange-text">renegade</span>, you
-                  must defend the remaining colonies from extinction. Every
-                  planet saved brings hope to the resistance. Every enemy
-                  destroyed weakens their stranglehold on our worlds. Scavenge
-                  resources from asteroids, upgrade your fighter, and become the
-                  legend that turns the tide of this war. The fate of humanity's
-                  last colonies rests in your hands, pilot.
+                  In a desperate gambit, you infiltrated an alien supply depot
+                  and hijacked their prototype fighter - the
+                  <span class="cyan-text">SOLAR PHANTOM</span>. Its technology
+                  is unlike anything human-made: faster engines, devastating
+                  firepower, and alien shielding systems. You barely escaped
+                  with your life, but now you have a chance.
+                </p>
+                <p class="story-paragraph">
+                  Time is running out. The
+                  <span class="orange-text">invasion fleet</span> is closing in
+                  on Earth and the remaining colonies. You must defend every
+                  planet, destroy every alien ship, and buy humanity time to
+                  evacuate. Scavenge resources from space debris, upgrade your
+                  stolen fighter, and show these invaders that humanity won't go
+                  quietly into the night. The fate of Earth - and everyone you
+                  love - rests in your hands, pilot.
                 </p>
               </div>
             </div>

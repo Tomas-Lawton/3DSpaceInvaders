@@ -241,9 +241,13 @@ function switchModel(shipId) {
 // Animate ship diagnostics when switching ships
 function updateShipDiagnostics(baseStats) {
   const speedBar = document.getElementById("velocity-stat");
+  const speedBarBonus = document.getElementById("velocity-stat-bonus");
   const armorBar = document.getElementById("altitude-stat");
+  const armorBarBonus = document.getElementById("altitude-stat-bonus");
   const firepowerBar = document.getElementById("apogee-stat");
+  const firepowerBarBonus = document.getElementById("apogee-stat-bonus");
   const agilityBar = document.getElementById("perigee-stat");
+  const agilityBarBonus = document.getElementById("perigee-stat-bonus");
 
   const speedValue = document.getElementById("velocity-value");
   const armorValue = document.getElementById("altitude-value");
@@ -257,42 +261,46 @@ function updateShipDiagnostics(baseStats) {
     // Calculate final stats: base stats + upgrade bonuses
     // Speed upgrade adds percentage boost
     const finalSpeed = Math.min(100, Math.round(baseStats.speed * bonuses.speedMultiplier));
+    const speedBonus = finalSpeed - baseStats.speed;
     // Health upgrade adds flat bonus (convert to rating scale)
     const finalArmor = Math.min(100, Math.round(baseStats.armor + (bonuses.healthBonus * 0.5)));
+    const armorBonus = Math.round(finalArmor - baseStats.armor);
     // Fire rate upgrade adds percentage boost
     const finalFirepower = Math.min(100, Math.round(baseStats.firepower * bonuses.fireRateMultiplier));
+    const firepowerBonus = finalFirepower - baseStats.firepower;
     // Agility isn't affected by upgrades directly, but we could add shields as bonus
     const finalAgility = Math.min(100, Math.round(baseStats.agility + (bonuses.damageReduction * 20)));
+    const agilityBonus = Math.round(finalAgility - baseStats.agility);
 
-    // Animate bars from current to target values
-    animateStatBar(speedBar, finalSpeed);
-    animateStatBar(armorBar, finalArmor);
-    animateStatBar(firepowerBar, finalFirepower);
-    animateStatBar(agilityBar, finalAgility);
+    // Animate base bars and bonus bars separately
+    animateStatBar(speedBar, baseStats.speed);
+    animateStatBar(speedBarBonus, speedBonus);
+    animateStatBar(armorBar, baseStats.armor);
+    animateStatBar(armorBarBonus, armorBonus);
+    animateStatBar(firepowerBar, baseStats.firepower);
+    animateStatBar(firepowerBarBonus, firepowerBonus);
+    animateStatBar(agilityBar, baseStats.agility);
+    animateStatBar(agilityBarBonus, agilityBonus);
 
     // Update text values showing base + bonus (bonus in orange)
     if (speedValue) {
-      const bonus = finalSpeed - baseStats.speed;
-      speedValue.innerHTML = bonus > 0
-        ? `${baseStats.speed} <span style="color: #ff9900;">+${bonus}</span>`
+      speedValue.innerHTML = speedBonus > 0
+        ? `${baseStats.speed} <span style="color: #ff9900;">+${speedBonus}</span>`
         : `${finalSpeed}`;
     }
     if (armorValue) {
-      const bonus = Math.round(finalArmor - baseStats.armor);
-      armorValue.innerHTML = bonus > 0
-        ? `${baseStats.armor} <span style="color: #ff9900;">+${bonus}</span>`
+      armorValue.innerHTML = armorBonus > 0
+        ? `${baseStats.armor} <span style="color: #ff9900;">+${armorBonus}</span>`
         : `${finalArmor}`;
     }
     if (firepowerValue) {
-      const bonus = finalFirepower - baseStats.firepower;
-      firepowerValue.innerHTML = bonus > 0
-        ? `${baseStats.firepower} <span style="color: #ff9900;">+${bonus}</span>`
+      firepowerValue.innerHTML = firepowerBonus > 0
+        ? `${baseStats.firepower} <span style="color: #ff9900;">+${firepowerBonus}</span>`
         : `${finalFirepower}`;
     }
     if (agilityValue) {
-      const bonus = Math.round(finalAgility - baseStats.agility);
-      agilityValue.innerHTML = bonus > 0
-        ? `${baseStats.agility} <span style="color: #ff9900;">+${bonus}</span>`
+      agilityValue.innerHTML = agilityBonus > 0
+        ? `${baseStats.agility} <span style="color: #ff9900;">+${agilityBonus}</span>`
         : `${finalAgility}`;
     }
   });

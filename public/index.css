@@ -991,13 +991,23 @@ body {
   overflow: hidden;
   margin-bottom: 5px;
   box-shadow: inset 0 0 5px rgba(0, 255, 238, 0.2);
+  display: flex;
+  flex-direction: row;
 }
 
 .stat-bar {
   height: 100%;
+  transition: width 0.3s ease;
+}
+
+.stat-bar-base {
   background: linear-gradient(90deg, #00ffee 0%, #00aacc 100%);
   box-shadow: 0 0 8px rgba(0, 255, 238, 0.6);
-  transition: width 0.3s ease;
+}
+
+.stat-bar-bonus {
+  background: linear-gradient(90deg, #ff9900 0%, #ff6600 100%);
+  box-shadow: 0 0 8px rgba(255, 153, 0, 0.6);
 }
 
 .stat-value {
@@ -1132,24 +1142,29 @@ body {
 /* Corner brackets */
 #right-upgrades-section::before {
   content: "";
-  position: absolute;
+  position: sticky;
   top: 5px;
   right: 5px;
   width: 20px;
   height: 20px;
   border-top: 2px solid rgba(255, 153, 0, 0.6);
   border-right: 2px solid rgba(255, 153, 0, 0.6);
+  float: right;
+  z-index: 10;
 }
 
 #right-upgrades-section::after {
   content: "";
-  position: absolute;
+  position: sticky;
   bottom: 5px;
   left: 5px;
   width: 20px;
   height: 20px;
   border-bottom: 2px solid rgba(0, 255, 238, 0.6);
   border-left: 2px solid rgba(0, 255, 238, 0.6);
+  display: block;
+  margin-top: auto;
+  z-index: 10;
 }
 
 .stats-header {
