@@ -153,6 +153,38 @@ class Game {
       }
     };
 
+    // Setup About modal
+    const aboutBtn = document.getElementById('about-btn');
+    const aboutModal = document.getElementById('about-modal');
+    const aboutClose = document.getElementById('about-close');
+
+    if (aboutBtn && aboutModal && aboutClose) {
+      aboutBtn.addEventListener('click', () => {
+        aboutModal.style.display = 'flex';
+      });
+
+      aboutClose.addEventListener('click', () => {
+        aboutModal.style.display = 'none';
+      });
+
+      // Close modal when clicking outside
+      aboutModal.addEventListener('click', (e) => {
+        if (e.target === aboutModal) {
+          aboutModal.style.display = 'none';
+        }
+      });
+    }
+
+    // Hidden restart key combination: Ctrl+Shift+R
+    const restartHandler = (event) => {
+      if (event.ctrlKey && event.shiftKey && event.key === 'R') {
+        event.preventDefault();
+        console.log('🔄 Restarting game...');
+        window.location.reload();
+      }
+    };
+    window.addEventListener('keydown', restartHandler);
+
     // Enter or Space key press (button click removed)
     const keyHandler = (event) => {
       if (!this.gameStarted && (event.key === 'Enter' || event.key === ' ')) {

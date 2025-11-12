@@ -68,11 +68,14 @@ export const planets = (() => {
         );
       } else {
         // Initial spawn (no player position yet)
-        planetGroup.position.set(
-          (Math.random() - 0.5) * 2000,  // X-axis - increased range
-          (Math.random() - 0.5) * 200,  // Y-axis - increased range
-          (Math.random() - 0.5) * 2000   // Z-axis - increased range
-        );
+        let x, y, z;
+        do {
+          x = (Math.random() - 0.5) * 2000;  // X-axis - increased range
+          y = (Math.random() - 0.5) * 200;   // Y-axis - increased range
+          z = (Math.random() - 0.5) * 2000;  // Z-axis - increased range
+        } while (Math.sqrt(x*x + y*y + z*z) < 300); // Ensure at least 300 units from origin
+
+        planetGroup.position.set(x, y, z);
 
         // Ensure the first planet spawns far from player (at least 2000 units away)
         const distance = planetGroup.position.length();

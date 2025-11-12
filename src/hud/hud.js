@@ -19,6 +19,12 @@ export const modelPaths = [
     laserColor: 0xffaa00,
     laserGlow: 0xff8800,
     boosterOffset: { x: 0, y: 2, z: -5 }, // Default position
+    baseStats: {
+      speed: 65,        // Base speed rating (0-100)
+      armor: 50,        // Base armor rating (0-100)
+      firepower: 55,    // Base firepower rating (0-100)
+      agility: 70       // Base agility rating (0-100)
+    }
   },
   {
     path: "public/ships/ship_2/",
@@ -29,6 +35,12 @@ export const modelPaths = [
     laserColor: 0xff6600,
     laserGlow: 0xff3300,
     boosterOffset: { x: 0, y: 6, z: -5 }, // Default position
+    baseStats: {
+      speed: 80,        // Fast scout
+      armor: 40,        // Light armor
+      firepower: 50,    // Moderate firepower
+      agility: 85       // Very agile
+    }
   },
   {
     path: "public/ships/ship_0/",
@@ -39,6 +51,12 @@ export const modelPaths = [
     laserColor: 0xc87dff,
     laserGlow: 0x9400ff,
     boosterOffset: { x: 0, y: 8, z: -5 }, // Fighter - raised booster
+    baseStats: {
+      speed: 70,        // Good speed
+      armor: 65,        // Heavy armor
+      firepower: 80,    // High firepower
+      agility: 60       // Moderate agility
+    }
   },
   {
     path: "public/ships/ship_6/",
@@ -49,6 +67,12 @@ export const modelPaths = [
     laserColor: 0x00ff66,
     laserGlow: 0x00cc44,
     boosterOffset: { x: 0, y: 2, z: -5 }, // Default position
+    baseStats: {
+      speed: 55,        // Slower
+      armor: 85,        // Very heavy armor
+      firepower: 75,    // Strong firepower
+      agility: 45       // Less agile
+    }
   },
   {
     path: "public/ships/ship_7/",
@@ -59,6 +83,12 @@ export const modelPaths = [
     laserColor: 0x6699ff,
     laserGlow: 0x3366cc,
     boosterOffset: { x: 0, y: 4, z: -5 }, // Default position
+    baseStats: {
+      speed: 90,        // Very fast
+      armor: 45,        // Light armor
+      firepower: 70,    // Good firepower
+      agility: 95       // Extremely agile
+    }
   },
 ];
 
@@ -74,7 +104,7 @@ export function initHUD() {
 
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(ambientLight);
-
+ 
   const light = new THREE.DirectionalLight(0xffffff, 10);
   light.position.set(5, 10, 7.5);
   scene.add(light);
@@ -134,6 +164,7 @@ async function loadShipModels() {
         laserColor: modelData.laserColor,
         laserGlow: modelData.laserGlow,
         boosterOffset: modelData.boosterOffset,
+        baseStats: modelData.baseStats,
       };
       console.log(`Loaded ${modelData.path} as ${shipId} (${modelData.name})`);
     });
@@ -150,6 +181,13 @@ async function loadShipModels() {
 export { switchModel };
 
 let previousModelId = null;
+
+// Function to refresh diagnostics for current ship (used when upgrades change)
+export function refreshDiagnostics() {
+  if (currentModel && currentModel.baseStats) {
+    updateShipDiagnostics(currentModel.baseStats);
+  }
+}
 
 function switchModel(shipId) {
   console.log(`switchModel called with: ${shipId}`);
@@ -191,8 +229,91 @@ function switchModel(shipId) {
     shipNameElem.textContent = currentModel.name;
   }
 
+  // Update ship diagnostics with base stats
+  if (currentModel.baseStats) {
+    updateShipDiagnostics(currentModel.baseStats);
+  }
+
   previousModelId = shipId;
   console.log(`Successfully switched to ${shipId}`);
+}
+
+// Animate ship diagnostics when switching ships
+function updateShipDiagnostics(baseStats) {
+  const speedBar = document.getElementById("velocity-stat");
+  const armorBar = document.getElementById("altitude-stat");
+  const firepowerBar = document.getElementById("apogee-stat");
+  const agilityBar = document.getElementById("perigee-stat");
+
+  const speedValue = document.getElementById("velocity-value");
+  const armorValue = document.getElementById("altitude-value");
+  const firepowerValue = document.getElementById("apogee-value");
+  const agilityValue = document.getElementById("perigee-value");
+
+  // Import upgrade system to get bonuses
+  import('../utils/upgrade-system.js').then(({ getTotalBonuses }) => {
+    const bonuses = getTotalBonuses();
+
+    // Calculate final stats: base stats + upgrade bonuses
+    // Speed upgrade adds percentage boost
+    const finalSpeed = Math.min(100, Math.round(baseStats.speed * bonuses.speedMultiplier));
+    // Health upgrade adds flat bonus (convert to rating scale)
+    const finalArmor = Math.min(100, Math.round(baseStats.armor + (bonuses.healthBonus * 0.5)));
+    // Fire rate upgrade adds percentage boost
+    const finalFirepower = Math.min(100, Math.round(baseStats.firepower * bonuses.fireRateMultiplier));
+    // Agility isn't affected by upgrades directly, but we could add shields as bonus
+    const finalAgility = Math.min(100, Math.round(baseStats.agility + (bonuses.damageReduction * 20)));
+
+    // Animate bars from current to target values
+    animateStatBar(speedBar, finalSpeed);
+    animateStatBar(armorBar, finalArmor);
+    animateStatBar(firepowerBar, finalFirepower);
+    animateStatBar(agilityBar, finalAgility);
+
+    // Update text values showing base + bonus
+    if (speedValue) {
+      const bonus = finalSpeed - baseStats.speed;
+      speedValue.textContent = bonus > 0 ? `${finalSpeed} (+${bonus})` : `${finalSpeed}`;
+    }
+    if (armorValue) {
+      const bonus = finalArmor - baseStats.armor;
+      armorValue.textContent = bonus > 0 ? `${finalArmor} (+${Math.round(bonus)})` : `${finalArmor}`;
+    }
+    if (firepowerValue) {
+      const bonus = finalFirepower - baseStats.firepower;
+      firepowerValue.textContent = bonus > 0 ? `${finalFirepower} (+${bonus})` : `${finalFirepower}`;
+    }
+    if (agilityValue) {
+      const bonus = finalAgility - baseStats.agility;
+      agilityValue.textContent = bonus > 0 ? `${finalAgility} (+${Math.round(bonus)})` : `${finalAgility}`;
+    }
+  });
+}
+
+// Helper function to animate stat bars smoothly
+function animateStatBar(barElement, targetPercentage) {
+  if (!barElement) return;
+
+  const currentWidth = parseFloat(barElement.style.width) || 0;
+  const duration = 500; // Animation duration in ms
+  const startTime = performance.now();
+
+  function animate(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+
+    // Ease out cubic
+    const easeProgress = 1 - Math.pow(1 - progress, 3);
+    const newWidth = currentWidth + (targetPercentage - currentWidth) * easeProgress;
+
+    barElement.style.width = `${newWidth}%`;
+
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    }
+  }
+
+  requestAnimationFrame(animate);
 }
 
 export function normalizeModelSize(model, targetSize = 1) {

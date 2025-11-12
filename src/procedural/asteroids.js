@@ -40,11 +40,16 @@ export const asteroids = (() => {
     async loadAsteroids() {
       try {
         let asteroidGroup = new THREE.Group();
-        asteroidGroup.position.set(
-            (Math.random() - 0.5) * 5000,
-            (Math.random() - 0.5) * 2000, // Reduced y-axis range for better discoverability
-            (Math.random() - 0.5) * 5000
-        );
+
+        // Ensure asteroid field spawns at least 300 units away from player (0,0,0)
+        let x, y, z;
+        do {
+          x = (Math.random() - 0.5) * 5000;
+          y = (Math.random() - 0.5) * 2000; // Reduced y-axis range for better discoverability
+          z = (Math.random() - 0.5) * 5000;
+        } while (Math.sqrt(x*x + y*y + z*z) < 300);
+
+        asteroidGroup.position.set(x, y, z);
         this.scene.add(asteroidGroup);
         // Reduced to fewer asteroids for better gameplay
         const numberOfAsteroids = Math.floor(Math.random() * 15) + 10; // 10-25 asteroids per system

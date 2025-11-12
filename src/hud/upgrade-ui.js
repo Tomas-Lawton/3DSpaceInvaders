@@ -10,7 +10,7 @@ import {
   FREE_SHIPS_MODE
 } from '../utils/upgrade-system.js';
 import { getOres, getXP, setOres, deductXP } from '../components/dom.js';
-import { switchModel } from './hud.js';
+import { switchModel, refreshDiagnostics } from './hud.js';
 
 let currentlySelectedShip = 'ship-1';
 
@@ -233,6 +233,8 @@ function handleUpgradeClick(event) {
       button.style.transform = '';
       button.style.boxShadow = '';
       updateAllUI();
+      // Refresh ship diagnostics to show new upgrade bonuses
+      refreshDiagnostics();
     }, 300);
   } else {
     // Show error feedback
@@ -420,6 +422,8 @@ function handleShipNavigationKeys(event) {
 // Function to be called when pause menu opens
 export function onPauseMenuOpen() {
   updateAllUI();
+  // Refresh diagnostics to show current ship + upgrades
+  refreshDiagnostics();
 }
 
 // Export for testing/debugging

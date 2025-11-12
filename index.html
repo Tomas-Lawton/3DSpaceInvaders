@@ -281,7 +281,7 @@
           <div id="left-stats-section">
             <h3 class="stats-header">SHIP DIAGNOSTICS</h3>
             <div class="stat-item">
-              <label class="stat-label">Inertial Velocity</label>
+              <label class="stat-label">Speed Rating</label>
               <div class="stat-bar-container">
                 <div
                   class="stat-bar"
@@ -289,11 +289,11 @@
                   style="width: 45%"
                 ></div>
               </div>
-              <span class="stat-value" id="velocity-value">7.68 km/s</span>
+              <span class="stat-value" id="velocity-value">65</span>
             </div>
 
             <div class="stat-item">
-              <label class="stat-label">Altitude</label>
+              <label class="stat-label">Armor Rating</label>
               <div class="stat-bar-container">
                 <div
                   class="stat-bar"
@@ -301,19 +301,19 @@
                   style="width: 30%"
                 ></div>
               </div>
-              <span class="stat-value" id="altitude-value">390.0 km</span>
+              <span class="stat-value" id="altitude-value">50</span>
             </div>
 
             <div class="stat-item">
-              <label class="stat-label">Apogee</label>
+              <label class="stat-label">Firepower Rating</label>
               <div class="stat-bar-container">
                 <div class="stat-bar" id="apogee-stat" style="width: 35%"></div>
               </div>
-              <span class="stat-value" id="apogee-value">404.4 km</span>
+              <span class="stat-value" id="apogee-value">55</span>
             </div>
 
             <div class="stat-item">
-              <label class="stat-label">Perigee</label>
+              <label class="stat-label">Agility Rating</label>
               <div class="stat-bar-container">
                 <div
                   class="stat-bar"
@@ -321,7 +321,7 @@
                   style="width: 40%"
                 ></div>
               </div>
-              <span class="stat-value" id="perigee-value">389.4 km</span>
+              <span class="stat-value" id="perigee-value">70</span>
             </div>
           </div>
 
@@ -490,86 +490,74 @@
         </div>
 
         <div class="intro-content">
-          <!-- Story Section -->
-          <div class="intro-section story-section">
-            <h2 class="intro-section-title orange-text">YOUR MISSION</h2>
-            <div class="story-text">
-              <p class="story-paragraph">
-                You escaped imprisonment on your home planet by stealing the
-                prototype fighter
-                <span class="cyan-text ship-highlight">SOLAR PHANTOM</span> — a
-                ship designed for the Empire's elite guard. Now branded a
-                <span class="orange-text">renegade pilot</span>, you've
-                intercepted distress signals from independent colonies across
-                the sector. The Empire's invasion fleet is overwhelming these
-                worlds, and you're their only hope.
-              </p>
+          <!-- Main Content (Mission + Controls) -->
+          <div id="main-content">
+            <div class="intro-compact-grid">
+              <!-- Mission Section -->
+              <div class="intro-section-compact">
+                <h2 class="intro-section-title orange-text">YOUR MISSION</h2>
+                <p class="story-compact">
+                  You escaped imprisonment by stealing the prototype fighter
+                  <span class="cyan-text">SOLAR PHANTOM</span>. Now a
+                  <span class="orange-text">renegade pilot</span>, you must defend colonies from the Empire's invasion fleet.
+                </p>
+              </div>
 
-              <!-- <p class="story-paragraph story-emphasis">
-                Defend the planets. Collect resources. Upgrade your arsenal.
-                <span class="glow-text">Fight back against the Empire.</span>
-              </p> -->
-            </div>
-          </div>
+              <!-- Controls Section -->
+              <div class="intro-section-compact">
+                <h2 class="intro-section-title orange-text">CONTROLS</h2>
+                <div class="intro-controls-compact">
+                  <div class="control-compact"><span class="intro-key-small">WS + Space/Shift</span> Fly</div>
+                  <div class="control-compact"><span class="intro-key-small">MOUSE</span> Aim</div>
+                  <div class="control-compact"><span class="intro-key-small orange-key">CLICK</span> Fire</div>
+                  <div class="control-compact"><span class="intro-key-small orange-key">ESC</span> Pause</div>
+                </div>
+              </div>
 
-          <!-- Controls and Tips Grid -->
-          <div class="intro-grid">
-            <div class="intro-section">
-              <h2 class="intro-section-title orange-text">CONTROLS</h2>
-              <div class="intro-controls-grid">
-                <div class="intro-control">
-                  <span class="intro-key">WS + Space/Shift</span>
-                  <span class="intro-label">Fly Spaceship</span>
-                </div>
-                <div class="intro-control">
-                  <span class="intro-key">MOUSE</span>
-                  <span class="intro-label">Aim</span>
-                </div>
-                <div class="intro-control">
-                  <span class="intro-key orange-key">CLICK</span>
-                  <span class="intro-label">Fire Weapons</span>
-                </div>
-                <div class="intro-control">
-                  <span class="intro-key orange-key">ESC</span>
-                  <span class="intro-label">Pause / Upgrade</span>
+              <!-- Objectives Section -->
+              <div class="intro-section-compact">
+                <h2 class="intro-section-title orange-text">OBJECTIVES</h2>
+                <div class="intro-tips-compact">
+                  <p class="intro-tip-small"><span class="tip-icon cyan-text">◆</span> Defend planets within <strong class="orange-text">1500km</strong></p>
+                  <p class="intro-tip-small"><span class="tip-icon cyan-text">◆</span> Follow <strong class="cyan-text">cyan arrows</strong> to planets</p>
+                  <p class="intro-tip-small"><span class="tip-icon cyan-text">◆</span> Target <strong class="orange-text">red arrows</strong> for enemies</p>
+                  <p class="intro-tip-small"><span class="tip-icon cyan-text">◆</span> Destroy asteroids for resources</p>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div class="intro-section">
-              <h2 class="intro-section-title orange-text">OBJECTIVES</h2>
-              <div class="intro-tips">
-                <p class="intro-tip">
-                  <span class="tip-icon cyan-text">◆</span>
-                  <span
-                    >Defend planets within
-                    <strong class="orange-text">1500km</strong> range</span
-                  >
-                </p>
-                <p class="intro-tip">
-                  <span class="tip-icon cyan-text">◆</span>
-                  <span
-                    >Follow <strong class="cyan-text">cyan arrows</strong> to
-                    planets</span
-                  >
-                </p>
-                <p class="intro-tip">
-                  <span class="tip-icon cyan-text">◆</span>
-                  <span
-                    >Target <strong class="orange-text">red arrows</strong> for
-                    enemies</span
-                  >
-                </p>
-                <p class="intro-tip">
-                  <span class="tip-icon cyan-text">◆</span>
-                  <span>Destroy asteroids for resources</span>
-                </p>
+          <!-- About Modal (Hidden by default) -->
+          <div id="about-modal" style="display: none;">
+            <div class="about-modal-content">
+              <button class="about-close" id="about-close">✕</button>
+              <h2 class="intro-section-title orange-text">ABOUT</h2>
+              <div class="credits-section">
+                <h3 class="credits-subtitle cyan-text">3D Models</h3>
+                <p class="credits-item">• SOLAR PHANTOM - <a href="#" class="credit-link" target="_blank">Model Credit</a></p>
+                <p class="credits-item">• STORM SCOUT - <a href="#" class="credit-link" target="_blank">Model Credit</a></p>
+                <p class="credits-item">• VOID REAPER - <a href="#" class="credit-link" target="_blank">Model Credit</a></p>
+                <p class="credits-item">• EMERALD FURY - <a href="#" class="credit-link" target="_blank">Model Credit</a></p>
+                <p class="credits-item">• GHOST INTERCEPTOR - <a href="#" class="credit-link" target="_blank">Model Credit</a></p>
+
+                <h3 class="credits-subtitle cyan-text">Audio</h3>
+                <p class="credits-item">• Soundtrack - <a href="#" class="credit-link" target="_blank">Audio Credit</a></p>
+                <p class="credits-item">• Ship Rumble - <a href="#" class="credit-link" target="_blank">Audio Credit</a></p>
+                <p class="credits-item">• Dogfight Music - <a href="#" class="credit-link" target="_blank">Audio Credit</a></p>
+                <p class="credits-item">• Sound Effects - <a href="#" class="credit-link" target="_blank">Audio Credit</a></p>
+                <p class="credits-item">• UI Bleep - <a href="#" class="credit-link" target="_blank">Audio Credit</a></p>
+
+                <h3 class="credits-subtitle cyan-text">Development</h3>
+                <p class="credits-item">• Created by Tomas Lawton</p>
+                <p class="credits-item">• Built with Three.js</p>
+                <p class="credits-item">• <a href="https://buymeacoffee.com/tomaslawton" target="_blank" class="credit-link">☕ Support this project</a></p>
               </div>
             </div>
           </div>
         </div>
 
         <div class="intro-footer">
+          <button id="about-btn" class="about-button">About & Credits</button>
           <button id="start-game-btn" class="intro-start-button" disabled>
             <span class="button-text">LOADING SHIPS...</span>
             <span class="button-subtitle" style="display: none"

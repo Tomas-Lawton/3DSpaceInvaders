@@ -100,11 +100,14 @@ export const stars = (() => {
         );
       } else {
         // Initial spawn
-        starGroup.position.set(
-          (Math.random() - 0.5) * 2000,
-          (Math.random() - 0.5) * 200,
-          (Math.random() - 0.5) * 2000
-        );
+        let x, y, z;
+        do {
+          x = (Math.random() - 0.5) * 2000;
+          y = (Math.random() - 0.5) * 200;
+          z = (Math.random() - 0.5) * 2000;
+        } while (Math.sqrt(x*x + y*y + z*z) < 300); // Ensure at least 300 units from origin
+
+        starGroup.position.set(x, y, z);
 
         // Ensure minimum distance from origin
         const distance = starGroup.position.length();
