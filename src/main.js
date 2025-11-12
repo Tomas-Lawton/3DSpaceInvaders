@@ -97,15 +97,10 @@ class Game {
     // Update the start button to show it's ready
     const startButton = document.getElementById('start-game-btn');
     const buttonText = startButton.querySelector('.button-text');
-    const buttonSubtitle = startButton.querySelector('.button-subtitle');
 
     if (buttonText) {
-      buttonText.textContent = 'START MISSION';
+      buttonText.textContent = 'NEXT';
       buttonText.classList.add('ready');
-    }
-    if (buttonSubtitle) {
-      buttonSubtitle.textContent = 'Press ENTER or SPACE';
-      buttonSubtitle.style.display = 'block';
     }
 
     // Enable the button
@@ -144,6 +139,9 @@ class Game {
   }
 
   setupIntroListener() {
+    const tabs = ['mission', 'controls', 'about'];
+    let currentTabIndex = 0;
+
     const startGame = () => {
       const introScreen = document.getElementById('intro-screen');
       if (introScreen && introScreen.style.display !== 'none') {
@@ -153,24 +151,71 @@ class Game {
       }
     };
 
-    // Setup About modal
-    const aboutBtn = document.getElementById('about-btn');
-    const aboutModal = document.getElementById('about-modal');
-    const aboutClose = document.getElementById('about-close');
-
-    if (aboutBtn && aboutModal && aboutClose) {
-      aboutBtn.addEventListener('click', () => {
-        aboutModal.style.display = 'flex';
+    const switchTab = (tabName) => {
+      // Update tab buttons
+      document.querySelectorAll('.intro-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.tab === tabName) {
+          tab.classList.add('active');
+        }
       });
 
-      aboutClose.addEventListener('click', () => {
-        aboutModal.style.display = 'none';
+      // Update tab panels
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.remove('active');
       });
+      const targetPanel = document.getElementById(`${tabName}-panel`);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+      }
 
-      // Close modal when clicking outside
-      aboutModal.addEventListener('click', (e) => {
-        if (e.target === aboutModal) {
-          aboutModal.style.display = 'none';
+      // Update current tab index
+      currentTabIndex = tabs.indexOf(tabName);
+
+      // Update navigation hint and button text
+      const navHint = document.querySelector('.nav-hint-text');
+      const startButton = document.getElementById('start-game-btn');
+
+      if (currentTabIndex === tabs.length - 1) {
+        // Last tab - show start game message
+        if (navHint) {
+          navHint.innerHTML = 'Press <span class="orange-text">ENTER</span> or <span class="orange-text">SPACE</span> to start';
+        }
+        if (startButton) {
+          const buttonText = startButton.querySelector('.button-text');
+          if (buttonText) {
+            buttonText.textContent = 'START MISSION';
+          }
+        }
+      } else {
+        // Not last tab - show continue message
+        if (navHint) {
+          navHint.innerHTML = 'Press <span class="orange-text">ENTER</span> or <span class="orange-text">SPACE</span> to continue';
+        }
+      }
+    };
+
+    // Setup tab click listeners
+    document.querySelectorAll('.intro-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        switchTab(tab.dataset.tab);
+      });
+    });
+
+    // Setup start button click listener
+    const startButton = document.getElementById('start-game-btn');
+    if (startButton) {
+      startButton.addEventListener('click', () => {
+        if (!startButton.disabled) {
+          if (currentTabIndex === tabs.length - 1) {
+            startGame();
+          } else {
+            // Go to next tab
+            const nextTab = tabs[currentTabIndex + 1];
+            if (nextTab) {
+              switchTab(nextTab);
+            }
+          }
         }
       });
     }
@@ -185,13 +230,34 @@ class Game {
     };
     window.addEventListener('keydown', restartHandler);
 
-    // Enter or Space key press (button click removed)
+    // Enter or Space key press for tab navigation and starting game
     const keyHandler = (event) => {
-      if (!this.gameStarted && (event.key === 'Enter' || event.key === ' ')) {
-        event.preventDefault(); // Prevent default space/enter behavior
-        startGame();
-        // Remove listener after first use
-        window.removeEventListener('keydown', keyHandler);
+      const introScreen = document.getElementById('intro-screen');
+      const startButton = document.getElementById('start-game-btn');
+
+      // Only handle if intro screen is visible and game hasn't started
+      if (!this.gameStarted && introScreen && introScreen.style.display !== 'none') {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault(); // Prevent default space/enter behavior
+
+          // Check if button is disabled (ships still loading)
+          if (startButton && startButton.disabled) {
+            return;
+          }
+
+          // If on last tab, start game
+          if (currentTabIndex === tabs.length - 1) {
+            startGame();
+            // Remove listener after game starts
+            window.removeEventListener('keydown', keyHandler);
+          } else {
+            // Otherwise, go to next tab
+            const nextTab = tabs[currentTabIndex + 1];
+            if (nextTab) {
+              switchTab(nextTab);
+            }
+          }
+        }
       }
     };
     window.addEventListener('keydown', keyHandler);

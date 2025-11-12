@@ -489,49 +489,98 @@
           </p>
         </div>
 
-        <div class="intro-content">
-          <!-- Main Content (Mission + Controls) -->
-          <div id="main-content">
-            <div class="intro-compact-grid">
-              <!-- Mission Section -->
-              <div class="intro-section-compact">
-                <h2 class="intro-section-title orange-text">YOUR MISSION</h2>
-                <p class="story-compact">
-                  You escaped imprisonment by stealing the prototype fighter
-                  <span class="cyan-text">SOLAR PHANTOM</span>. Now a
-                  <span class="orange-text">renegade pilot</span>, you must defend colonies from the Empire's invasion fleet.
+        <!-- Tab Navigation -->
+        <div class="intro-tabs">
+          <button class="intro-tab active" data-tab="mission">MISSION</button>
+          <button class="intro-tab" data-tab="controls">CONTROLS</button>
+          <button class="intro-tab" data-tab="about">ABOUT</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="intro-tab-content">
+          <!-- Mission Tab -->
+          <div class="tab-panel active" id="mission-panel">
+            <div class="intro-section">
+              <h2 class="intro-section-title orange-text">YOUR MISSION</h2>
+              <div class="story-text">
+                <p class="story-paragraph">
+                  The year is <span class="cyan-text">2063</span>. You are a prisoner of the
+                  <span class="orange-text">Galactic Empire</span>, captured during the failed
+                  defense of Colony-7.
                 </p>
-              </div>
-
-              <!-- Controls Section -->
-              <div class="intro-section-compact">
-                <h2 class="intro-section-title orange-text">CONTROLS</h2>
-                <div class="intro-controls-compact">
-                  <div class="control-compact"><span class="intro-key-small">WS + Space/Shift</span> Fly</div>
-                  <div class="control-compact"><span class="intro-key-small">MOUSE</span> Aim</div>
-                  <div class="control-compact"><span class="intro-key-small orange-key">CLICK</span> Fire</div>
-                  <div class="control-compact"><span class="intro-key-small orange-key">ESC</span> Pause</div>
-                </div>
-              </div>
-
-              <!-- Objectives Section -->
-              <div class="intro-section-compact">
-                <h2 class="intro-section-title orange-text">OBJECTIVES</h2>
-                <div class="intro-tips-compact">
-                  <p class="intro-tip-small"><span class="tip-icon cyan-text">◆</span> Defend planets within <strong class="orange-text">1500km</strong></p>
-                  <p class="intro-tip-small"><span class="tip-icon cyan-text">◆</span> Follow <strong class="cyan-text">cyan arrows</strong> to planets</p>
-                  <p class="intro-tip-small"><span class="tip-icon cyan-text">◆</span> Target <strong class="orange-text">red arrows</strong> for enemies</p>
-                  <p class="intro-tip-small"><span class="tip-icon cyan-text">◆</span> Destroy asteroids for resources</p>
-                </div>
+                <p class="story-paragraph">
+                  In a daring escape, you've stolen the experimental fighter
+                  <span class="cyan-text">SOLAR PHANTOM</span> - a prototype ship with
+                  unmatched capabilities.
+                </p>
+                <p class="story-paragraph">
+                  Now branded a <span class="orange-text">renegade</span>, you must defend
+                  the remaining colonies from the Empire's relentless invasion fleet.
+                  Every planet saved brings hope. Every enemy destroyed weakens their grip.
+                </p>
+                <p class="story-paragraph strong-text">
+                  The fate of humanity's last colonies rests in your hands, pilot.
+                </p>
               </div>
             </div>
           </div>
 
-          <!-- About Modal (Hidden by default) -->
-          <div id="about-modal" style="display: none;">
-            <div class="about-modal-content">
-              <button class="about-close" id="about-close">✕</button>
-              <h2 class="intro-section-title orange-text">ABOUT</h2>
+          <!-- Controls Tab -->
+          <div class="tab-panel" id="controls-panel">
+            <div class="intro-section">
+              <h2 class="intro-section-title orange-text">FLIGHT CONTROLS</h2>
+              <div class="intro-controls-grid">
+                <div class="intro-control">
+                  <span class="intro-key">W + SPACE</span>
+                  <span class="intro-label">Accelerate</span>
+                </div>
+                <div class="intro-control">
+                  <span class="intro-key">S + SHIFT</span>
+                  <span class="intro-label">Decelerate</span>
+                </div>
+                <div class="intro-control">
+                  <span class="intro-key">MOUSE</span>
+                  <span class="intro-label">Aim Ship</span>
+                </div>
+                <div class="intro-control">
+                  <span class="intro-key orange-text">CLICK</span>
+                  <span class="intro-label">Fire Lasers</span>
+                </div>
+                <div class="intro-control">
+                  <span class="intro-key orange-text">ESC</span>
+                  <span class="intro-label">Pause Menu</span>
+                </div>
+              </div>
+
+              <h2 class="intro-section-title orange-text" style="margin-top: 30px;">OBJECTIVES</h2>
+              <div class="intro-tips">
+                <p class="intro-tip">
+                  <span class="orange-text">▸</span> Defend planets from enemy waves (approach within
+                  <strong class="cyan-text">1500km</strong> to engage)
+                </p>
+                <p class="intro-tip">
+                  <span class="orange-text">▸</span> Follow
+                  <strong class="cyan-text">cyan directional arrows</strong> to locate planets
+                </p>
+                <p class="intro-tip">
+                  <span class="orange-text">▸</span> Track
+                  <strong class="orange-text">red directional arrows</strong> to target enemies
+                </p>
+                <p class="intro-tip">
+                  <span class="orange-text">▸</span> Destroy asteroids to collect resources
+                  (Iron, Gold, Crystal)
+                </p>
+                <p class="intro-tip">
+                  <span class="orange-text">▸</span> Use ESC to access upgrades and unlock new ships
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- About Tab -->
+          <div class="tab-panel" id="about-panel">
+            <div class="intro-section">
+              <h2 class="intro-section-title orange-text">CREDITS & ATTRIBUTION</h2>
               <div class="credits-section">
                 <h3 class="credits-subtitle cyan-text">3D Models</h3>
                 <p class="credits-item">• SOLAR PHANTOM - <a href="#" class="credit-link" target="_blank">Model Credit</a></p>
@@ -545,11 +594,10 @@
                 <p class="credits-item">• Ship Rumble - <a href="#" class="credit-link" target="_blank">Audio Credit</a></p>
                 <p class="credits-item">• Dogfight Music - <a href="#" class="credit-link" target="_blank">Audio Credit</a></p>
                 <p class="credits-item">• Sound Effects - <a href="#" class="credit-link" target="_blank">Audio Credit</a></p>
-                <p class="credits-item">• UI Bleep - <a href="#" class="credit-link" target="_blank">Audio Credit</a></p>
 
                 <h3 class="credits-subtitle cyan-text">Development</h3>
                 <p class="credits-item">• Created by Tomas Lawton</p>
-                <p class="credits-item">• Built with Three.js</p>
+                <p class="credits-item">• Built with Three.js & WebGL</p>
                 <p class="credits-item">• <a href="https://buymeacoffee.com/tomaslawton" target="_blank" class="credit-link">☕ Support this project</a></p>
               </div>
             </div>
@@ -557,12 +605,11 @@
         </div>
 
         <div class="intro-footer">
-          <button id="about-btn" class="about-button">About & Credits</button>
+          <div class="intro-navigation-hint">
+            <span class="nav-hint-text">Press <span class="orange-text">ENTER</span> or <span class="orange-text">SPACE</span> to continue</span>
+          </div>
           <button id="start-game-btn" class="intro-start-button" disabled>
             <span class="button-text">LOADING SHIPS...</span>
-            <span class="button-subtitle" style="display: none"
-              >Press ENTER or SPACE to begin</span
-            >
           </button>
         </div>
       </div>
