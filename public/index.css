@@ -1708,7 +1708,6 @@ body {
   position: relative;
 }
 
-
 /* Animated starfield background */
 #intro-screen::before {
   content: "";
@@ -2410,10 +2409,6 @@ body {
   text-shadow: 0 0 10px rgba(255, 153, 0, 0.6);
 }
 
-.support-link {
-  cursor: pointer !important;
-}
-
 /* Buy Me a Coffee Link */
 .bmac-link {
   display: inline-block;
@@ -2456,7 +2451,6 @@ body {
   text-decoration: none;
   transition: all 0.3s ease;
   pointer-events: auto;
-  cursor: pointer !important;
 }
 
 .support-button:hover {
@@ -2486,7 +2480,6 @@ body {
   letter-spacing: 1.5px;
   transition: all 0.3s ease;
   pointer-events: auto;
-  cursor: pointer !important;
 }
 
 .restart-button:hover {
@@ -3441,15 +3434,14 @@ body {
   position: absolute;
   width: 10px;
   height: 10px;
-  background: radial-gradient(circle, #00aaff, #0066cc);
-  border: 1px solid rgba(0, 170, 255, 0.6);
+  background: radial-gradient(circle, #ff4444, #cc0000);
+  border: 1px solid rgba(255, 80, 80, 0.6);
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(0, 170, 255, 1),
-    inset 0 0 4px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 10px rgba(255, 50, 50, 1),
+    inset 0 0 4px rgba(255, 200, 200, 0.3);
   animation: miniMapPulse 2s ease-in-out infinite;
   transform: translate(-50%, -50%);
 }
-
 /* Orange for under attack */
 .mini-map-planet-attack {
   position: absolute;
