@@ -206,6 +206,7 @@ export const enemy = (() => {
         enemyObject.lookAt(randomTarget);
 
         enemyObject.health = this.health;
+        enemyObject.maxHealth = this.health; // Store max health for health bar calculation
         enemyObject.lastShotTime = 0; // Initialize firing timer
 
         if (callback) {

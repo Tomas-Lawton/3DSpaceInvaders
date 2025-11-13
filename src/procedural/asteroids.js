@@ -104,6 +104,7 @@ export const asteroids = (() => {
     
             asteroidClone.type = selectedModel;
             asteroidClone.health = 100;
+            asteroidClone.maxHealth = 100; // Store max health for health bar calculation
             asteroidClone.healthBar = null;
             const scale = Math.random() * 4 + 1; // Scale factor between 1 and 5
             asteroidClone.scale.set(scale, scale, scale);

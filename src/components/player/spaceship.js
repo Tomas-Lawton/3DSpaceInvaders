@@ -751,12 +751,18 @@ export const spaceship = (() => {
         }, 100);
       }
 
-      const healthPercentage = Math.max(0, Math.min(1, meshObj.health / 100));
-      meshObj.healthBar.element.style.width = `${healthPercentage * 100}px`;
+      // Use maxHealth if available, otherwise default to 100 for backwards compatibility
+      const maxHealth = meshObj.maxHealth || 100;
+      const healthPercentage = Math.max(0, Math.min(1, meshObj.health / maxHealth));
 
-      const red = Math.floor(255 * (1 - healthPercentage));
-      const green = Math.floor(255 * healthPercentage);
-      meshObj.healthBar.element.style.background = `rgb(${red}, ${green}, 0)`;
+      // Safety check: ensure element still exists before updating
+      if (meshObj.healthBar && meshObj.healthBar.element) {
+        meshObj.healthBar.element.style.width = `${healthPercentage * 100}px`;
+
+        const red = Math.floor(255 * (1 - healthPercentage));
+        const green = Math.floor(255 * healthPercentage);
+        meshObj.healthBar.element.style.background = `rgb(${red}, ${green}, 0)`;
+      }
     }
 
     // updateHealthBarPosition(asteroid) {
@@ -790,9 +796,14 @@ export const spaceship = (() => {
     // }
 
     updateHealthBarPosition(asteroid) {
-      // Use temporary vectors to avoid frequent cloning
+      // Safety check: ensure health bar still exists
+      if (!asteroid.healthBar || !asteroid.healthBar.element) {
+        return;
+      }
+
+      // Use getWorldPosition for reliable position calculation (works for both asteroids and enemies)
       const actualPosition = new THREE.Vector3();
-      actualPosition.copy(asteroid.position).add(asteroid.parent.position);
+      asteroid.getWorldPosition(actualPosition);
 
       // Early exit if too far
       const distanceToAsteroid =
@@ -832,9 +843,16 @@ export const spaceship = (() => {
 
     removeHealthBar(asteroid) {
       if (asteroid.healthBar) {
-        document.body.removeChild(asteroid.healthBar.element);
-        // delete asteroid.healthBar;
-        clearInterval(asteroid.healthBar.interval); // Clear the interval
+        // Safely remove DOM element (check if it's still in the document)
+        if (asteroid.healthBar.element && asteroid.healthBar.element.parentNode) {
+          document.body.removeChild(asteroid.healthBar.element);
+        }
+        // Clear the update interval
+        if (asteroid.healthBar.interval) {
+          clearInterval(asteroid.healthBar.interval);
+        }
+        // CRITICAL: Remove reference so health bar can be recreated
+        delete asteroid.healthBar;
       }
     }
     playSound() {
