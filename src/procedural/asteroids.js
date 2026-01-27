@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { tutorial } from "../tutorial/tutorial.js";
 
 export const asteroids = (() => {
   class AsteroidLoader {
@@ -17,24 +18,106 @@ export const asteroids = (() => {
         // Load Asteroid Models
         const modelPromises = this.paths.map(async (path) => {
           const gltf = await this.loader.setPath(path).loadAsync("scene.gltf");
-          const model = gltf.scene.clone(); 
+          const model = gltf.scene.clone();
           model.traverse((node) => {
             if (node.isMesh) {
               node.material.side = THREE.DoubleSide;
             }
           });
-          return model; 
+          return model;
         });
         this.loadedModels = await Promise.all(modelPromises);
 
         // Now load the systems
         for (let i = 0; i < systems; i++) {
-          const group = await this.loadAsteroids(); 
-          this.asteroidSystem.push(group); 
+          const group = await this.loadAsteroids();
+          this.asteroidSystem.push(group);
         }
       } catch (error) {
         console.error("Error loading models:", error);
       }
+    }
+
+    // Tutorial mode: create a single asteroid field at a specific position
+    async initialiseTutorialSystem(position) {
+      try {
+        // Load Asteroid Models first
+        const modelPromises = this.paths.map(async (path) => {
+          const gltf = await this.loader.setPath(path).loadAsync("scene.gltf");
+          const model = gltf.scene.clone();
+          model.traverse((node) => {
+            if (node.isMesh) {
+              node.material.side = THREE.DoubleSide;
+            }
+          });
+          return model;
+        });
+        this.loadedModels = await Promise.all(modelPromises);
+
+        // Create a single asteroid field at the specified position
+        const group = await this.loadTutorialAsteroids(position);
+        this.asteroidSystem.push(group);
+      } catch (error) {
+        console.error("Error loading tutorial asteroids:", error);
+      }
+    }
+
+    // Load a small cluster of asteroids at a specific position for tutorial
+    async loadTutorialAsteroids(position) {
+      let asteroidGroup = new THREE.Group();
+      asteroidGroup.position.set(position.x, position.y, position.z);
+      asteroidGroup.isTutorialAsteroid = true; // Mark for tutorial detection
+      this.scene.add(asteroidGroup);
+
+      // Larger asteroid field for tutorial - 15 asteroids
+      const numberOfAsteroids = 15;
+
+      // Tell tutorial system how many asteroids to expect
+      tutorial.setTutorialAsteroidCount(numberOfAsteroids);
+
+      for (let i = 0; i < numberOfAsteroids; i++) {
+        let selectedModel = Math.floor(Math.random() * this.loadedModels.length);
+        const asteroidClone = this.loadedModels[selectedModel].clone();
+
+        // Spread out cluster formation
+        const clusterSize = 80; // Larger spread
+        const x = (Math.random() - 0.5) * clusterSize;
+        const y = (Math.random() - 0.5) * clusterSize * 0.5; // Less vertical spread
+        const z = (Math.random() - 0.5) * clusterSize;
+
+        asteroidClone.position.set(x, y, z);
+
+        asteroidClone.rotation.set(
+          Math.random() * Math.PI * 2,
+          Math.random() * Math.PI * 2,
+          Math.random() * Math.PI * 2
+        );
+
+        // Slower movement for tutorial
+        asteroidClone.velocity = new THREE.Vector3(
+          (Math.random() - 0.5) * 0.01,
+          (Math.random() - 0.5) * 0.01,
+          (Math.random() - 0.5) * 0.01
+        );
+
+        asteroidClone.type = selectedModel;
+        asteroidClone.health = 40; // Lower health for tutorial (easier to destroy)
+        asteroidClone.maxHealth = 40;
+        asteroidClone.healthBar = null;
+        asteroidClone.isTutorialAsteroid = true; // Mark for tutorial tracking
+
+        const scale = Math.random() * 3 + 2; // Larger scale (2-5) for better visibility
+        asteroidClone.scale.set(scale, scale, scale);
+        asteroidClone.frustumCulled = false; // Disable culling for tutorial visibility
+        asteroidGroup.add(asteroidClone);
+      }
+
+      // Brighter light for the larger group
+      const pointLight = new THREE.PointLight(0x00AAFF, 250, 200); // Blue tint for visibility
+      pointLight.position.set(0, 0, 0);
+      asteroidGroup.add(pointLight);
+
+      return asteroidGroup;
     }
 
     async loadAsteroids() {

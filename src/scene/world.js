@@ -4,6 +4,7 @@ import { Ring } from "../procedural/ring.js";
 import { asteroids } from "../procedural/asteroids.js";
 import { planets } from "../procedural/planets.js";
 import { stars } from "../procedural/stars.js";
+import { tutorial } from "../tutorial/tutorial.js";
 
 // import { getRandomDeepColor } from "../utils/utils.js";
 
@@ -12,22 +13,74 @@ export const gameworld = (() => {
     constructor(params) {
       this.scene = params.scene;
       this.rings = [];
+      this.tutorialMode = false;
     }
-    addElements() {
+
+    addElements(isTutorial = false) {
+      this.tutorialMode = isTutorial;
+
       if (this.scene) {
         const softLight = new THREE.AmbientLight(0xffffff, 1);
         softLight.position.set(0, 10, 0);
         this.scene.add(softLight);
 
         this.createSky();
-        this.createStarfield(500); //procedural - increased to 500 for richer starfield
-        this.createAsteroidSystems(5); //procedural - reduced to 1 system for performance
-        this.createPlanets(1); //procedural
-        this.createStars(1 + Math.floor(Math.random() * 3)); // 1-3 stars
-        // this.addGround(); // Removed ground for performance - not needed in space
+        this.createStarfield(500);
 
-        // Removed axes helper for performance
-        // this.createLoops();
+        if (isTutorial) {
+          // Tutorial mode: spawn controlled positions
+          console.log('[WORLD] Tutorial mode - spawning controlled positions');
+          this.createTutorialAsteroid();
+          this.createTutorialPlanet();
+          // No random stars in tutorial
+        } else {
+          // Normal mode: random spawns
+          this.createAsteroidSystems(5);
+          this.createPlanets(1);
+          this.createStars(1 + Math.floor(Math.random() * 3));
+        }
+      }
+    }
+
+    // Create a single asteroid field directly ahead for tutorial
+    async createTutorialAsteroid() {
+      const modelPaths = [
+        "public/asteroid_models/plane/",
+        "public/asteroid_models/iron/",
+        "public/asteroid_models/gold/",
+        "public/asteroid_models/crystal/",
+      ];
+      const asteroidLoader = new asteroids.AsteroidLoader(this.scene, modelPaths);
+
+      // Create a single asteroid system at a fixed position ahead of player
+      const tutorialPositions = tutorial.getTutorialPositions();
+      const position = tutorialPositions ? tutorialPositions.asteroid : { x: 0, y: 0, z: 1200 };
+
+      await asteroidLoader.initialiseTutorialSystem(position);
+      console.log('[WORLD] Tutorial asteroid field created at', position);
+      this.asteroidLoader = asteroidLoader;
+    }
+
+    // Create a single planet further ahead for tutorial
+    async createTutorialPlanet() {
+      const planetsLoader = new planets.PlanetLoader(this.scene);
+
+      const tutorialPositions = tutorial.getTutorialPositions();
+      const position = tutorialPositions ? tutorialPositions.planet : { x: 0, y: 0, z: 3600 };
+
+      await planetsLoader.initialiseTutorialPlanet(position);
+      console.log('[WORLD] Tutorial planet created at', position);
+      this.planetLoader = planetsLoader;
+    }
+
+    // Enable normal spawning after tutorial completes
+    enableNormalSpawning() {
+      if (this.tutorialMode) {
+        console.log('[WORLD] Enabling normal spawning after tutorial');
+        this.tutorialMode = false;
+        // Spawn additional asteroid systems
+        this.createAsteroidSystems(4); // 4 more (1 already exists from tutorial)
+        this.createStars(1 + Math.floor(Math.random() * 2));
       }
     }
     Update(playerCurrentPosition, audioManager, playerForwardDirection = null, playerShip = null) {

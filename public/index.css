@@ -3818,3 +3818,419 @@ body {
     height: 140px;
   }
 }
+
+/* ==================== MOBILE ORIENTATION PROMPT ==================== */
+
+#rotate-device-prompt {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.98);
+  z-index: 100000;
+  justify-content: center;
+  align-items: center;
+}
+
+.rotate-content {
+  text-align: center;
+  color: #00ffee;
+  padding: 40px;
+}
+
+.rotate-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: tiltPhone 2s ease-in-out infinite;
+}
+
+.rotate-arrow {
+  font-size: 60px;
+  color: #ff9900;
+  margin-bottom: 20px;
+  animation: rotateArrow 1.5s ease-in-out infinite;
+}
+
+.rotate-content p {
+  font-size: 18px;
+  font-family: "Orbitron", monospace;
+  max-width: 300px;
+  line-height: 1.6;
+}
+
+@keyframes tiltPhone {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(90deg); }
+}
+
+@keyframes rotateArrow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* Show rotate prompt only on mobile in portrait */
+@media (max-width: 1024px) and (pointer: coarse) and (orientation: portrait) {
+  #rotate-device-prompt {
+    display: flex !important;
+  }
+}
+
+/* ==================== MOBILE CONTROLS ==================== */
+
+#mobile-controls {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5000;
+  pointer-events: none;
+}
+
+#mobile-controls > * {
+  pointer-events: auto;
+}
+
+/* Virtual Joystick for steering (alternative to motion) */
+#mobile-joystick-zone {
+  position: absolute;
+  bottom: 30px;
+  left: 30px;
+  width: 120px;
+  height: 120px;
+  display: none; /* Hidden when motion controls active */
+}
+
+#mobile-joystick {
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 255, 238, 0.15);
+  border: 2px solid rgba(0, 255, 238, 0.4);
+  border-radius: 50%;
+  position: relative;
+}
+
+#mobile-joystick-knob {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background: radial-gradient(circle, rgba(0, 255, 238, 0.8) 0%, rgba(0, 255, 238, 0.4) 100%);
+  border: 2px solid #00ffee;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 20px rgba(0, 255, 238, 0.5);
+}
+
+/* Fire Button */
+#mobile-fire-btn {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(255, 100, 100, 0.3) 0%, rgba(255, 50, 50, 0.5) 100%);
+  border: 3px solid rgba(255, 100, 100, 0.8);
+  border-radius: 50%;
+  color: #ff6464;
+  font-family: "Orbitron", monospace;
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(255, 100, 100, 0.8);
+  box-shadow: 0 0 30px rgba(255, 100, 100, 0.4);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+#mobile-fire-btn:active {
+  background: radial-gradient(circle, rgba(255, 150, 150, 0.5) 0%, rgba(255, 100, 100, 0.7) 100%);
+  transform: scale(0.95);
+  box-shadow: 0 0 50px rgba(255, 100, 100, 0.8);
+}
+
+/* Boost Button */
+#mobile-boost-btn {
+  position: absolute;
+  bottom: 150px;
+  right: 30px;
+  width: 70px;
+  height: 70px;
+  background: radial-gradient(circle, rgba(0, 255, 100, 0.2) 0%, rgba(0, 200, 100, 0.4) 100%);
+  border: 2px solid rgba(0, 255, 100, 0.6);
+  border-radius: 50%;
+  color: #00ff64;
+  font-family: "Orbitron", monospace;
+  font-size: 10px;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0, 255, 100, 0.8);
+  box-shadow: 0 0 20px rgba(0, 255, 100, 0.3);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+#mobile-boost-btn:active {
+  background: radial-gradient(circle, rgba(0, 255, 100, 0.4) 0%, rgba(0, 200, 100, 0.6) 100%);
+  transform: scale(0.95);
+}
+
+/* Brake Button */
+#mobile-brake-btn {
+  position: absolute;
+  bottom: 150px;
+  right: 120px;
+  width: 70px;
+  height: 70px;
+  background: radial-gradient(circle, rgba(255, 153, 0, 0.2) 0%, rgba(255, 120, 0, 0.4) 100%);
+  border: 2px solid rgba(255, 153, 0, 0.6);
+  border-radius: 50%;
+  color: #ff9900;
+  font-family: "Orbitron", monospace;
+  font-size: 10px;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(255, 153, 0, 0.8);
+  box-shadow: 0 0 20px rgba(255, 153, 0, 0.3);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+#mobile-brake-btn:active {
+  background: radial-gradient(circle, rgba(255, 153, 0, 0.4) 0%, rgba(255, 120, 0, 0.6) 100%);
+  transform: scale(0.95);
+}
+
+/* Motion Permission Prompt */
+#mobile-motion-prompt {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 20, 40, 0.95);
+  border: 2px solid rgba(0, 255, 238, 0.6);
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 0 50px rgba(0, 255, 238, 0.3);
+}
+
+#mobile-motion-prompt p {
+  color: #00ffee;
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+#enable-motion-btn,
+#skip-motion-btn {
+  padding: 15px 25px;
+  margin: 10px;
+  background: rgba(0, 255, 238, 0.2);
+  border: 2px solid #00ffee;
+  border-radius: 8px;
+  color: #00ffee;
+  font-family: "Orbitron", monospace;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#enable-motion-btn:active,
+#skip-motion-btn:active {
+  background: rgba(0, 255, 238, 0.4);
+}
+
+#skip-motion-btn {
+  background: rgba(255, 153, 0, 0.2);
+  border-color: #ff9900;
+  color: #ff9900;
+}
+
+/* Hide cursors on mobile and swap control info */
+@media (max-width: 1024px) and (pointer: coarse) {
+  .cursor {
+    display: none !important;
+  }
+
+  * {
+    cursor: auto !important;
+  }
+
+  /* Swap control info for mobile */
+  #desktop-controls {
+    display: none !important;
+  }
+
+  #mobile-controls-info {
+    display: block !important;
+  }
+
+  /* Simplify HUD for mobile */
+  #hud-container {
+    padding: 15px;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  #top-left-section,
+  #center-display,
+  #right-upgrades-section {
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  /* Hide non-essential HUD elements on mobile */
+  #radar-container,
+  #messages-badge {
+    display: none;
+  }
+
+  #mini-map {
+    width: 100px;
+    height: 100px;
+    top: 10px;
+    right: 10px;
+    left: auto;
+    bottom: auto;
+  }
+
+  #player-stats-header {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .stat-card {
+    font-size: 10px;
+    padding: 5px;
+  }
+}
+
+/* ==================== TUTORIAL SYSTEM ==================== */
+
+#tutorial-prompt {
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9000;
+  display: none;
+  pointer-events: none;
+}
+
+#tutorial-prompt.visible {
+  animation: tutorialSlideIn 0.5s ease-out forwards;
+}
+
+.tutorial-content {
+  background: linear-gradient(135deg, rgba(0, 20, 40, 0.95) 0%, rgba(0, 40, 60, 0.9) 100%);
+  border: 2px solid #00ffee;
+  border-radius: 12px;
+  padding: 20px 40px;
+  text-align: center;
+  box-shadow:
+    0 0 30px rgba(0, 255, 238, 0.4),
+    0 0 60px rgba(0, 255, 238, 0.2),
+    inset 0 0 30px rgba(0, 255, 238, 0.1);
+  min-width: 400px;
+  max-width: 600px;
+}
+
+.tutorial-title {
+  font-family: "Orbitron", monospace;
+  font-size: 14px;
+  font-weight: bold;
+  color: #ff9900;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px rgba(255, 153, 0, 0.8);
+}
+
+.tutorial-message {
+  font-family: "Orbitron", monospace;
+  font-size: 18px;
+  color: #ffffff;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.tutorial-hint {
+  font-family: "Orbitron", monospace;
+  font-size: 12px;
+  color: #00ffee;
+  opacity: 0.8;
+  animation: tutorialPulse 2s ease-in-out infinite;
+}
+
+#tutorial-skip {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9001;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: "Orbitron", monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: none;
+}
+
+#tutorial-skip:hover {
+  background: rgba(255, 153, 0, 0.3);
+  border-color: #ff9900;
+  color: #ff9900;
+}
+
+@keyframes tutorialSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes tutorialPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Mobile tutorial adjustments */
+@media (max-width: 1024px) and (pointer: coarse) {
+  #tutorial-prompt {
+    bottom: 180px;
+  }
+
+  .tutorial-content {
+    min-width: 280px;
+    max-width: 90vw;
+    padding: 15px 25px;
+  }
+
+  .tutorial-title {
+    font-size: 12px;
+  }
+
+  .tutorial-message {
+    font-size: 14px;
+  }
+
+  .tutorial-hint {
+    font-size: 10px;
+  }
+
+  #tutorial-skip {
+    top: 10px;
+    right: 10px;
+    padding: 8px 15px;
+    font-size: 10px;
+  }
+}

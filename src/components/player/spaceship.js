@@ -10,6 +10,7 @@ import {
   normalizeModelSize,
   normalizeModelPosition,
 } from "../../hud/hud.js";
+import { tutorial } from "../../tutorial/tutorial.js";
 
 export const spaceship = (() => {
   // Static model cache shared across all ship instances
@@ -240,7 +241,9 @@ export const spaceship = (() => {
       this.boosterOffset = selectedModel.boosterOffset || { x: 0, y: 2, z: -5 };
 
       // Remove previous model if it exists
+      let lastPosition = null;
       if (this.mesh) {
+        lastPosition = this.mesh.position.clone();
         this.scene.remove(this.mesh);
         this.mesh.traverse((child) => {
           if (child.geometry) child.geometry.dispose();
@@ -258,7 +261,7 @@ export const spaceship = (() => {
       // Check if model is cached
       if (this.modelCache[shipId]) {
         console.log(`Using cached model for ship ${shipId}`);
-        this.applyModel(this.modelCache[shipId].clone(), selectedModel);
+        this.applyModel(this.modelCache[shipId].clone(), selectedModel, lastPosition);
         return;
       }
 
@@ -269,7 +272,7 @@ export const spaceship = (() => {
           // Cache the loaded model for future use
           this.modelCache[shipId] = gltf.scene.clone();
           console.log(`Cached model for ship ${shipId}`);
-          this.applyModel(gltf.scene, selectedModel);
+          this.applyModel(gltf.scene, selectedModel, lastPosition);
         },
         (xhr) => {
           let progressAmount = (xhr.loaded / xhr.total) * 100;
@@ -279,7 +282,7 @@ export const spaceship = (() => {
       );
     }
 
-    applyModel(loadedModel, selectedModel) {
+    applyModel(loadedModel, selectedModel, lastPosition=null) {
       this.mesh = new THREE.Group();
       const tempObjectGroup = new THREE.Group();
       this.shipGroup = tempObjectGroup;
@@ -307,7 +310,7 @@ export const spaceship = (() => {
       tempObjectGroup.add(loadedModel);
 
       // Add ambient light for better ship visibility
-      const ambientLight = new THREE.AmbientLight(selectedModel.boosterColor || 0xc87dff, 1);
+      const ambientLight = new THREE.AmbientLight(selectedModel.boosterColor || 0xc87dff, 7);
       ambientLight.position.set(0, 10, 15)
       tempObjectGroup.add(ambientLight);
       this.ambientLight = ambientLight;
@@ -328,6 +331,10 @@ export const spaceship = (() => {
       this.mesh.rotation.y = Math.PI;
 
       this.scene.add(this.mesh);
+      if (lastPosition) {
+        this.mesh.position.set(lastPosition.x, lastPosition.y, lastPosition.z);
+        console.log("Set new mesh at last ship position")
+      }
 
       this.thirdPersonCamera = new third_person_camera.ThirdPersonCamera({
         camera: this.camera,
@@ -372,6 +379,17 @@ export const spaceship = (() => {
 
       const direction = new THREE.Vector3();
       this.mesh.children[0].getWorldDirection(direction);
+
+      // Validate direction vector - if zero length, use fallback forward direction
+      const dirLength = direction.length();
+      if (dirLength < 0.001 || !isFinite(dirLength)) {
+        console.warn("Invalid laser direction, using fallback");
+        // Use the ship's forward direction based on its rotation
+        direction.set(0, 0, 1);
+        direction.applyQuaternion(this.mesh.quaternion);
+        direction.applyQuaternion(this.mesh.children[0].quaternion);
+      }
+
       const laserPosition = this.mesh.position.clone();
 
       // Create laser group for better visual quality
@@ -409,7 +427,8 @@ export const spaceship = (() => {
       laserGroup.lookAt(laserPosition.clone().add(direction));
       this.scene.add(laserGroup);
 
-      const velocity = direction.normalize().multiplyScalar(30);
+      // Create velocity as a separate vector (don't mutate direction)
+      const velocity = direction.clone().normalize().multiplyScalar(30);
       const spawnTime = performance.now(); // Track creation time for max lifetime
 
       if (this.lightSound) {
@@ -421,7 +440,7 @@ export const spaceship = (() => {
       this.activeLasers.push({
         laserBeam: laserGroup,
         velocity,
-        direction,
+        direction: direction.clone(), // Store a copy of the original direction
         spawnTime,
       });
     }
@@ -623,6 +642,11 @@ export const spaceship = (() => {
                       asteroid.parent.remove(asteroid);
                       this.playSound();
                       incrementOre(asteroid.type);
+
+                      // Notify tutorial system
+                      if (tutorial.isActive()) {
+                        tutorial.onAsteroidDestroyed();
+                      }
                     }
                     return;
                   }
@@ -1245,9 +1269,13 @@ export const spaceship = (() => {
     }
     calculateRotation() {
       if (this.forwardVelocity > 0 || this.upwardVelocity > 0) {
-        const continuousRotation = -(mouseX * 0.0001);
+        // Use getter functions to support both desktop mouse and mobile input
+        const currentMouseX = getMouseX();
+        const currentMouseY = getMouseY();
+
+        const continuousRotation = -(currentMouseX * 0.0001);
         this.mesh.rotation.y += continuousRotation;
-        const targetX = this.mesh.children[0].rotation.x + mouseY * 0.0002;
+        const targetX = this.mesh.children[0].rotation.x + currentMouseY * 0.0002;
         const mappedTargetX = mapValue(
           targetX,
           -Math.PI,
@@ -1265,7 +1293,7 @@ export const spaceship = (() => {
         const maxRotation = Math.PI / 2;
         const midX = window.innerWidth / 2;
         this.mesh.children[0].rotation.z = mapValue(
-          mouseX,
+          currentMouseX,
           -midX,
           midX,
           -maxRotation,
@@ -1342,18 +1370,35 @@ const centerY = window.innerHeight / 2;
 let mouseX = 0;
 let mouseY = 0;
 
+// Getter functions that check for mobile input
+export const getMouseX = () => {
+  // Mobile input takes priority if set
+  if (typeof window.mobileMouseX === 'number' && window.mobileMouseX !== 0) {
+    return window.mobileMouseX;
+  }
+  return mouseX;
+};
+
+export const getMouseY = () => {
+  // Mobile input takes priority if set
+  if (typeof window.mobileMouseY === 'number' && window.mobileMouseY !== 0) {
+    return window.mobileMouseY;
+  }
+  return mouseY;
+};
+
 var cursorBig = document.querySelector(".big");
 var cursorSmall = document.querySelector(".small");
 window.addEventListener("mousemove", (event) => {
   mouseX = event.clientX - centerX;
   mouseY = event.clientY - centerY;
-  // console.log(mouseX, mouseY);
 
-  cursorBig.style.transform = `translate3d(calc(${event.clientX}px - 50%), calc(${event.clientY}px - 50%), 0)`;
-  // cursor.style.left = event.pageX + "px";
-  // cursor.style.top = event.pageY + "px";
+  if (cursorBig) {
+    cursorBig.style.transform = `translate3d(calc(${event.clientX}px - 50%), calc(${event.clientY}px - 50%), 0)`;
+  }
 
-  cursorSmall.style.left = event.pageX + "px";
-  cursorSmall.style.top = event.pageY + "px";
-  // cursorBig.style.transform = `translate3d(calc(${mouseY}px), calc(${mouseY}px), 0)`;
+  if (cursorSmall) {
+    cursorSmall.style.left = event.pageX + "px";
+    cursorSmall.style.top = event.pageY + "px";
+  }
 });

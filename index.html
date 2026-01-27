@@ -2,24 +2,28 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>3D Space Invaders</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      rel="preload"
       href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap"
-      rel="stylesheet"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap"></noscript>
     <link rel="stylesheet" href="public/index.css" />
     <script
       async
-      src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"
+      src="https://cdn.jsdelivr.net/npm/es-module-shims@1.6.3/dist/es-module-shims.js"
     ></script>
     <script type="importmap">
       {
         "imports": {
-          "three": "https://unpkg.com/three@v0.169.0/build/three.module.js",
-          "three/addons/": "https://unpkg.com/three@v0.153.0/examples/jsm/",
-          "dat.gui": "https://unpkg.com/dat.gui@0.7.7/build/dat.gui.module.js"
+          "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/",
+          "dat.gui": "https://cdn.jsdelivr.net/npm/dat.gui@0.7.7/build/dat.gui.module.js"
         }
       }
     </script>
@@ -485,6 +489,32 @@
     <div class="cursor small"></div>
     <div class="cursor big"></div>
 
+    <!-- Mobile Orientation Prompt -->
+    <div id="rotate-device-prompt">
+      <div class="rotate-content">
+        <div class="rotate-icon">📱</div>
+        <div class="rotate-arrow">↻</div>
+        <p>Please rotate your device to landscape mode for the best experience</p>
+      </div>
+    </div>
+
+    <!-- Mobile Controls (hidden on desktop) -->
+    <div id="mobile-controls" style="display: none;">
+      <div id="mobile-joystick-zone">
+        <div id="mobile-joystick">
+          <div id="mobile-joystick-knob"></div>
+        </div>
+      </div>
+      <button id="mobile-fire-btn">FIRE</button>
+      <button id="mobile-boost-btn">BOOST</button>
+      <button id="mobile-brake-btn">BRAKE</button>
+      <div id="mobile-motion-prompt" style="display: none;">
+        <p>Enable motion controls for steering?</p>
+        <button id="enable-motion-btn">Enable Motion</button>
+        <button id="skip-motion-btn">Use Touch Only</button>
+      </div>
+    </div>
+
     <!-- Ship Selection Confirmation Dialog -->
     <div id="ship-confirm-dialog" style="display: none">
       <div class="confirm-dialog-content">
@@ -568,8 +598,8 @@
           <div class="tab-panel" id="controls-panel">
             <div class="intro-section">
               <div class="controls-objectives-grid">
-                <!-- Controls Section -->
-                <div class="controls-column">
+                <!-- Controls Section - Desktop -->
+                <div class="controls-column" id="desktop-controls">
                   <h2 class="intro-section-title orange-text">
                     FLIGHT CONTROLS
                   </h2>
@@ -588,6 +618,30 @@
                     </div>
                     <div class="intro-control">
                       <span class="intro-key orange-text">CLICK</span>
+                      <span class="intro-label">Fire Lasers</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Controls Section - Mobile -->
+                <div class="controls-column" id="mobile-controls-info" style="display: none;">
+                  <h2 class="intro-section-title orange-text">
+                    MOBILE CONTROLS
+                  </h2>
+                  <div class="intro-controls-compact">
+                    <div class="intro-control">
+                      <span class="intro-key">TILT DEVICE</span>
+                      <span class="intro-label">Aim Ship</span>
+                    </div>
+                    <div class="intro-control">
+                      <span class="intro-key cyan-text">BOOST BTN</span>
+                      <span class="intro-label">Accelerate</span>
+                    </div>
+                    <div class="intro-control">
+                      <span class="intro-key">BRAKE BTN</span>
+                      <span class="intro-label">Slow Down</span>
+                    </div>
+                    <div class="intro-control">
+                      <span class="intro-key orange-text">FIRE BTN</span>
                       <span class="intro-label">Fire Lasers</span>
                     </div>
                   </div>

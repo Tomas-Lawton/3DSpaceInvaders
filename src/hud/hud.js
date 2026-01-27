@@ -26,22 +26,22 @@ export const modelPaths = [
       agility: 70       // Base agility rating (0-100)
     }
   },
-  {
-    path: "public/ships/ship_2/",
-    rotation: { x: 0, y: Math.PI / 2, z: 0 },
-    isNormalized: false,
-    name: "STORM SCOUT",
-    boosterColor: 0xff6600, // Red-Orange
-    laserColor: 0xff6600,
-    laserGlow: 0xff3300,
-    boosterOffset: { x: 0, y: 6, z: -5 }, // Default position
-    baseStats: {
-      speed: 80,        // Fast scout
-      armor: 40,        // Light armor
-      firepower: 50,    // Moderate firepower
-      agility: 85       // Very agile
-    }
-  },
+  // {
+  //   path: "public/ships/ship_2/",
+  //   rotation: { x: 0, y: Math.PI / 2, z: 0 },
+  //   isNormalized: false,
+  //   name: "STORM SCOUT",
+  //   boosterColor: 0xff6600, // Red-Orange
+  //   laserColor: 0xff6600,
+  //   laserGlow: 0xff3300,
+  //   boosterOffset: { x: 0, y: 6, z: -5 }, // Default position
+  //   baseStats: {
+  //     speed: 80,        // Fast scout
+  //     armor: 40,        // Light armor
+  //     firepower: 50,    // Moderate firepower
+  //     agility: 85       // Very agile
+  //   }
+  // },
   {
     path: "public/ships/ship_0/",
     rotation: { x: 0, y: 0, z: 0 },
@@ -58,22 +58,22 @@ export const modelPaths = [
       agility: 60       // Moderate agility
     }
   },
-  {
-    path: "public/ships/ship_6/",
-    rotation: { x: 0, y: Math.PI / 2, z: 0 },
-    isNormalized: false,
-    name: "EMERALD FURY",
-    boosterColor: 0x00ff66, // Green
-    laserColor: 0x00ff66,
-    laserGlow: 0x00cc44,
-    boosterOffset: { x: 0, y: 2, z: -5 }, // Default position
-    baseStats: {
-      speed: 55,        // Slower
-      armor: 85,        // Very heavy armor
-      firepower: 75,    // Strong firepower
-      agility: 45       // Less agile
-    }
-  },
+  // {
+  //   path: "public/ships/ship_6/",
+  //   rotation: { x: 0, y: Math.PI / 2, z: 0 },
+  //   isNormalized: false,
+  //   name: "EMERALD FURY",
+  //   boosterColor: 0x00ff66, // Green
+  //   laserColor: 0x00ff66,
+  //   laserGlow: 0x00cc44,
+  //   boosterOffset: { x: 0, y: 2, z: -5 }, // Default position
+  //   baseStats: {
+  //     speed: 55,        // Slower
+  //     armor: 85,        // Very heavy armor
+  //     firepower: 75,    // Strong firepower
+  //     agility: 45       // Less agile
+  //   }
+  // },
   {
     path: "public/ships/ship_7/",
     rotation: { x: 0, y: 2 * Math.PI, z: 0 },
@@ -102,7 +102,7 @@ export function initHUD() {
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setClearColor(0x000000, 0);
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 2);
   scene.add(ambientLight);
  
   const light = new THREE.DirectionalLight(0xffffff, 10);

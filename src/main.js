@@ -15,10 +15,12 @@ import {
   updatePlayerPositionUI,
 } from "./components/dom.js";
 import { player_input } from "./components/player/player-input.js";
+import { mobileInput } from "./components/player/mobile-input.js";
 import { PHYSICS_CONSTANTS } from "./utils/constants.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { initHUD } from "./hud/hud.js";
 import { getTotalBonuses, loadUpgradeState } from "./utils/upgrade-system.js";
+import { tutorial } from "./tutorial/tutorial.js";
 
 class Game {
   constructor() {
@@ -69,13 +71,20 @@ class Game {
     // Load upgrade state from localStorage
     loadUpgradeState();
 
+    // Initialize tutorial system (checks if first-time player)
+    const isTutorialMode = tutorial.init();
+    this.tutorialActive = isTutorialMode;
+    console.log(`[GAME] Tutorial mode: ${isTutorialMode ? 'ACTIVE' : 'SKIPPED'}`);
+
     // Preload all ship models before starting
     console.log('[GAME] Preloading all ship models...');
     await spaceship.preloadAllModels();
     console.log('[GAME] All ship models preloaded successfully!');
 
     await this.setupAudio();
-    this.world.addElements();
+
+    // Pass tutorial mode to world for controlled spawning
+    this.world.addElements(isTutorialMode);
 
     if (this.playerEntity !== undefined && this.playerShip !== undefined) {
       this.playerShip.setSpaceshipModel(0); // default ship 'SOLAR PHANTOM'
@@ -87,6 +96,9 @@ class Game {
 
     // Mark game as ready and update intro button
     this.markGameReady();
+
+    // Initialize mobile controls if on mobile device
+    this.initMobileControls();
 
     // setupGUI({ audioManager: this.audioManager });
 
@@ -106,6 +118,27 @@ class Game {
     // Enable the button
     startButton.disabled = false;
     startButton.classList.add('ready');
+  }
+
+  initMobileControls() {
+    // Initialize mobile input with references to player entity and fire callback
+    const isMobile = mobileInput.init(
+      this.playerEntity,
+      () => {
+        // Fire callback - same logic as desktop mousedown
+        if (this.playerShip && !this.isPaused && this.gameStarted) {
+          this.playerShip.fireLaser();
+        }
+      },
+      this // Pass game reference for pause/start state checks
+    );
+
+    if (isMobile) {
+      console.log('[GAME] Mobile controls initialized');
+      this.isMobile = true;
+    } else {
+      this.isMobile = false;
+    }
   }
 
   setupPauseListener() {
@@ -148,6 +181,16 @@ class Game {
         introScreen.style.display = 'none';
         this.gameStarted = true;
         console.log('🚀 Game started! Good luck, pilot!');
+
+        // Show tutorial prompts if tutorial is active
+        if (this.tutorialActive && tutorial.isActive()) {
+          tutorial.showPrompt();
+        }
+
+        // On mobile, try to lock to landscape after user interaction
+        if (this.isMobile) {
+          mobileInput.requestLandscape();
+        }
       }
     };
 
@@ -319,6 +362,21 @@ class Game {
           );
           updateHealthBar(this.playerShip.health, this.playerShip.maxHealth);
           updatePlayerPositionUI(this.playerShip.mesh.position);
+
+          // Update tutorial state based on player velocity
+          if (this.tutorialActive && tutorial.isActive()) {
+            tutorial.update({ playerVelocity: this.playerShip.forwardVelocity });
+          }
+
+          // Check if tutorial just completed and enable normal world spawning
+          if (this.tutorialActive && tutorial.isComplete() && !this.tutorialCompletionHandled) {
+            this.tutorialCompletionHandled = true;
+            this.tutorialActive = false;
+            console.log('[GAME] Tutorial completed - enabling normal world spawning');
+            if (this.world) {
+              this.world.enableNormalSpawning();
+            }
+          }
         }
       }
     }
@@ -360,7 +418,10 @@ let shootingInterval;
 const cursorBig = document.querySelector('.big');
 const cursorSmall = document.querySelector('.small');
 
-window.addEventListener("mousedown", () => {
+window.addEventListener("mousedown", (event) => {
+  // Skip on mobile - touch events are handled by mobile-input.js
+  if (game.isMobile) return;
+
   // Only allow firing if game has started and is not paused
   if (!game.isPaused && game.gameStarted) {
     if (game.playerShip) {
@@ -376,13 +437,13 @@ window.addEventListener("mousedown", () => {
       }, adjustedFireRate);
     }
 
-    cursorBig.classList.add("click");
-    cursorSmall.classList.add("hover__small");
+    if (cursorBig) cursorBig.classList.add("click");
+    if (cursorSmall) cursorSmall.classList.add("hover__small");
   }
 });
 
 window.addEventListener("mouseup", () => {
   clearInterval(shootingInterval);
-  cursorBig.classList.remove("click");
-  cursorSmall.classList.remove("hover__small");
+  if (cursorBig) cursorBig.classList.remove("click");
+  if (cursorSmall) cursorSmall.classList.remove("hover__small");
 });

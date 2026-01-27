@@ -630,6 +630,13 @@ export const enemy = (() => {
       const direction = new THREE.Vector3();
       enemy.getWorldDirection(direction);
 
+      // Validate direction vector - if zero length, skip firing
+      const dirLength = direction.length();
+      if (dirLength < 0.001 || !isFinite(dirLength)) {
+        console.warn("[ENEMY] Invalid laser direction, skipping fire");
+        return;
+      }
+
       // Use lower-poly geometry for laser projectiles
       const laserBeam = new THREE.Mesh(
         new THREE.SphereGeometry(0.3, 8, 8), // Reduced from 20x20
@@ -644,9 +651,10 @@ export const enemy = (() => {
       laserBeam.lookAt(laserBeam.position.clone().add(direction));
       this.scene.add(laserBeam);
 
-      const velocity = direction.normalize().multiplyScalar(20); // Proper laser speed
+      // Clone direction before modifying to create velocity (prevents shared reference bug)
+      const velocity = direction.clone().normalize().multiplyScalar(20);
       const spawnTime = performance.now(); // Track creation time
-      this.activeLasers.push({ laserBeam, velocity, direction, targetingPlanet, spawnTime });
+      this.activeLasers.push({ laserBeam, velocity, direction: direction.clone(), targetingPlanet, spawnTime });
 
       if (this.lightSound) {
         this.lightSound.currentTime = 0;

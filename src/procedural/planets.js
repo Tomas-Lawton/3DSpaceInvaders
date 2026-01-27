@@ -3,6 +3,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { getRandomDeepColor } from "../utils/utils.js";
 import { updateCloestPlanet, updateDirectionalIndicators, updatePlanetDefenseStatus, hidePlanetDefenseStatus, updateMiniMap, addXP } from "../components/dom.js";
 import { enemy } from "../components/enemy.js";
+import { tutorial } from "../tutorial/tutorial.js";
 
 export const planets = (() => {
   class PlanetLoader {
@@ -34,6 +35,44 @@ export const planets = (() => {
         this.scene.add(planetGroup);
         this.planets.push(planetGroup);
       }
+    }
+
+    // Tutorial mode: create a single planet at a specific position
+    async initialiseTutorialPlanet(position) {
+      const gltf = await this.planetLoader
+        .setPath(this.path)
+        .loadAsync("scene.gltf");
+      if (!gltf || !gltf.scene) {
+        throw new Error(`Failed to load planet model`);
+      }
+
+      this.gltfModel = gltf;
+
+      const planetGroup = new THREE.Group();
+      const scale = 400; // Fixed size for tutorial (medium)
+      const model = this.createPlanetModel(gltf, scale);
+
+      // Use a distinct cyan color for tutorial planet
+      const tutorialColor = 0x00ffee;
+      const fogSphere = this.createFog(model.position, tutorialColor, scale * 0.9);
+
+      planetGroup.add(model);
+      planetGroup.add(fogSphere);
+
+      // Set fixed position from tutorial config
+      planetGroup.position.set(position.x, position.y, position.z);
+
+      planetGroup.health = 1500; // Slightly lower health for tutorial
+      planetGroup.maxHealth = 1500;
+      planetGroup.planetSize = scale * -1;
+      planetGroup.hasEnemies = false;
+      planetGroup.isTutorialPlanet = true; // Mark for tutorial tracking
+
+      this.scene.add(planetGroup);
+      this.planets.push(planetGroup);
+
+      console.log('[PLANETS] Tutorial planet created at', position);
+      return planetGroup;
     }
 
     // Creates a group of planet objects, including model and fog sphere
@@ -111,6 +150,14 @@ export const planets = (() => {
     createPlanetModel(gltf, scale) {
       const model = gltf.scene.clone();
       model.scale.set(scale, scale, scale);
+
+      // Disable frustum culling on planet model to prevent visibility glitches at far distances
+      model.traverse((child) => {
+        if (child.isMesh) {
+          child.frustumCulled = false;
+        }
+      });
+
       return model;
     }
 
@@ -128,6 +175,10 @@ export const planets = (() => {
 
       const fogSphere = new THREE.Mesh(fogGeometry, fogMaterial);
       fogSphere.position.copy(position);
+
+      // Disable frustum culling to prevent visibility glitches at far distances
+      fogSphere.frustumCulled = false;
+
       return fogSphere;
     }
 
@@ -200,6 +251,11 @@ export const planets = (() => {
 
           console.log(`[PLANET] 🛡️ Planet permanently cleared - enemies will NEVER respawn here`);
 
+          // Notify tutorial system
+          if (tutorial.isActive()) {
+            tutorial.onPlanetSaved();
+          }
+
           // Hide planet defense status
           hidePlanetDefenseStatus();
         }
@@ -266,6 +322,12 @@ export const planets = (() => {
           }
 
           if (playerDistance < 1500) { //  closer than 1500: spawn enemy group
+            // Notify tutorial that player is near a planet (only once per planet)
+            if (tutorial.isActive() && !planet.tutorialNearNotified) {
+              planet.tutorialNearNotified = true;
+              tutorial.onNearPlanet();
+            }
+
             // ROBUST CHECK: Only spawn if no enemies exist AND not currently spawning
             const hasActiveEnemies = this.enemyLoader && this.enemyLoader.enemies && this.enemyLoader.enemies.length > 0;
 
@@ -279,9 +341,37 @@ export const planets = (() => {
               planet.cleared = false;
             }
 
+            // Check if we're switching to a DIFFERENT planet while in combat
+            const isSwitchingPlanets = hasActiveEnemies && this.currentPlanet && this.currentPlanet !== planet && !planet.cleared;
+
+            if (isSwitchingPlanets && !this.currentlySpawning) {
+              console.log(`[PLANET] 🔄 Switching from old planet to new planet - cleaning up old dogfight`);
+
+              // Clean up the old dogfight
+              this.cleanupEnemies();
+
+              // Reset the old planet's state (but don't mark as cleared - player fled)
+              if (this.currentPlanet) {
+                this.currentPlanet.hasEnemies = false;
+                this.currentPlanet.spawnTriggeredThisSession = false;
+              }
+
+              // Stop dogfight music (will restart when new enemies spawn)
+              if (audioManager) {
+                audioManager.stopDogfightMusic();
+              }
+
+              // Reset state
+              this.currentPlanet = null;
+              this.enemiesSpawned = false;
+            }
+
+            // Recalculate after potential cleanup
+            const hasActiveEnemiesNow = this.enemyLoader && this.enemyLoader.enemies && this.enemyLoader.enemies.length > 0;
+
             // Don't spawn if planet has been cleared
-            if (!planet.cleared && !planet.hasEnemies && !hasActiveEnemies && !this.currentlySpawning && !planet.spawnTriggeredThisSession) {
-                console.log(`[PLANET] ✅ Player within 1500. Spawning enemies... (hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning})`);
+            if (!planet.cleared && !planet.hasEnemies && !hasActiveEnemiesNow && !this.currentlySpawning && !planet.spawnTriggeredThisSession) {
+                console.log(`[PLANET] ✅ Player within 1500. Spawning enemies... (hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemiesNow}, spawning: ${this.currentlySpawning})`);
 
                 // Set ALL flags IMMEDIATELY to prevent ANY re-entry
                 planet.hasEnemies = true;
@@ -290,7 +380,7 @@ export const planets = (() => {
                 this.currentPlanet = planet;
                 this.currentlySpawning = true; // Spawn lock
 
-                const enemyCount = 7; // Max 7 enemies per planet
+                const enemyCount = 5; // Reduced from 7 to 5 for better balance
 
                 // Create loader if it doesn't exist
                 if (!this.enemyLoader) {
@@ -303,7 +393,7 @@ export const planets = (() => {
                 // ALWAYS cleanup before spawning to ensure clean state
                 this.cleanupEnemies();
 
-                // Now spawn exactly 7 enemies
+                // Now spawn enemies
                 console.log(`[PLANET] Calling initaliseEnemies(${enemyCount})`);
                 // Pass planet size (stored as negative, so use absolute value)
                 const planetRadius = Math.abs(planet.planetSize);
@@ -319,16 +409,26 @@ export const planets = (() => {
                   playerShip.showNotification('⚠️ Planet Under Attack! Destroy All Enemies!', 'danger');
                 }
 
+                // Notify tutorial system that enemies spawned
+                if (tutorial.isActive()) {
+                  // Slight delay to allow enemies to initialize
+                  setTimeout(() => {
+                    tutorial.onEnemiesSpawned();
+                  }, 500);
+                }
+
                 // Release spawn lock after async callbacks complete
                 // Increased to 2000ms to ensure GLTF loading callbacks have time to fire
                 setTimeout(() => {
                   this.currentlySpawning = false;
                   console.log(`[PLANET] Spawn lock released (enemies should be in scene now)`);
                 }, 2000);
+            } else if (planet.cleared) {
+              // Planet is cleared - do nothing (silent, no log spam)
             } else {
               // Log why spawn was blocked (only once per second to avoid spam)
               if (!this._lastBlockLog || Date.now() - this._lastBlockLog > 1000) {
-                console.log(`[PLANET] ⛔ Spawn BLOCKED - hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemies}, spawning: ${this.currentlySpawning}`);
+                console.log(`[PLANET] ⛔ Spawn BLOCKED - hasEnemies: ${planet.hasEnemies}, activeEnemies: ${hasActiveEnemiesNow}, spawning: ${this.currentlySpawning}, cleared: ${planet.cleared}`);
                 this._lastBlockLog = Date.now();
               }
             }
@@ -349,15 +449,23 @@ export const planets = (() => {
         // Check if player is far from combat - end dogfight completely
         if (this.enemyLoader && this.enemyLoader.enemies.length > 0 && this.currentPlanet) {
           const combatDistance = 2500; // Distance threshold to end combat
-          const nearestEnemyDistance = Math.min(...this.enemyLoader.enemies.map(enemy => {
-            const dx = enemy.position.x - playerCurrentPosition.x;
-            const dy = enemy.position.y - playerCurrentPosition.y;
-            const dz = enemy.position.z - playerCurrentPosition.z;
+          const nearestEnemyDistance = Math.min(...this.enemyLoader.enemies.map(e => {
+            const dx = e.position.x - playerCurrentPosition.x;
+            const dy = e.position.y - playerCurrentPosition.y;
+            const dz = e.position.z - playerCurrentPosition.z;
             return Math.sqrt(dx * dx + dy * dy + dz * dz);
           }));
 
           if (nearestEnemyDistance > combatDistance) {
             console.log(`[COMBAT] Player fled combat (${nearestEnemyDistance.toFixed(0)}u away) - ending dogfight`);
+
+            // Reset the planet state so enemies can respawn if player returns
+            // (Don't mark as cleared - player fled, didn't win)
+            if (this.currentPlanet) {
+              this.currentPlanet.hasEnemies = false;
+              this.currentPlanet.spawnTriggeredThisSession = false;
+              console.log(`[COMBAT] Reset planet state - enemies will respawn if player returns`);
+            }
 
             // Clean up enemies
             this.cleanupEnemies();
@@ -372,11 +480,8 @@ export const planets = (() => {
               audioManager.stopDogfightMusic();
             }
 
-            // Hide planet info UI
-            const planetInfo = document.getElementById('planet-info');
-            if (planetInfo) {
-              planetInfo.style.display = 'none';
-            }
+            // Hide planet defense status
+            hidePlanetDefenseStatus();
           }
         }
 

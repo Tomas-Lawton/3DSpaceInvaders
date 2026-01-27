@@ -657,34 +657,35 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     container.appendChild(indicator);
   };
 
-  // Create indicators for all planets (except cleared ones)
+  // Helper function to calculate distance from player
+  const getDistance = (obj) => {
+    const dx = obj.position.x - playerPosition.x;
+    const dy = obj.position.y - playerPosition.y;
+    const dz = obj.position.z - playerPosition.z;
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+  };
+
+  // Show only NEAREST planet (excluding cleared ones) - cleaner UI
   if (planets && planets.length > 0) {
-    planets.forEach(planet => {
-      // Don't show indicators for cleared planets
-      if (!planet.cleared) {
-        createIndicator(planet.position, 'planet');
-      }
-    });
+    const activePlanets = planets.filter(p => !p.cleared);
+    if (activePlanets.length > 0) {
+      // Sort by distance and take nearest
+      const nearestPlanet = activePlanets.sort((a, b) => getDistance(a) - getDistance(b))[0];
+      createIndicator(nearestPlanet.position, 'planet');
+    }
   }
 
-  // Create indicators for all enemies
+  // Show only NEAREST enemy - reduces clutter during combat
   if (enemies && enemies.length > 0) {
-    enemies.forEach(enemy => {
-      createIndicator(enemy.position, 'enemy');
-    });
+    const nearestEnemy = enemies.sort((a, b) => getDistance(a) - getDistance(b))[0];
+    createIndicator(nearestEnemy.position, 'enemy');
   }
 
-  // Create indicators for asteroid fields
+  // Show only NEAREST asteroid field
   if (asteroidFields && asteroidFields.length > 0) {
-    asteroidFields.forEach(field => {
-      createIndicator(field.position, 'asteroid');
-    });
+    const nearestField = asteroidFields.sort((a, b) => getDistance(a) - getDistance(b))[0];
+    createIndicator(nearestField.position, 'asteroid');
   }
 
-  // Create indicators for stars
-  if (stars && stars.length > 0) {
-    stars.forEach(star => {
-      createIndicator(star.position, 'star');
-    });
-  }
+  // Stars hidden to reduce visual noise - mini-map shows them instead
 }
