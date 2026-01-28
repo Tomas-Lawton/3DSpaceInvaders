@@ -45,6 +45,27 @@ export const MESSAGES = {
     timestamp: Date.now()
   },
 
+  tutorialComplete: {
+    id: 'tutorialComplete',
+    type: MessageType.QUEST,
+    title: 'MISSION: DEFEND THE SECTOR',
+    lines: [
+      'Training complete! Your orders:',
+      '',
+      '→ Save 3 planets from enemy attack',
+      '→ Collect 10 iron from asteroids',
+      '→ Reach 100 XP to unlock upgrades',
+      '',
+      'CYAN markers = Planets in danger',
+      'BLUE markers = Asteroid fields',
+      '',
+      'Press ESC for upgrades & new ships.'
+    ],
+    icon: '🎯',
+    read: false,
+    timestamp: Date.now()
+  },
+
   firstPlanet: {
     id: 'firstPlanet',
     type: MessageType.HINT,

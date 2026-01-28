@@ -86,6 +86,15 @@ class Game {
     // Pass tutorial mode to world for controlled spawning
     this.world.addElements(isTutorialMode);
 
+    // Set up callback to spawn tutorial planet when asteroids are cleared
+    if (isTutorialMode) {
+      tutorial.setOnAsteroidsClearedCallback(() => {
+        if (this.world) {
+          this.world.spawnTutorialPlanet();
+        }
+      });
+    }
+
     if (this.playerEntity !== undefined && this.playerShip !== undefined) {
       this.playerShip.setSpaceshipModel(0); // default ship 'SOLAR PHANTOM'
       this.playerEntity.AddComponent(new player_input.PlayerInput());
@@ -121,21 +130,18 @@ class Game {
   }
 
   initMobileControls() {
-    // Initialize mobile input with references to player entity and fire callback
+    // Check if mobile device - if so, show unsupported message and stop
     const isMobile = mobileInput.init(
       this.playerEntity,
-      () => {
-        // Fire callback - same logic as desktop mousedown
-        if (this.playerShip && !this.isPaused && this.gameStarted) {
-          this.playerShip.fireLaser();
-        }
-      },
-      this // Pass game reference for pause/start state checks
+      null, // No fire callback needed
+      this
     );
 
     if (isMobile) {
-      console.log('[GAME] Mobile controls initialized');
+      console.log('[GAME] Mobile/small device detected - game not supported');
       this.isMobile = true;
+      // Stop game from proceeding on mobile
+      return;
     } else {
       this.isMobile = false;
     }
@@ -185,11 +191,6 @@ class Game {
         // Show tutorial prompts if tutorial is active
         if (this.tutorialActive && tutorial.isActive()) {
           tutorial.showPrompt();
-        }
-
-        // On mobile, try to lock to landscape after user interaction
-        if (this.isMobile) {
-          mobileInput.requestLandscape();
         }
       }
     };
@@ -330,7 +331,11 @@ class Game {
     requestAnimationFrame((time) => this.animate(time));
     const timeElapsed = (currentTime - this.previousTime) / 1000;
     this.previousTime = currentTime;
-    if (this.playerShip !== undefined && this.playerShip.mesh === null) return; // wait to load
+
+    // Wait for ship to be fully loaded (mesh and camera must exist)
+    if (!this.playerShip || !this.playerShip.mesh || !this.playerShip.thirdPersonCamera) {
+      return;
+    }
 
     if (!this.isPaused && this.gameStarted) {
       // Only update if the game is not paused and has started
@@ -339,6 +344,11 @@ class Game {
   }
 
   Update(timeElapsed) {
+    // Double-check ship is ready (safety guard)
+    if (!this.playerShip || !this.playerShip.mesh) {
+      return;
+    }
+
     // get current inputs
     if (this.playerEntity && this.playerEntity.GetComponent("PlayerInput")) {
       this.playerEntity.Update();
@@ -352,8 +362,8 @@ class Game {
             timeElapsed,
             this.audioManager,
             this.world.asteroidLoader,
-            this.world.planetLoader.enemyLoader,
-            this.world.planetLoader
+            this.world.planetLoader?.enemyLoader || null,
+            this.world.planetLoader || null
           );
           // update hud
           updateVelocityBar(
@@ -385,16 +395,15 @@ class Game {
     if (this.world && this.audioManager) {
       let playerCurrentPosition;
       let playerForwardDirection;
-      if (this.playerShip === undefined) {
-        playerCurrentPosition = new THREE.Vector3(0, 0, 0); // Just assign the vector itself
+      if (!this.playerShip || !this.playerShip.mesh) {
+        playerCurrentPosition = new THREE.Vector3(0, 0, 0);
         playerForwardDirection = new THREE.Vector3(0, 0, 1);
       } else {
-        playerCurrentPosition = this.playerShip.mesh.position; // Access the position of the ship's mesh
-        // Get the player's forward direction
+        playerCurrentPosition = this.playerShip.mesh.position;
         playerForwardDirection = new THREE.Vector3();
         this.playerShip.mesh.getWorldDirection(playerForwardDirection);
       }
-      this.world.Update(playerCurrentPosition, this.audioManager, playerForwardDirection, this.playerShip); // depends on user and sound
+      this.world.Update(playerCurrentPosition, this.audioManager, playerForwardDirection, this.playerShip);
     }
 
     // Update warp effect based on ship velocity

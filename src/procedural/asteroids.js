@@ -62,15 +62,18 @@ export const asteroids = (() => {
       }
     }
 
-    // Load a small cluster of asteroids at a specific position for tutorial
+    // Load asteroids in a spiral formation for tutorial - visually interesting
     async loadTutorialAsteroids(position) {
       let asteroidGroup = new THREE.Group();
       asteroidGroup.position.set(position.x, position.y, position.z);
       asteroidGroup.isTutorialAsteroid = true; // Mark for tutorial detection
       this.scene.add(asteroidGroup);
 
-      // Larger asteroid field for tutorial - 15 asteroids
-      const numberOfAsteroids = 15;
+      // Flat spiral formation with 14 asteroids
+      const numberOfAsteroids = 14;
+      const spiralTurns = 2; // Number of spiral rotations
+      const startRadius = 20;
+      const endRadius = 120;
 
       // Tell tutorial system how many asteroids to expect
       tutorial.setTutorialAsteroidCount(numberOfAsteroids);
@@ -79,11 +82,15 @@ export const asteroids = (() => {
         let selectedModel = Math.floor(Math.random() * this.loadedModels.length);
         const asteroidClone = this.loadedModels[selectedModel].clone();
 
-        // Spread out cluster formation
-        const clusterSize = 80; // Larger spread
-        const x = (Math.random() - 0.5) * clusterSize;
-        const y = (Math.random() - 0.5) * clusterSize * 0.5; // Less vertical spread
-        const z = (Math.random() - 0.5) * clusterSize;
+        // Spiral formation - asteroids wind outward from center
+        const progress = i / (numberOfAsteroids - 1); // 0 to 1
+        const angle = progress * Math.PI * 2 * spiralTurns;
+        const radius = startRadius + (endRadius - startRadius) * progress;
+
+        // Flat spiral facing the player (x-y plane)
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        const z = 0; // Flat - spiral faces the player
 
         asteroidClone.position.set(x, y, z);
 
@@ -93,27 +100,29 @@ export const asteroids = (() => {
           Math.random() * Math.PI * 2
         );
 
-        // Slower movement for tutorial
+        // Slow spiral drift on x-y plane (facing player)
+        const orbitSpeed = 0.003;
         asteroidClone.velocity = new THREE.Vector3(
-          (Math.random() - 0.5) * 0.01,
-          (Math.random() - 0.5) * 0.01,
-          (Math.random() - 0.5) * 0.01
+          -Math.sin(angle) * orbitSpeed,
+          Math.cos(angle) * orbitSpeed,
+          0 // No z movement - stays facing player
         );
 
         asteroidClone.type = selectedModel;
-        asteroidClone.health = 40; // Lower health for tutorial (easier to destroy)
-        asteroidClone.maxHealth = 40;
+        asteroidClone.health = 35; // Lower health for tutorial (easier to destroy)
+        asteroidClone.maxHealth = 35;
         asteroidClone.healthBar = null;
         asteroidClone.isTutorialAsteroid = true; // Mark for tutorial tracking
 
-        const scale = Math.random() * 3 + 2; // Larger scale (2-5) for better visibility
+        // Asteroids get slightly larger toward the outside of spiral
+        const scale = 3 + progress * 2; // Scale 3-5
         asteroidClone.scale.set(scale, scale, scale);
         asteroidClone.frustumCulled = false; // Disable culling for tutorial visibility
         asteroidGroup.add(asteroidClone);
       }
 
-      // Brighter light for the larger group
-      const pointLight = new THREE.PointLight(0x00AAFF, 250, 200); // Blue tint for visibility
+      // Central light to illuminate the larger spiral
+      const pointLight = new THREE.PointLight(0x00AAFF, 400, 350); // Blue tint, larger range
       pointLight.position.set(0, 0, 0);
       asteroidGroup.add(pointLight);
 

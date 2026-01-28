@@ -5,6 +5,7 @@ import { asteroids } from "../procedural/asteroids.js";
 import { planets } from "../procedural/planets.js";
 import { stars } from "../procedural/stars.js";
 import { tutorial } from "../tutorial/tutorial.js";
+import { updateMiniMap, updateDirectionalIndicators } from "../components/dom.js";
 
 // import { getRandomDeepColor } from "../utils/utils.js";
 
@@ -31,7 +32,8 @@ export const gameworld = (() => {
           // Tutorial mode: spawn controlled positions
           console.log('[WORLD] Tutorial mode - spawning controlled positions');
           this.createTutorialAsteroid();
-          this.createTutorialPlanet();
+          // Planet spawns after asteroids are cleared (triggered by tutorial system)
+          this.tutorialPlanetSpawned = false;
           // No random stars in tutorial
         } else {
           // Normal mode: random spawns
@@ -73,6 +75,15 @@ export const gameworld = (() => {
       this.planetLoader = planetsLoader;
     }
 
+    // Spawn tutorial planet (called when asteroids are cleared)
+    spawnTutorialPlanet() {
+      if (this.tutorialMode && !this.tutorialPlanetSpawned) {
+        console.log('[WORLD] Tutorial asteroids cleared - spawning planet');
+        this.tutorialPlanetSpawned = true;
+        this.createTutorialPlanet();
+      }
+    }
+
     // Enable normal spawning after tutorial completes
     enableNormalSpawning() {
       if (this.tutorialMode) {
@@ -100,6 +111,30 @@ export const gameworld = (() => {
           audioManager,
           this.asteroidLoader,
           this.starLoader
+        );
+      } else if (this.asteroidLoader) {
+        // Update mini-map and indicators when planet doesn't exist (e.g., tutorial asteroids phase)
+        const playerRotation = playerForwardDirection ?
+          Math.atan2(playerForwardDirection.x, playerForwardDirection.z) : 0;
+
+        updateMiniMap(
+          playerCurrentPosition,
+          [], // No planets yet
+          [], // No enemies yet
+          playerRotation,
+          this.asteroidLoader.asteroidSystem || [],
+          null,
+          this.starLoader?.stars || []
+        );
+
+        // Also update directional indicators for tutorial asteroids
+        updateDirectionalIndicators(
+          playerCurrentPosition,
+          playerForwardDirection,
+          [], // No planets yet
+          [], // No enemies yet
+          this.asteroidLoader.asteroidSystem || [],
+          this.starLoader?.stars || []
         );
       }
 

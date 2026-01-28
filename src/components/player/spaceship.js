@@ -16,12 +16,14 @@ export const spaceship = (() => {
   // Static model cache shared across all ship instances
   const modelCache = {};
 
-  // Preload all ship models
+  // Preload all ship models with retry logic for reliability
   const preloadAllModels = () => {
     return new Promise((resolve) => {
       const loader = new GLTFLoader();
       let loadedCount = 0;
+      let successCount = 0;
       const totalModels = modelPaths.length;
+      const maxRetries = 2;
 
       // Animated progress display
       let displayedProgress = 0;
@@ -43,7 +45,7 @@ export const spaceship = (() => {
 
       console.log(`[PRELOAD] Starting preload of ${totalModels} ship models...`);
 
-      modelPaths.forEach((modelData, index) => {
+      const loadModel = (modelData, index, retryCount = 0) => {
         loader.setPath(modelData.path).load(
           "scene.gltf",
           (gltf) => {
@@ -64,6 +66,7 @@ export const spaceship = (() => {
             // Cache the model
             modelCache[index] = loadedModel;
             loadedCount++;
+            successCount++;
 
             // Update progress with animation
             const progress = Math.floor((loadedCount / totalModels) * 100);
@@ -72,7 +75,7 @@ export const spaceship = (() => {
             console.log(`[PRELOAD] Loaded ${index}: ${modelData.name} (${loadedCount}/${totalModels})`);
 
             if (loadedCount === totalModels) {
-              console.log('[PRELOAD] All ship models loaded!');
+              console.log(`[PRELOAD] All ship models loaded! (${successCount}/${totalModels} successful)`);
               // Ensure we reach 100% before resolving
               setTimeout(() => {
                 updateProgress(100);
@@ -82,15 +85,29 @@ export const spaceship = (() => {
           },
           undefined,
           (error) => {
-            console.error(`[PRELOAD] Error loading model ${index}:`, error);
+            console.error(`[PRELOAD] Error loading model ${index} (attempt ${retryCount + 1}):`, error);
+
+            // Retry loading if we haven't exceeded max retries
+            if (retryCount < maxRetries) {
+              console.log(`[PRELOAD] Retrying model ${index}...`);
+              setTimeout(() => loadModel(modelData, index, retryCount + 1), 500);
+              return;
+            }
+
+            // After all retries failed, continue with other models
             loadedCount++;
             const progress = Math.floor((loadedCount / totalModels) * 100);
             updateProgress(progress);
             if (loadedCount === totalModels) {
+              console.log(`[PRELOAD] Completed with ${successCount}/${totalModels} successful`);
               setTimeout(resolve, 300);
             }
           }
         );
+      };
+
+      modelPaths.forEach((modelData, index) => {
+        loadModel(modelData, index);
       });
     });
   };
@@ -331,17 +348,19 @@ export const spaceship = (() => {
       this.mesh.rotation.y = Math.PI;
 
       this.scene.add(this.mesh);
-      if (lastPosition) {
-        this.mesh.position.set(lastPosition.x, lastPosition.y, lastPosition.z);
-        console.log("Set new mesh at last ship position")
-      }
 
       this.thirdPersonCamera = new third_person_camera.ThirdPersonCamera({
         camera: this.camera,
         target: this.mesh,
       });
 
-      this.updateSpaceshipPosition();
+      // Only reset to default position on initial load, otherwise preserve position
+      if (lastPosition) {
+        this.mesh.position.set(lastPosition.x, lastPosition.y, lastPosition.z);
+        console.log("Set new mesh at last ship position");
+      } else {
+        this.updateSpaceshipPosition();
+      }
 
       // Hide loading screen and show intro only on initial load
       if (this.isInitialLoad) {
@@ -592,7 +611,7 @@ export const spaceship = (() => {
 
           // Check distance OR lifetime - remove if too far OR too old
           if (
-            laserBeam.position.distanceTo(this.mesh.position) > 300 ||
+            laserBeam.position.distanceTo(this.mesh.position) > 500 ||
             age > maxLaserLifetime
           ) {
             this.scene.remove(laserBeam);

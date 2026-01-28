@@ -37,6 +37,9 @@ export function initializeMessageUI() {
       // Open pause menu when clicking alert
       import('../components/dom.js').then(module => {
         module.toggleHUD();
+        // Mark messages as read and hide alert
+        markAllMessagesRead();
+        updateAlertDisplay();
       });
     });
   }
@@ -146,9 +149,10 @@ function showNextMessage() {
 }
 
 // Update alert notification (in-game)
-function updateAlertDisplay() {
+export function updateAlertDisplay() {
   const alertBox = document.getElementById('message-alert');
   const alertBadge = document.querySelector('.alert-badge');
+  const alertText = document.querySelector('.alert-text');
 
   if (!alertBox) return;
 
@@ -158,6 +162,11 @@ function updateAlertDisplay() {
     alertBox.style.display = 'flex';
     if (alertBadge) {
       alertBadge.textContent = unreadCount;
+    }
+    // Update alert text with latest message title
+    const latestMessage = MESSAGE_SYSTEM.messages[0];
+    if (alertText && latestMessage) {
+      alertText.textContent = latestMessage.title || 'New mission available';
     }
   } else {
     alertBox.style.display = 'none';

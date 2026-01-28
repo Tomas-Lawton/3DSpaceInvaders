@@ -221,7 +221,8 @@ export function updatePlanetDefenseStatus(planet, enemyCount) {
   const healthText = document.getElementById('planet-health-text');
   const enemiesText = document.getElementById('enemies-remaining');
 
-  if (!statusElement || !planet || !planet.hasEnemies || planet.cleared) {
+  // Only show during active dogfight (enemies must be present and planet not cleared)
+  if (!statusElement || !planet || !planet.hasEnemies || planet.cleared || enemyCount <= 0) {
     if (statusElement) {
       statusElement.style.display = 'none';
     }
@@ -527,16 +528,14 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     // Convert to degrees and adjust for screen coordinates
     const arrowAngle = (horizontalAngle * 180 / Math.PI);
 
-    // Determine arrow symbol based on vertical position
-    let arrowSymbol;
+    // Determine vertical position for altitude indicator
     const verticalThreshold = 0.3; // Threshold for "level"
+    let verticalDirection = 'level';
 
     if (localUp > verticalThreshold) {
-      arrowSymbol = '▲'; // Target is above - climb
+      verticalDirection = 'above'; // Target is above - climb
     } else if (localUp < -verticalThreshold) {
-      arrowSymbol = '▼'; // Target is below - dive
-    } else {
-      arrowSymbol = '▶'; // Target is level - turn only
+      verticalDirection = 'below'; // Target is below - dive
     }
 
     // Create indicator element
@@ -559,7 +558,7 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
         left: ${indicatorX}px;
         top: ${indicatorY}px;
         width: 3px;
-        height: 16px;
+        height: 20px;
         background: ${lineColor};
         box-shadow: 0 0 8px ${glowColor};
         transform: translate(-50%, -50%);
@@ -578,17 +577,27 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
         altitudeColor = type === 'asteroid' ? '#0099ff' : '#ffcc00'; // Blue for asteroids, yellow for stars
       }
 
-      altitudeLabel.textContent = altitudeDiff > 0 ? `↑${altitudeDiff}` : altitudeDiff < 0 ? `↓${Math.abs(altitudeDiff)}` : '→';
+      // Arrow big (26px), number smaller (14px)
+      if (altitudeDiff > 0) {
+        altitudeLabel.innerHTML = `<span style="font-size:26px;line-height:1;">↑</span><span style="font-size:14px;line-height:1;">${altitudeDiff}</span>`;
+      } else if (altitudeDiff < 0) {
+        altitudeLabel.innerHTML = `<span style="font-size:26px;line-height:1;">↓</span><span style="font-size:14px;line-height:1;">${Math.abs(altitudeDiff)}</span>`;
+      } else {
+        altitudeLabel.innerHTML = `<span style="font-size:26px;line-height:1;">→</span>`;
+      }
       altitudeLabel.style.cssText = `
         position: absolute;
-        top: -20px;
+        top: -24px;
         left: 50%;
         transform: translateX(-50%);
-        font-size: 11px;
         font-weight: bold;
         color: ${altitudeColor};
         white-space: nowrap;
         text-shadow: 0 0 8px ${altitudeColor}, 0 0 3px rgba(0, 0, 0, 1);
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 1px;
       `;
 
       indicator.appendChild(altitudeLabel);
@@ -603,12 +612,20 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
       indicator.classList.add('below');
     }
 
-    // Create arrow icon
+    // Create arrow icon (equilateral triangle using CSS)
     const arrow = document.createElement('div');
-    arrow.className = 'arrow-icon';
-    arrow.textContent = arrowSymbol;
+    arrow.className = 'arrow-icon equilateral-triangle';
     // Rotate arrow to point along the bearing direction
     arrow.style.transform = `rotate(${arrowAngle}deg)`;
+
+    // Create altitude indicator (separate from main direction arrow)
+    const altitudeArrow = document.createElement('div');
+    altitudeArrow.className = `altitude-arrow ${verticalDirection}`;
+    if (verticalDirection === 'above') {
+      altitudeArrow.innerHTML = '<span class="alt-triangle up"></span><span class="alt-text">UP</span>';
+    } else if (verticalDirection === 'below') {
+      altitudeArrow.innerHTML = '<span class="alt-triangle down"></span><span class="alt-text">DOWN</span>';
+    }
 
     // Add distance label
     const distanceLabel = document.createElement('div');
@@ -638,20 +655,33 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
       altitudeColor = '#0099ff'; // Below - blue
     }
 
-    altitudeLabel.textContent = altitudeDiff > 0 ? `↑${altitudeDiff}` : altitudeDiff < 0 ? `↓${Math.abs(altitudeDiff)}` : '→';
+    // Arrow big (26px), number smaller (14px)
+    if (altitudeDiff > 0) {
+      altitudeLabel.innerHTML = `<span style="font-size:26px;line-height:1;">↑</span><span style="font-size:14px;line-height:1;">${altitudeDiff}</span>`;
+    } else if (altitudeDiff < 0) {
+      altitudeLabel.innerHTML = `<span style="font-size:26px;line-height:1;">↓</span><span style="font-size:14px;line-height:1;">${Math.abs(altitudeDiff)}</span>`;
+    } else {
+      altitudeLabel.innerHTML = `<span style="font-size:26px;line-height:1;">→</span>`;
+    }
     altitudeLabel.style.cssText = `
       position: absolute;
-      top: -20px;
+      top: -24px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 11px;
       font-weight: bold;
       color: ${altitudeColor};
       white-space: nowrap;
       text-shadow: 0 0 8px ${altitudeColor}, 0 0 3px rgba(0, 0, 0, 1);
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 1px;
     `;
 
     indicator.appendChild(arrow);
+    if (verticalDirection !== 'level') {
+      indicator.appendChild(altitudeArrow);
+    }
     indicator.appendChild(distanceLabel);
     indicator.appendChild(altitudeLabel);
     container.appendChild(indicator);
@@ -675,16 +705,22 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     }
   }
 
-  // Show only NEAREST enemy - reduces clutter during combat
+  // Show indicator for EACH enemy
   if (enemies && enemies.length > 0) {
-    const nearestEnemy = enemies.sort((a, b) => getDistance(a) - getDistance(b))[0];
-    createIndicator(nearestEnemy.position, 'enemy');
+    enemies.forEach(enemy => {
+      createIndicator(enemy.position, 'enemy');
+    });
   }
 
-  // Show only NEAREST asteroid field
+  // Show indicator for ALL asteroid fields that still have asteroids
   if (asteroidFields && asteroidFields.length > 0) {
-    const nearestField = asteroidFields.sort((a, b) => getDistance(a) - getDistance(b))[0];
-    createIndicator(nearestField.position, 'asteroid');
+    asteroidFields.forEach(field => {
+      // Check if field still has asteroids (not just lights)
+      const hasAsteroids = field.children && field.children.some(child => !child.isLight);
+      if (hasAsteroids) {
+        createIndicator(field.position, 'asteroid');
+      }
+    });
   }
 
   // Stars hidden to reduce visual noise - mini-map shows them instead

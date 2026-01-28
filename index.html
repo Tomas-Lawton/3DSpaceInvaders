@@ -31,6 +31,18 @@
   <body>
     <canvas id="three-canvas"></canvas>
 
+    <!-- Message Alert (In-Game Notification) -->
+    <div id="message-alert" style="display: none;">
+      <div class="alert-hologram-border"></div>
+      <div class="alert-icon">📡</div>
+      <div class="alert-content">
+        <div class="alert-title">INCOMING TRANSMISSION</div>
+        <div class="alert-text">New mission available</div>
+      </div>
+      <div class="alert-badge">1</div>
+      <div class="alert-hint">Click to view</div>
+    </div>
+
     <div id="health-bar-background" class="hud-ui"></div>
     <div id="health-bar" class="hud-ui"></div>
     <div id="velocity-bar-background" class="hud-ui"></div>
@@ -489,29 +501,17 @@
     <div class="cursor small"></div>
     <div class="cursor big"></div>
 
-    <!-- Mobile Orientation Prompt -->
-    <div id="rotate-device-prompt">
-      <div class="rotate-content">
-        <div class="rotate-icon">📱</div>
-        <div class="rotate-arrow">↻</div>
-        <p>Please rotate your device to landscape mode for the best experience</p>
-      </div>
-    </div>
-
-    <!-- Mobile Controls (hidden on desktop) -->
-    <div id="mobile-controls" style="display: none;">
-      <div id="mobile-joystick-zone">
-        <div id="mobile-joystick">
-          <div id="mobile-joystick-knob"></div>
-        </div>
-      </div>
-      <button id="mobile-fire-btn">FIRE</button>
-      <button id="mobile-boost-btn">BOOST</button>
-      <button id="mobile-brake-btn">BRAKE</button>
-      <div id="mobile-motion-prompt" style="display: none;">
-        <p>Enable motion controls for steering?</p>
-        <button id="enable-motion-btn">Enable Motion</button>
-        <button id="skip-motion-btn">Use Touch Only</button>
+    <!-- Unsupported Device Screen (shown on mobile/small devices) -->
+    <div id="unsupported-device-screen" style="display: none;">
+      <div class="unsupported-content">
+        <h1 class="unsupported-title">DESKTOP REQUIRED</h1>
+        <div class="unsupported-icon">🖥️</div>
+        <p class="unsupported-message">
+          This game requires a larger screen and keyboard/mouse controls due to heavy 3D rendering.
+        </p>
+        <p class="unsupported-hint">
+          Please visit on a desktop or laptop computer for the best experience.
+        </p>
       </div>
     </div>
 
@@ -622,31 +622,6 @@
                     </div>
                   </div>
                 </div>
-                <!-- Controls Section - Mobile -->
-                <div class="controls-column" id="mobile-controls-info" style="display: none;">
-                  <h2 class="intro-section-title orange-text">
-                    MOBILE CONTROLS
-                  </h2>
-                  <div class="intro-controls-compact">
-                    <div class="intro-control">
-                      <span class="intro-key">TILT DEVICE</span>
-                      <span class="intro-label">Aim Ship</span>
-                    </div>
-                    <div class="intro-control">
-                      <span class="intro-key cyan-text">BOOST BTN</span>
-                      <span class="intro-label">Accelerate</span>
-                    </div>
-                    <div class="intro-control">
-                      <span class="intro-key">BRAKE BTN</span>
-                      <span class="intro-label">Slow Down</span>
-                    </div>
-                    <div class="intro-control">
-                      <span class="intro-key orange-text">FIRE BTN</span>
-                      <span class="intro-label">Fire Lasers</span>
-                    </div>
-                  </div>
-                </div>
-
                 <!-- Objectives Section -->
                 <div class="objectives-column">
                   <h2 class="intro-section-title orange-text">OBJECTIVES</h2>

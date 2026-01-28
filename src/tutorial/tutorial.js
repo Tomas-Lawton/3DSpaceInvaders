@@ -1,6 +1,8 @@
 // Tutorial System
 // Guides first-time players through the game basics
 
+import { triggerMessage } from '../hud/message-ui.js';
+
 export const tutorial = (() => {
   const STORAGE_KEY = 'spaceInvadersTutorialComplete';
 
@@ -17,33 +19,33 @@ export const tutorial = (() => {
   const STEP_MESSAGES = {
     [STEPS.CONTROLS]: {
       title: 'FLIGHT CONTROLS',
-      message: 'Use W to accelerate and MOUSE to steer. Try moving forward!',
-      hint: 'Hold W to fly'
+      message: 'Hold W to accelerate forward. Move your MOUSE to steer the ship. Use S to slow down. Try flying toward the asteroid field ahead!',
+      hint: 'W = Accelerate | S = Brake | Mouse = Steer'
     },
     [STEPS.MINING]: {
-      title: 'MINING',
-      message: 'Fly to the asteroids ahead and destroy them ALL for resources.',
-      hint: 'Follow the blue marker'
+      title: 'ASTEROID MINING',
+      message: 'Destroy asteroids by CLICKING to fire your lasers. Each asteroid drops valuable resources used for upgrades. Clear the entire field!',
+      hint: 'Click to fire | Blue marker on mini-map shows asteroids'
     },
     [STEPS.RESOURCES]: {
-      title: 'ASTEROID FIELD CLEARED',
-      message: 'Excellent work! Now fly to the planet ahead. It needs defending!',
-      hint: 'Follow the cyan marker'
+      title: 'FIELD CLEARED - PLANET INCOMING',
+      message: 'Resources collected! A nearby planet needs your help. Fly toward the cyan marker - hostile forces are approaching!',
+      hint: 'Cyan marker = Planet | Check mini-map for direction'
     },
     [STEPS.PLANET]: {
-      title: 'PLANET DEFENSE',
-      message: 'This planet is under attack! Destroy the enemies to save it.',
-      hint: 'Enemies marked in red'
+      title: 'PLANET UNDER ATTACK',
+      message: 'Enemy ships are attacking this planet! The planet has a health bar - if it reaches zero, the planet is lost. Destroy all enemies quickly!',
+      hint: 'Red markers = Enemies | Protect the planet!'
     },
     [STEPS.COMBAT]: {
-      title: 'COMBAT',
-      message: 'Keep firing! Destroy all enemies to save the planet.',
-      hint: 'Click to fire lasers'
+      title: 'ENGAGE HOSTILES',
+      message: 'Keep firing at enemy ships! Watch your own health in the top-left. Destroying enemies earns XP for upgrades.',
+      hint: 'Click rapidly to fire | Track enemies with red markers'
     },
     [STEPS.COMPLETE]: {
       title: 'TUTORIAL COMPLETE',
-      message: 'Well done, pilot! Press ESC to access upgrades and new ships.',
-      hint: 'Explore the galaxy!'
+      message: 'Excellent work, pilot! Press ESC anytime to access the upgrade menu, unlock new ships, and view your stats. Good luck out there!',
+      hint: 'ESC = Menu | Explore and defend the galaxy!'
     }
   };
 
@@ -66,6 +68,9 @@ export const tutorial = (() => {
   let promptElement = null;
   let skipButton = null;
 
+  // Callback for when asteroids are cleared (to spawn planet)
+  let onAsteroidsClearedCallback = null;
+
   // Check if this is a first-time player
   const isFirstTimePlayer = () => {
     const completed = localStorage.getItem(STORAGE_KEY);
@@ -73,23 +78,19 @@ export const tutorial = (() => {
   };
 
   // Initialize tutorial system
+  // Tutorial now always runs on game start (user can skip if they want)
   const init = () => {
     state.isFirstTime = isFirstTimePlayer();
-    state.tutorialComplete = !state.isFirstTime;
-    state.tutorialActive = state.isFirstTime;
+    state.tutorialComplete = false;
+    state.tutorialActive = true; // Always active - user can skip if they want
     state.currentStep = STEPS.CONTROLS;
     state.stepStartTime = performance.now();
 
     // Create UI elements
     createUI();
 
-    if (state.tutorialActive) {
-      console.log('[TUTORIAL] Starting tutorial for first-time player');
-      showPrompt();
-    } else {
-      console.log('[TUTORIAL] Tutorial already completed, skipping');
-      hidePrompt();
-    }
+    console.log('[TUTORIAL] Starting tutorial (skip available)');
+    showPrompt();
 
     return state.tutorialActive;
   };
@@ -189,9 +190,11 @@ export const tutorial = (() => {
 
     console.log('[TUTORIAL] Tutorial completed and saved');
 
-    // Hide after delay
+    // Hide after delay and show first mission
     setTimeout(() => {
       hidePrompt();
+      // Show the first mission message after tutorial
+      triggerMessage('tutorialComplete');
     }, 5000);
   };
 
@@ -205,6 +208,9 @@ export const tutorial = (() => {
     localStorage.setItem(STORAGE_KEY, 'true');
 
     hidePrompt();
+
+    // Show first mission message even when skipping
+    triggerMessage('tutorialComplete');
   };
 
   // Update tutorial state based on game events
@@ -278,9 +284,18 @@ export const tutorial = (() => {
 
       // Only advance when ALL asteroids are destroyed
       if (state.tutorialAsteroidsDestroyed >= state.tutorialAsteroidsTotal) {
+        // Trigger callback to spawn planet before advancing
+        if (onAsteroidsClearedCallback) {
+          onAsteroidsClearedCallback();
+        }
         update({ asteroidDestroyed: true });
       }
     }
+  };
+
+  // Set callback for when asteroids are cleared
+  const setOnAsteroidsClearedCallback = (callback) => {
+    onAsteroidsClearedCallback = callback;
   };
 
   // Notify that player is near a planet
@@ -347,6 +362,7 @@ export const tutorial = (() => {
     update,
     advanceStep,
     setTutorialAsteroidCount,
+    setOnAsteroidsClearedCallback,
     onAsteroidDestroyed,
     onNearPlanet,
     onEnemiesSpawned,
