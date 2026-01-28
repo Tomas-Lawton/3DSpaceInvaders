@@ -34,7 +34,10 @@ export function initializeMessageUI() {
 
   if (alertBox) {
     alertBox.addEventListener('click', () => {
-      // Open pause menu when clicking alert
+      // Pause game and open pause menu when clicking alert
+      if (window.toggleGamePause) {
+        window.toggleGamePause(true); // Force pause
+      }
       import('../components/dom.js').then(module => {
         module.toggleHUD();
         // Mark messages as read and hide alert
@@ -152,6 +155,7 @@ function showNextMessage() {
 export function updateAlertDisplay() {
   const alertBox = document.getElementById('message-alert');
   const alertBadge = document.querySelector('.alert-badge');
+  const alertTitle = document.querySelector('.alert-title');
   const alertText = document.querySelector('.alert-text');
 
   if (!alertBox) return;
@@ -163,10 +167,17 @@ export function updateAlertDisplay() {
     if (alertBadge) {
       alertBadge.textContent = unreadCount;
     }
-    // Update alert text with latest message title
+    // Update alert with latest message title and content
     const latestMessage = MESSAGE_SYSTEM.messages[0];
-    if (alertText && latestMessage) {
-      alertText.textContent = latestMessage.title || 'New mission available';
+    if (latestMessage) {
+      if (alertTitle) {
+        alertTitle.textContent = latestMessage.title || 'NEW MESSAGE';
+      }
+      if (alertText && latestMessage.lines) {
+        // Show first non-empty line as preview
+        const preview = latestMessage.lines.find(line => line && line.trim()) || '';
+        alertText.textContent = preview;
+      }
     }
   } else {
     alertBox.style.display = 'none';
@@ -241,7 +252,8 @@ export function triggerMessage(messageId) {
   if (message) {
     // Reset to show newest message
     currentMessageIndex = 0;
-    updateMessageDisplay();
+    // Show alert first - don't call updateMessageDisplay() here as it marks messages as read
+    // The pause menu will call updateMessageDisplay() when opened
     updateAlertDisplay();
   }
 }

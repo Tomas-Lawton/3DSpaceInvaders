@@ -45,12 +45,93 @@ export const MESSAGES = {
     timestamp: Date.now()
   },
 
+  // Tutorial step messages
+  tutorialControls: {
+    id: 'tutorialControls',
+    type: MessageType.HINT,
+    title: 'FLIGHT CONTROLS',
+    lines: [
+      'Hold W to accelerate forward.',
+      'Move your MOUSE to steer.',
+      'Use S to slow down.',
+      '',
+      '→ W = Accelerate | S = Brake',
+      '→ Mouse = Steer ship'
+    ],
+    icon: '🎮',
+    read: false,
+    timestamp: Date.now()
+  },
+
+  tutorialMining: {
+    id: 'tutorialMining',
+    type: MessageType.HINT,
+    title: 'ASTEROID MINING',
+    lines: [
+      'Destroy ALL asteroids for resources (click to fire).',
+      '',
+      '→ Click = Fire lasers',
+      '→ Blue marker = Asteroids'
+    ],
+    icon: '💎',
+    read: false,
+    timestamp: Date.now()
+  },
+
+  tutorialPlanet: {
+    id: 'tutorialPlanet',
+    type: MessageType.HINT,
+    title: 'PLANET INCOMING',
+    lines: [
+      'Earth needs your help!',
+      'Fly toward the cyan marker.',
+      '',
+      '→ Cyan marker = Planet',
+      '→ Check mini-map for direction'
+    ],
+    icon: '🌍',
+    read: false,
+    timestamp: Date.now()
+  },
+
+  tutorialUnderAttack: {
+    id: 'tutorialUnderAttack',
+    type: MessageType.WARNING,
+    title: 'PLANET UNDER ATTACK',
+    lines: [
+      'Enemies are attacking!',
+      'Defend the planet!',
+      '',
+      '→ Planet health bar above',
+      '→ Destroy all enemies!'
+    ],
+    icon: '🚨',
+    read: false,
+    timestamp: Date.now()
+  },
+
+  tutorialCombat: {
+    id: 'tutorialCombat',
+    type: MessageType.WARNING,
+    title: 'ENGAGE HOSTILES',
+    lines: [
+      'Kill all enemies to save EARTH!',
+      'Watch your health too.',
+      '',
+      '→ Red markers = Enemies',
+      '→ Click rapidly to fire'
+    ],
+    icon: '⚔️',
+    read: false,
+    timestamp: Date.now()
+  },
+
   tutorialComplete: {
     id: 'tutorialComplete',
     type: MessageType.QUEST,
     title: 'MISSION: DEFEND THE SECTOR',
     lines: [
-      'Training complete! Your orders:',
+      'Training complete! Press ESC:',
       '',
       '→ Save 3 planets from enemy attack',
       '→ Collect 10 iron from asteroids',
@@ -319,8 +400,13 @@ export function showMessage(messageId) {
   // Don't show if already in recent messages
   const existing = MESSAGE_SYSTEM.messages.find(m => m.id === messageId);
   if (existing && Date.now() - existing.timestamp < 60000) {
-    // Same message within 1 minute, skip
-    return;
+    // Same message within 1 minute - mark as unread again so alert shows
+    if (existing.read) {
+      existing.read = false;
+      MESSAGE_SYSTEM.unreadCount++;
+      saveMessageState();
+    }
+    return existing;
   }
 
   // Create new message instance

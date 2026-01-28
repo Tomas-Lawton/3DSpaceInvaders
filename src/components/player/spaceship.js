@@ -198,7 +198,7 @@ export const spaceship = (() => {
       let selectShip = document.getElementById("select-ship");
       selectShip.addEventListener("click", () => {
         // Map ship IDs to modelPaths indices
-        // ship-1 -> 0, ship-2 -> 1, ship-3 -> 2, ship-4 -> 3, ship-6 -> 4
+        // ship-1 -> 0, ship-2 -> 1, ship-3 -> 2 (only 3 active in modelPaths)
         const shipIdMapping = {
           'ship-1': 0,
           'ship-2': 1,
@@ -354,12 +354,22 @@ export const spaceship = (() => {
         target: this.mesh,
       });
 
-      // Only reset to default position on initial load, otherwise preserve position
+      // Always apply scale, but preserve position when switching ships
+      this.mesh.scale.set(
+        this.spaceshipParams.scale,
+        this.spaceshipParams.scale,
+        this.spaceshipParams.scale
+      );
+
       if (lastPosition) {
         this.mesh.position.set(lastPosition.x, lastPosition.y, lastPosition.z);
         console.log("Set new mesh at last ship position");
       } else {
-        this.updateSpaceshipPosition();
+        this.mesh.position.set(
+          this.spaceshipParams.positionX,
+          this.spaceshipParams.positionY,
+          this.spaceshipParams.positionZ
+        );
       }
 
       // Hide loading screen and show intro only on initial load

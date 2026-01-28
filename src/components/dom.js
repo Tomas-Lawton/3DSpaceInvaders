@@ -1,8 +1,9 @@
 import { mapValue } from "../utils/utils.js";
+import { markAllMessagesRead } from "../utils/message-system.js";
 
 export const progressContainer = document.getElementById("progress-container");
 export const progressText = document.getElementById("progress");
-export const canvas = document.getElementById('three-canvas');
+export const canvas = document.getElementById("three-canvas");
 
 let iron = 0;
 let gold = 0;
@@ -21,9 +22,9 @@ export function incrementOre(type) {
 }
 
 function updateResourceDisplay() {
-  const oresContainer = document.getElementById('ores');
+  const oresContainer = document.getElementById("ores");
   if (oresContainer) {
-    const oreElements = oresContainer.querySelectorAll('p');
+    const oreElements = oresContainer.querySelectorAll("p");
     if (oreElements.length >= 3) {
       oreElements[0].textContent = `Iron ${iron}`;
       oreElements[1].textContent = `Gold ${gold}`;
@@ -43,16 +44,16 @@ export function addXP(amount) {
 }
 
 function updatePauseMenuXP() {
-  const headerXP = document.getElementById('header-xp');
+  const headerXP = document.getElementById("header-xp");
   if (headerXP) {
     headerXP.textContent = xp;
   }
 }
 
 function updatePauseMenuResources() {
-  const headerIron = document.getElementById('header-iron');
-  const headerGold = document.getElementById('header-gold');
-  const headerCrystal = document.getElementById('header-crystal');
+  const headerIron = document.getElementById("header-iron");
+  const headerGold = document.getElementById("header-gold");
+  const headerCrystal = document.getElementById("header-crystal");
 
   if (headerIron) headerIron.textContent = iron;
   if (headerGold) headerGold.textContent = gold;
@@ -71,44 +72,137 @@ export function getXP() {
 }
 
 // Make addXP globally available for testing
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.addXP = addXP;
 }
 
+// export function toggleHUD() {
+//   const hud = document.getElementById("control-ui");
+//   const inGameHudElements = document.querySelectorAll(".hud-ui");
+
+//   if (hud.style.display === "none" || hud.style.display === "") {
+//     // Opening pause menu
+//     hud.style.display = "flex";
+//     canvas.style.filter = "blur(10px)";
+
+//     // Hide in-game HUD elements
+//     inGameHudElements.forEach((element) => {
+//       element.style.display = "none";
+//     });
+
+//     // Update upgrade UI when opening pause menu
+//     import("../hud/upgrade-ui.js")
+//       .then((module) => {
+//         module.onPauseMenuOpen();
+//       })
+//       .catch((err) => console.error("Failed to load upgrade UI:", err));
+
+//     // Hide mission notification and mark messages as read when opening HUD
+//     // Hide tutorial UI when opening HUD
+//     const tutorialPrompt = document.getElementById("tutorial-prompt");
+//     const tutorialSkip = document.getElementById("tutorial-skip");
+//     const messageAlert = document.getElementById("message-alert");
+//     if (messageAlert.style.display !== "none") {
+//       messageAlert.style.display = "none";
+//       tutorialPrompt.style.display = "none";
+//       tutorialSkip.style.display = "none";
+//     } else {
+//       messageAlert.style.display = "flex";
+//       tutorialPrompt.style.display = "flex";
+//       tutorialSkip.style.display = "flex";
+//     }
+//     // markAllMessagesRead();
+
+//   } else {
+//     // Closing pause menu
+//     hud.style.display = "none";
+//     canvas.style.filter = "none";
+
+//     // Show in-game HUD elements (except planet-defense-status which is controlled separately)
+//     inGameHudElements.forEach((element) => {
+//       if (element.id !== "planet-defense-status") {
+//         element.style.display = "";
+//       }
+//     });
+
+//     // Restore tutorial skip button if tutorial is still active
+//     import("../tutorial/tutorial.js")
+//       .then((module) => {
+//         if (module.tutorial.isActive()) {
+//           const skipButton = document.getElementById("tutorial-skip");
+//           if (skipButton) skipButton.style.display = "block";
+//         }
+//       })
+//       .catch(() => {});
+//   }
+// }
+
+
 export function toggleHUD() {
   const hud = document.getElementById("control-ui");
-  const inGameHudElements = document.querySelectorAll('.hud-ui');
+  const canvas = document.querySelector("canvas"); // assuming there's one main canvas
+  const inGameHudElements = document.querySelectorAll(".hud-ui");
 
-  if (hud.style.display === 'none' || hud.style.display === '') {
-    // Opening pause menu
-    hud.style.display = 'flex';
-    canvas.style.filter = 'blur(10px)';
+  const tutorialPrompt = document.getElementById("tutorial-prompt");
+  const tutorialSkip = document.getElementById("tutorial-skip");
+  const messageAlert = document.getElementById("message-alert");
 
-    // Hide in-game HUD elements
-    inGameHudElements.forEach(element => {
-      element.style.display = 'none';
+  const isCurrentlyHidden = !hud || hud.style.display === "none" || hud.style.display === "";
+
+  if (isCurrentlyHidden) {
+    // ─── Opening pause menu ─────────────────────────────────────
+    if (hud) hud.style.display = "flex";
+    if (canvas) canvas.style.filter = "blur(10px)";
+
+    // Hide all in-game HUD elements
+    inGameHudElements.forEach((el) => {
+      el.style.display = "none";
     });
 
-    // Update upgrade UI when opening pause menu
-    import('../hud/upgrade-ui.js').then(module => {
-      module.onPauseMenuOpen();
-    }).catch(err => console.error('Failed to load upgrade UI:', err));
-    // Message UI disabled - was causing layout issues
-    // import('../hud/message-ui.js').then(module => {
-    //   module.onPauseMenuOpenMessage();
-    // }).catch(err => console.error('Failed to load message UI:', err));
+    // Force hide tutorial / notification while paused
+    if (messageAlert) messageAlert.style.display = "none";
+    if (tutorialPrompt) tutorialPrompt.style.display = "none";
+    if (tutorialSkip) tutorialSkip.style.display = "none";
+
+    // Load and update upgrade UI (if it exists)
+    import("../hud/upgrade-ui.js")
+      .then((module) => {
+        if (module?.onPauseMenuOpen) {
+          module.onPauseMenuOpen();
+        }
+      })
+      .catch((err) => console.error("Failed to load upgrade UI:", err));
+
+    // Optional: mark messages as read when pause opens
+    // markAllMessagesRead();
+
   } else {
-    // Closing pause menu
-    hud.style.display = 'none';
-    canvas.style.filter = 'none';
+    // ─── Closing pause menu ─────────────────────────────────────
+    if (hud) hud.style.display = "none";
+    if (canvas) canvas.style.filter = "none";
 
-    // Show in-game HUD elements
-    inGameHudElements.forEach(element => {
-      element.style.display = '';
+    // Restore in-game HUD elements (except special cases)
+    inGameHudElements.forEach((el) => {
+      if (el.id !== "planet-defense-status") {
+        el.style.display = ""; // or "flex" / "block" — depending on your CSS default
+      }
     });
+
+    // Only re-show tutorial if it's still relevant/active
+    import("../tutorial/tutorial.js")
+      .then((module) => {
+        if (module?.tutorial?.isActive?.()) {
+          if (messageAlert) messageAlert.style.display = "flex";
+          if (tutorialPrompt) tutorialPrompt.style.display = "flex";
+          if (tutorialSkip) tutorialSkip.style.display = "block"; // usually block or inline-block for buttons
+        }
+        // else → leave hidden (tutorial step completed / dismissed)
+      })
+      .catch((err) => {
+        console.warn("Could not load tutorial module on HUD close:", err);
+      });
   }
 }
-
 export function getOres() {
   return { iron, gold, crystal };
 }
@@ -136,7 +230,7 @@ export function updatePlayerPositionUI(xyz) {
   if (playerPosFrameCounter < PLAYER_POS_UPDATE_INTERVAL) return; // Skip this frame
   playerPosFrameCounter = 0;
 
-  const userPosition = document.getElementById('user-position');
+  const userPosition = document.getElementById("user-position");
   if (userPosition) {
     userPosition.textContent = `POS:\nX:${xyz.x.toFixed(1)}\nY:${xyz.y.toFixed(1)}\nZ:${xyz.z.toFixed(1)}`;
   }
@@ -151,7 +245,7 @@ export function updateCloestPlanet(xyz) {
   if (closestPlanetFrameCounter < CLOSEST_PLANET_UPDATE_INTERVAL) return; // Skip this frame
   closestPlanetFrameCounter = 0;
 
-  const nearestPlanet = document.getElementById('nearest-planet');
+  const nearestPlanet = document.getElementById("nearest-planet");
   if (nearestPlanet) {
     nearestPlanet.textContent = `NEAREST PLANET:\n------------\nX:${xyz.x.toFixed(1)}\nY:${xyz.y.toFixed(1)}\nZ:${xyz.z.toFixed(1)}`;
   }
@@ -164,7 +258,7 @@ export function updateCloestPlanet(xyz) {
 }
 
 export function updateVelocityBar(vel, maxVelocity) {
-  const velocityBar = document.getElementById('velocity-bar');
+  const velocityBar = document.getElementById("velocity-bar");
   if (velocityBar) {
     let maxHeight = 300;
     let h = mapValue(vel, 0, maxVelocity, 0, maxHeight);
@@ -173,7 +267,7 @@ export function updateVelocityBar(vel, maxVelocity) {
 }
 
 export function updateHealthBar(health, maxHealth) {
-  const healthBar = document.getElementById('health-bar');
+  const healthBar = document.getElementById("health-bar");
   if (healthBar) {
     let maxHeight = 300;
     let h = mapValue(health, 0, maxHealth, 0, maxHeight);
@@ -216,40 +310,48 @@ export function updatePlanetDefenseStatus(planet, enemyCount) {
   if (planetDefenseFrameCounter < PLANET_DEFENSE_UPDATE_INTERVAL) return; // Skip this frame
   planetDefenseFrameCounter = 0;
 
-  const statusElement = document.getElementById('planet-defense-status');
-  const healthFill = document.getElementById('planet-health-fill');
-  const healthText = document.getElementById('planet-health-text');
-  const enemiesText = document.getElementById('enemies-remaining');
+  const statusElement = document.getElementById("planet-defense-status");
+  const healthFill = document.getElementById("planet-health-fill");
+  const healthText = document.getElementById("planet-health-text");
+  const enemiesText = document.getElementById("enemies-remaining");
 
   // Only show during active dogfight (enemies must be present and planet not cleared)
-  if (!statusElement || !planet || !planet.hasEnemies || planet.cleared || enemyCount <= 0) {
+  if (
+    !statusElement ||
+    !planet ||
+    !planet.hasEnemies ||
+    planet.cleared ||
+    enemyCount <= 0
+  ) {
     if (statusElement) {
-      statusElement.style.display = 'none';
+      statusElement.style.display = "none";
     }
     return;
   }
 
   // Show the status element
-  statusElement.style.display = 'block';
+  statusElement.style.display = "block";
 
   // Update health bar
   const healthPercent = (planet.health / planet.maxHealth) * 100;
 
   // Debug logging
-  console.log(`📊 [DEFENSE HUD] Planet HP: ${Math.floor(planet.health)}/${planet.maxHealth} (${healthPercent.toFixed(1)}%) | Enemies: ${enemyCount}`);
+  console.log(
+    `📊 [DEFENSE HUD] Planet HP: ${Math.floor(planet.health)}/${planet.maxHealth} (${healthPercent.toFixed(1)}%) | Enemies: ${enemyCount}`,
+  );
 
   if (healthFill) {
     healthFill.style.width = `${healthPercent}%`;
     console.log(`📊 [DEFENSE HUD] Health bar width set to: ${healthPercent}%`);
   } else {
-    console.error('❌ [DEFENSE HUD] planet-health-fill element not found!');
+    console.error("❌ [DEFENSE HUD] planet-health-fill element not found!");
   }
 
   // Update health text
   if (healthText) {
     healthText.textContent = `${Math.max(0, Math.floor(planet.health))} / ${planet.maxHealth}`;
   } else {
-    console.error('❌ [DEFENSE HUD] planet-health-text element not found!');
+    console.error("❌ [DEFENSE HUD] planet-health-text element not found!");
   }
 
   // Update enemies remaining
@@ -260,19 +362,22 @@ export function updatePlanetDefenseStatus(planet, enemyCount) {
   // Change color based on health percentage
   if (healthFill) {
     if (healthPercent > 60) {
-      healthFill.style.background = 'linear-gradient(90deg, #00ff00 0%, #88ff00 100%)';
+      healthFill.style.background =
+        "linear-gradient(90deg, #00ff00 0%, #88ff00 100%)";
     } else if (healthPercent > 30) {
-      healthFill.style.background = 'linear-gradient(90deg, #ffff00 0%, #ff8800 100%)';
+      healthFill.style.background =
+        "linear-gradient(90deg, #ffff00 0%, #ff8800 100%)";
     } else {
-      healthFill.style.background = 'linear-gradient(90deg, #ff0000 0%, #cc0000 100%)';
+      healthFill.style.background =
+        "linear-gradient(90deg, #ff0000 0%, #cc0000 100%)";
     }
   }
 }
 
 export function hidePlanetDefenseStatus() {
-  const statusElement = document.getElementById('planet-defense-status');
+  const statusElement = document.getElementById("planet-defense-status");
   if (statusElement) {
-    statusElement.style.display = 'none';
+    statusElement.style.display = "none";
   }
 }
 
@@ -280,17 +385,25 @@ export function hidePlanetDefenseStatus() {
 let miniMapFrameCounter = 0;
 const MINI_MAP_UPDATE_INTERVAL = 5; // Update every 5 frames (~12 times per second)
 
-export function updateMiniMap(playerPosition, planets, enemies, playerRotation = 0, asteroidFields = [], currentPlanet = null, stars = []) {
+export function updateMiniMap(
+  playerPosition,
+  planets,
+  enemies,
+  playerRotation = 0,
+  asteroidFields = [],
+  currentPlanet = null,
+  stars = [],
+) {
   miniMapFrameCounter++;
   if (miniMapFrameCounter < MINI_MAP_UPDATE_INTERVAL) return; // Skip this frame
   miniMapFrameCounter = 0;
 
-  const miniMapTargets = document.getElementById('mini-map-targets');
-  const miniMapContent = document.querySelector('.mini-map-content');
+  const miniMapTargets = document.getElementById("mini-map-targets");
+  const miniMapContent = document.querySelector(".mini-map-content");
   if (!miniMapTargets || !miniMapContent) return;
 
   // Clear existing targets
-  miniMapTargets.innerHTML = '';
+  miniMapTargets.innerHTML = "";
 
   const mapSize = 280; // Size of the mini-map content area (matches CSS)
   const maxDistance = 5000; // Max distance to show on map (increased for better visibility)
@@ -299,25 +412,25 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
   // Rotate the map based on player's facing direction
   // Objects rotate around the player to show relative positions
   // Add 180 degrees so forward actually appears at top
-  const rotationDegrees = (playerRotation * 180 / Math.PI) + 180;
+  const rotationDegrees = (playerRotation * 180) / Math.PI + 180;
   miniMapContent.style.transform = `rotate(${rotationDegrees}deg)`;
 
   // Counter-rotate player icon so it ALWAYS points up (forward)
-  const playerIcon = document.querySelector('.player-ship-icon');
+  const playerIcon = document.querySelector(".player-ship-icon");
   if (playerIcon) {
     // Parent element handles rotation, keep icon centered
     playerIcon.parentElement.style.transform = `translate(-50%, -50%) rotate(${-rotationDegrees}deg)`;
   }
 
   // Counter-rotate the North indicator to always point north
-  const northIndicator = document.querySelector('.mini-map-north');
+  const northIndicator = document.querySelector(".mini-map-north");
   if (northIndicator) {
     northIndicator.style.transform = `translateX(-50%) rotate(${-rotationDegrees}deg)`;
   }
 
   // Add planets to mini-map
   if (planets && planets.length > 0) {
-    planets.forEach(planet => {
+    planets.forEach((planet) => {
       const dx = planet.position.x - playerPosition.x;
       const dz = planet.position.z - playerPosition.z;
       const distance = Math.sqrt(dx * dx + dz * dz);
@@ -328,19 +441,19 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
         const x = center + (dx / maxDistance) * (mapSize / 2);
         const y = center + (dz / maxDistance) * (mapSize / 2);
 
-        const planetDot = document.createElement('div');
+        const planetDot = document.createElement("div");
         // Determine planet status: green if saved, orange if under attack, blue if safe
         const isUnderAttack = currentPlanet && planet === currentPlanet;
         const isSaved = planet.cleared === true;
-        let className = 'mini-map-planet'; // Blue for safe
-        let status = '';
+        let className = "mini-map-planet"; // Blue for safe
+        let status = "";
 
         if (isSaved) {
-          className = 'mini-map-planet-saved'; // Green for saved
-          status = ' - SAVED';
+          className = "mini-map-planet-saved"; // Green for saved
+          status = " - SAVED";
         } else if (isUnderAttack) {
-          className = 'mini-map-planet-attack'; // Orange for under attack
-          status = ' - UNDER ATTACK!';
+          className = "mini-map-planet-attack"; // Orange for under attack
+          status = " - UNDER ATTACK!";
         }
 
         planetDot.className = className;
@@ -354,7 +467,7 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
 
   // Add enemies to mini-map
   if (enemies && enemies.length > 0) {
-    enemies.forEach(enemy => {
+    enemies.forEach((enemy) => {
       const dx = enemy.position.x - playerPosition.x;
       const dz = enemy.position.z - playerPosition.z;
       const distance = Math.sqrt(dx * dx + dz * dz);
@@ -364,8 +477,8 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
         const x = center + (dx / maxDistance) * (mapSize / 2);
         const y = center + (dz / maxDistance) * (mapSize / 2);
 
-        const enemyDot = document.createElement('div');
-        enemyDot.className = 'mini-map-enemy';
+        const enemyDot = document.createElement("div");
+        enemyDot.className = "mini-map-enemy";
         enemyDot.style.left = `${x}px`;
         enemyDot.style.top = `${y}px`;
         miniMapTargets.appendChild(enemyDot);
@@ -386,8 +499,8 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
         const x = center + (dx / maxDistance) * (mapSize / 2);
         const y = center + (dz / maxDistance) * (mapSize / 2);
 
-        const asteroidDot = document.createElement('div');
-        asteroidDot.className = 'mini-map-asteroid';
+        const asteroidDot = document.createElement("div");
+        asteroidDot.className = "mini-map-asteroid";
         asteroidDot.style.left = `${x}px`;
         asteroidDot.style.top = `${y}px`;
         miniMapTargets.appendChild(asteroidDot);
@@ -410,8 +523,8 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
         const x = center + (dx / maxDistance) * (mapSize / 2);
         const y = center + (dz / maxDistance) * (mapSize / 2);
 
-        const starDot = document.createElement('div');
-        starDot.className = 'mini-map-star';
+        const starDot = document.createElement("div");
+        starDot.className = "mini-map-star";
         starDot.style.left = `${x}px`;
         starDot.style.top = `${y}px`;
         starDot.title = `Star ${Math.floor(distance)}u`;
@@ -425,16 +538,23 @@ export function updateMiniMap(playerPosition, planets, enemies, playerRotation =
 let indicatorFrameCounter = 0;
 const INDICATOR_UPDATE_INTERVAL = 3; // Update every 3 frames (~20 times per second)
 
-export function updateDirectionalIndicators(playerPosition, playerForwardDirection, planets, enemies, asteroidFields = [], stars = []) {
+export function updateDirectionalIndicators(
+  playerPosition,
+  playerForwardDirection,
+  planets,
+  enemies,
+  asteroidFields = [],
+  stars = [],
+) {
   indicatorFrameCounter++;
   if (indicatorFrameCounter < INDICATOR_UPDATE_INTERVAL) return; // Skip this frame
   indicatorFrameCounter = 0;
 
-  const container = document.getElementById('indicators-container');
+  const container = document.getElementById("indicators-container");
   if (!container || !playerForwardDirection) return;
 
   // Clear all existing indicators
-  container.innerHTML = '';
+  container.innerHTML = "";
 
   // Circle radius from center of screen
   const circleRadius = 180;
@@ -447,14 +567,14 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     const dirToTarget = {
       x: targetPosition.x - playerPosition.x,
       y: targetPosition.y - playerPosition.y,
-      z: targetPosition.z - playerPosition.z
+      z: targetPosition.z - playerPosition.z,
     };
 
     // Get 3D distance
     const distance3D = Math.sqrt(
       dirToTarget.x * dirToTarget.x +
-      dirToTarget.y * dirToTarget.y +
-      dirToTarget.z * dirToTarget.z
+        dirToTarget.y * dirToTarget.y +
+        dirToTarget.z * dirToTarget.z,
     );
 
     if (distance3D === 0) return; // Skip if same position
@@ -463,7 +583,7 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     const normalizedDir = {
       x: dirToTarget.x / distance3D,
       y: dirToTarget.y / distance3D,
-      z: dirToTarget.z / distance3D
+      z: dirToTarget.z / distance3D,
     };
 
     // Player's forward direction (already normalized from getWorldDirection)
@@ -471,7 +591,7 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     const forward = {
       x: playerForwardDirection.x,
       y: playerForwardDirection.y,
-      z: playerForwardDirection.z
+      z: playerForwardDirection.z,
     };
 
     // Calculate right vector using cross product: right = forward × up
@@ -480,11 +600,13 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     let right = {
       x: forward.y * worldUp.z - forward.z * worldUp.y,
       y: forward.z * worldUp.x - forward.x * worldUp.z,
-      z: forward.x * worldUp.y - forward.y * worldUp.x
+      z: forward.x * worldUp.y - forward.y * worldUp.x,
     };
 
     // Normalize right vector
-    const rightLength = Math.sqrt(right.x * right.x + right.y * right.y + right.z * right.z);
+    const rightLength = Math.sqrt(
+      right.x * right.x + right.y * right.y + right.z * right.z,
+    );
     if (rightLength > 0.001) {
       right.x /= rightLength;
       right.y /= rightLength;
@@ -498,13 +620,20 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     const up = {
       x: right.y * forward.z - right.z * forward.y,
       y: right.z * forward.x - right.x * forward.z,
-      z: right.x * forward.y - right.y * forward.x
+      z: right.x * forward.y - right.y * forward.x,
     };
 
     // Project target direction onto player's local coordinate system
-    const localRight = normalizedDir.x * right.x + normalizedDir.y * right.y + normalizedDir.z * right.z;
-    const localUp = normalizedDir.x * up.x + normalizedDir.y * up.y + normalizedDir.z * up.z;
-    const localForward = normalizedDir.x * forward.x + normalizedDir.y * forward.y + normalizedDir.z * forward.z;
+    const localRight =
+      normalizedDir.x * right.x +
+      normalizedDir.y * right.y +
+      normalizedDir.z * right.z;
+    const localUp =
+      normalizedDir.x * up.x + normalizedDir.y * up.y + normalizedDir.z * up.z;
+    const localForward =
+      normalizedDir.x * forward.x +
+      normalizedDir.y * forward.y +
+      normalizedDir.z * forward.z;
 
     // Calculate angle in the horizontal plane
     // atan2(x, z) gives us the angle where:
@@ -526,20 +655,20 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
 
     // Calculate arrow rotation to point toward the target
     // Convert to degrees and adjust for screen coordinates
-    const arrowAngle = (horizontalAngle * 180 / Math.PI);
+    const arrowAngle = (horizontalAngle * 180) / Math.PI;
 
     // Determine vertical position for altitude indicator
     const verticalThreshold = 0.3; // Threshold for "level"
-    let verticalDirection = 'level';
+    let verticalDirection = "level";
 
     if (localUp > verticalThreshold) {
-      verticalDirection = 'above'; // Target is above - climb
+      verticalDirection = "above"; // Target is above - climb
     } else if (localUp < -verticalThreshold) {
-      verticalDirection = 'below'; // Target is below - dive
+      verticalDirection = "below"; // Target is below - dive
     }
 
     // Create indicator element
-    const indicator = document.createElement('div');
+    const indicator = document.createElement("div");
     indicator.className = `direction-arrow ${type}`;
     indicator.style.left = `${indicatorX}px`;
     indicator.style.top = `${indicatorY}px`;
@@ -548,10 +677,13 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     const altitudeDiff = Math.floor(dirToTarget.y);
 
     // For asteroids and stars, create a simple line instead of full marker
-    if (type === 'asteroid' || type === 'star') {
+    if (type === "asteroid" || type === "star") {
       // Different colors for different types
-      const lineColor = type === 'asteroid' ? '#0099ff' : '#ffcc00'; // Blue for asteroids, yellow for stars
-      const glowColor = type === 'asteroid' ? 'rgba(0, 153, 255, 0.8)' : 'rgba(255, 204, 0, 0.8)';
+      const lineColor = type === "asteroid" ? "#0099ff" : "#ffcc00"; // Blue for asteroids, yellow for stars
+      const glowColor =
+        type === "asteroid"
+          ? "rgba(0, 153, 255, 0.8)"
+          : "rgba(255, 204, 0, 0.8)";
 
       indicator.style.cssText = `
         position: absolute;
@@ -566,15 +698,15 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
       `;
 
       // Add altitude label for asteroids and stars
-      const altitudeLabel = document.createElement('div');
-      altitudeLabel.className = 'altitude-label';
+      const altitudeLabel = document.createElement("div");
+      altitudeLabel.className = "altitude-label";
 
       // Color code based on altitude
-      let altitudeColor = '#ffffff'; // Level
+      let altitudeColor = "#ffffff"; // Level
       if (altitudeDiff > 50) {
-        altitudeColor = '#ff9900'; // Above - orange
+        altitudeColor = "#ff9900"; // Above - orange
       } else if (altitudeDiff < -50) {
-        altitudeColor = type === 'asteroid' ? '#0099ff' : '#ffcc00'; // Blue for asteroids, yellow for stars
+        altitudeColor = type === "asteroid" ? "#0099ff" : "#ffcc00"; // Blue for asteroids, yellow for stars
       }
 
       // Arrow big (26px), number smaller (14px)
@@ -607,29 +739,31 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
 
     // Add vertical offset class for styling
     if (localUp > verticalThreshold) {
-      indicator.classList.add('above');
+      indicator.classList.add("above");
     } else if (localUp < -verticalThreshold) {
-      indicator.classList.add('below');
+      indicator.classList.add("below");
     }
 
     // Create arrow icon (equilateral triangle using CSS)
-    const arrow = document.createElement('div');
-    arrow.className = 'arrow-icon equilateral-triangle';
+    const arrow = document.createElement("div");
+    arrow.className = "arrow-icon equilateral-triangle";
     // Rotate arrow to point along the bearing direction
     arrow.style.transform = `rotate(${arrowAngle}deg)`;
 
     // Create altitude indicator (separate from main direction arrow)
-    const altitudeArrow = document.createElement('div');
+    const altitudeArrow = document.createElement("div");
     altitudeArrow.className = `altitude-arrow ${verticalDirection}`;
-    if (verticalDirection === 'above') {
-      altitudeArrow.innerHTML = '<span class="alt-triangle up"></span><span class="alt-text">UP</span>';
-    } else if (verticalDirection === 'below') {
-      altitudeArrow.innerHTML = '<span class="alt-triangle down"></span><span class="alt-text">DOWN</span>';
+    if (verticalDirection === "above") {
+      altitudeArrow.innerHTML =
+        '<span class="alt-triangle up"></span><span class="alt-text">UP</span>';
+    } else if (verticalDirection === "below") {
+      altitudeArrow.innerHTML =
+        '<span class="alt-triangle down"></span><span class="alt-text">DOWN</span>';
     }
 
     // Add distance label
-    const distanceLabel = document.createElement('div');
-    distanceLabel.className = 'distance-label';
+    const distanceLabel = document.createElement("div");
+    distanceLabel.className = "distance-label";
     const distanceKm = Math.floor(distance3D);
     distanceLabel.textContent = `${distanceKm}km`;
     distanceLabel.style.cssText = `
@@ -644,15 +778,15 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     `;
 
     // Add altitude difference label for better vertical awareness
-    const altitudeLabel = document.createElement('div');
-    altitudeLabel.className = 'altitude-label';
+    const altitudeLabel = document.createElement("div");
+    altitudeLabel.className = "altitude-label";
 
     // Color code based on altitude
-    let altitudeColor = '#ffffff'; // Level
+    let altitudeColor = "#ffffff"; // Level
     if (altitudeDiff > 50) {
-      altitudeColor = '#ff9900'; // Above - orange
+      altitudeColor = "#ff9900"; // Above - orange
     } else if (altitudeDiff < -50) {
-      altitudeColor = '#0099ff'; // Below - blue
+      altitudeColor = "#0099ff"; // Below - blue
     }
 
     // Arrow big (26px), number smaller (14px)
@@ -679,7 +813,7 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
     `;
 
     indicator.appendChild(arrow);
-    if (verticalDirection !== 'level') {
+    if (verticalDirection !== "level") {
       indicator.appendChild(altitudeArrow);
     }
     indicator.appendChild(distanceLabel);
@@ -697,28 +831,31 @@ export function updateDirectionalIndicators(playerPosition, playerForwardDirecti
 
   // Show only NEAREST planet (excluding cleared ones) - cleaner UI
   if (planets && planets.length > 0) {
-    const activePlanets = planets.filter(p => !p.cleared);
+    const activePlanets = planets.filter((p) => !p.cleared);
     if (activePlanets.length > 0) {
       // Sort by distance and take nearest
-      const nearestPlanet = activePlanets.sort((a, b) => getDistance(a) - getDistance(b))[0];
-      createIndicator(nearestPlanet.position, 'planet');
+      const nearestPlanet = activePlanets.sort(
+        (a, b) => getDistance(a) - getDistance(b),
+      )[0];
+      createIndicator(nearestPlanet.position, "planet");
     }
   }
 
   // Show indicator for EACH enemy
   if (enemies && enemies.length > 0) {
-    enemies.forEach(enemy => {
-      createIndicator(enemy.position, 'enemy');
+    enemies.forEach((enemy) => {
+      createIndicator(enemy.position, "enemy");
     });
   }
 
   // Show indicator for ALL asteroid fields that still have asteroids
   if (asteroidFields && asteroidFields.length > 0) {
-    asteroidFields.forEach(field => {
+    asteroidFields.forEach((field) => {
       // Check if field still has asteroids (not just lights)
-      const hasAsteroids = field.children && field.children.some(child => !child.isLight);
+      const hasAsteroids =
+        field.children && field.children.some((child) => !child.isLight);
       if (hasAsteroids) {
-        createIndicator(field.position, 'asteroid');
+        createIndicator(field.position, "asteroid");
       }
     });
   }

@@ -95,28 +95,15 @@ export const tutorial = (() => {
     return state.tutorialActive;
   };
 
-  // Create tutorial UI elements
+  // Create tutorial UI elements (skip button only - messages use message UI)
   const createUI = () => {
-    // Check if already exists
-    if (document.getElementById('tutorial-prompt')) {
-      promptElement = document.getElementById('tutorial-prompt');
+    // Check if skip button already exists
+    if (document.getElementById('tutorial-skip')) {
       skipButton = document.getElementById('tutorial-skip');
       return;
     }
 
-    // Create prompt container
-    promptElement = document.createElement('div');
-    promptElement.id = 'tutorial-prompt';
-    promptElement.innerHTML = `
-      <div class="tutorial-content">
-        <div class="tutorial-title" id="tutorial-title">FLIGHT CONTROLS</div>
-        <div class="tutorial-message" id="tutorial-message">Use W to accelerate and MOUSE to steer</div>
-        <div class="tutorial-hint" id="tutorial-hint">Hold W to fly</div>
-      </div>
-    `;
-    document.body.appendChild(promptElement);
-
-    // Create skip button
+    // Create skip button only
     skipButton = document.createElement('button');
     skipButton.id = 'tutorial-skip';
     skipButton.textContent = 'Skip Tutorial';
@@ -124,24 +111,24 @@ export const tutorial = (() => {
     document.body.appendChild(skipButton);
   };
 
-  // Show tutorial prompt
+  // Map steps to message IDs
+  const STEP_MESSAGE_IDS = {
+    [STEPS.CONTROLS]: 'tutorialControls',
+    [STEPS.MINING]: 'tutorialMining',
+    [STEPS.RESOURCES]: 'tutorialPlanet',
+    [STEPS.PLANET]: 'tutorialUnderAttack',
+    [STEPS.COMBAT]: 'tutorialCombat',
+    [STEPS.COMPLETE]: 'tutorialComplete'
+  };
+
+  // Show tutorial prompt using message UI
   const showPrompt = () => {
-    if (!promptElement) return;
+    const messageId = STEP_MESSAGE_IDS[state.currentStep];
+    if (messageId) {
+      triggerMessage(messageId);
+    }
 
-    const stepData = STEP_MESSAGES[state.currentStep];
-    if (!stepData) return;
-
-    const titleEl = document.getElementById('tutorial-title');
-    const messageEl = document.getElementById('tutorial-message');
-    const hintEl = document.getElementById('tutorial-hint');
-
-    if (titleEl) titleEl.textContent = stepData.title;
-    if (messageEl) messageEl.textContent = stepData.message;
-    if (hintEl) hintEl.textContent = stepData.hint;
-
-    promptElement.style.display = 'block';
-    promptElement.classList.add('visible');
-
+    // Show skip button if not complete
     if (skipButton && state.currentStep !== STEPS.COMPLETE) {
       skipButton.style.display = 'block';
     } else if (skipButton) {
@@ -149,14 +136,15 @@ export const tutorial = (() => {
     }
   };
 
-  // Hide tutorial prompt
+  // Hide tutorial prompt (skip button only, messages handled by message UI)
   const hidePrompt = () => {
-    if (promptElement) {
-      promptElement.style.display = 'none';
-      promptElement.classList.remove('visible');
-    }
     if (skipButton) {
       skipButton.style.display = 'none';
+    }
+    // Hide message alert if visible
+    const messageAlert = document.getElementById('message-alert');
+    if (messageAlert) {
+      messageAlert.style.display = 'none';
     }
   };
 
@@ -170,6 +158,7 @@ export const tutorial = (() => {
     console.log(`[TUTORIAL] Advanced to step ${state.currentStep}: ${STEP_MESSAGES[state.currentStep]?.title}`);
 
     if (state.currentStep >= STEPS.COMPLETE) {
+      console.log("STEP: ", state.currentStep)
       completeTutorial();
     } else {
       showPrompt();

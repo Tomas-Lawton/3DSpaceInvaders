@@ -422,6 +422,29 @@ class Game {
 const game = new Game();
 let shootingInterval;
 
+// Expose pause toggle globally for mission notification clicks
+window.toggleGamePause = (forcePause = null) => {
+  if (!game.gameStarted) return;
+
+  if (forcePause !== null) {
+    game.isPaused = forcePause;
+  } else {
+    game.isPaused = !game.isPaused;
+  }
+
+  if (game.isPaused) {
+    if (game.audioManager) {
+      game.audioManager.pauseSpaceshipSound();
+      game.audioManager.pauseDogfightMusic();
+    }
+  } else {
+    if (game.audioManager) {
+      game.audioManager.resumeSpaceshipSound();
+      game.audioManager.resumeDogfightMusic();
+    }
+  }
+};
+
 
 
 const cursorBig = document.querySelector('.big');
