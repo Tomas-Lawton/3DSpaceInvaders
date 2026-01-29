@@ -2,50 +2,57 @@
 // Guides first-time players through the game basics
 
 import { triggerMessage } from '../hud/message-ui.js';
+import { resetMessageSystem } from '../utils/message-system.js';
 
 export const tutorial = (() => {
   const STORAGE_KEY = 'spaceInvadersTutorialComplete';
 
   // Tutorial steps
   const STEPS = {
-    CONTROLS: 0,
-    MINING: 1,
-    RESOURCES: 2,
-    PLANET: 3,
-    COMBAT: 4,
-    COMPLETE: 5
+    CONTROLS: 0,    // Movement tutorial
+    FIRING: 1,      // Click to fire tutorial
+    MINING: 2,      // Destroy asteroids
+    RESOURCES: 3,   // Go to planet
+    PLANET: 4,      // Planet under attack
+    COMBAT: 5,      // Destroy enemies
+    COMPLETE: 6
   };
 
   const STEP_MESSAGES = {
     [STEPS.CONTROLS]: {
       title: 'FLIGHT CONTROLS',
-      message: 'Hold W to accelerate forward. Move your MOUSE to steer the ship. Use S to slow down. Try flying toward the asteroid field ahead!',
+      message: 'Hold W to fly forward. Move MOUSE to steer.',
       hint: 'W = Accelerate | S = Brake | Mouse = Steer'
     },
+    [STEPS.FIRING]: {
+      title: 'FIRE YOUR LASERS',
+      message: 'Click Mouse to fire your lasers!',
+      hint: 'Click = Fire | Hold = Rapid fire'
+    },
     [STEPS.MINING]: {
-      title: 'ASTEROID MINING',
-      message: 'Destroy asteroids by CLICKING to fire your lasers. Each asteroid drops valuable resources used for upgrades. Clear the entire field!',
-      hint: 'Click to fire | Blue marker on mini-map shows asteroids'
+      title: 'DESTROY ASTEROIDS',
+      message: 'Destroy all 8 asteroids to proceed.',
+      hint: 'Blue marker = Asteroids'
     },
     [STEPS.RESOURCES]: {
-      title: 'FIELD CLEARED - PLANET INCOMING',
-      message: 'Resources collected! A nearby planet needs your help. Fly toward the cyan marker - hostile forces are approaching!',
-      hint: 'Cyan marker = Planet | Check mini-map for direction'
+      title: 'ASTEROIDS CLEARED',
+      message: 'Fly toward the cyan marker - Earth needs help!',
+      hint: 'Cyan marker = Planet'
     },
     [STEPS.PLANET]: {
       title: 'PLANET UNDER ATTACK',
-      message: 'Enemy ships are attacking this planet! The planet has a health bar - if it reaches zero, the planet is lost. Destroy all enemies quickly!',
-      hint: 'Red markers = Enemies | Protect the planet!'
+      message: 'Enemy ships detected! Protect the planet!',
+      hint: 'Red markers = Enemies'
     },
     [STEPS.COMBAT]: {
       title: 'ENGAGE HOSTILES',
-      message: 'Keep firing at enemy ships! Watch your own health in the top-left. Destroying enemies earns XP for upgrades.',
-      hint: 'Click rapidly to fire | Track enemies with red markers'
+      message: 'Destroy all enemies to save the planet!',
+      hint: 'Click rapidly to fire'
     },
     [STEPS.COMPLETE]: {
       title: 'TUTORIAL COMPLETE',
-      message: 'Excellent work, pilot! Press ESC anytime to access the upgrade menu, unlock new ships, and view your stats. Good luck out there!',
-      hint: 'ESC = Menu | Explore and defend the galaxy!'
+      message: 'Press ESC for upgrades and new ships!',
+      hint: 'ESC = Menu'
     }
   };
 
@@ -78,18 +85,31 @@ export const tutorial = (() => {
   };
 
   // Initialize tutorial system
-  // Tutorial now always runs on game start (user can skip if they want)
+  // Tutorial always resets and runs on game start (user can skip if they want)
   const init = () => {
-    state.isFirstTime = isFirstTimePlayer();
-    state.tutorialComplete = false;
-    state.tutorialActive = true; // Always active - user can skip if they want
+    // Reset all tutorial state on game start
+    state.isFirstTime = true;
     state.currentStep = STEPS.CONTROLS;
+    state.tutorialComplete = false;
+    state.tutorialActive = true;
     state.stepStartTime = performance.now();
+    state.hasMovedForward = false;
+    state.hasDestroyedAsteroid = false;
+    state.hasReachedPlanet = false;
+    state.hasKilledEnemy = false;
+    state.tutorialAsteroidsTotal = 0;
+    state.tutorialAsteroidsDestroyed = 0;
+
+    // Clear the completion flag so tutorial always runs fresh
+    localStorage.removeItem(STORAGE_KEY);
+
+    // Reset message system so tutorial messages can show again
+    resetMessageSystem();
 
     // Create UI elements
     createUI();
 
-    console.log('[TUTORIAL] Starting tutorial (skip available)');
+    console.log('[TUTORIAL] Tutorial reset and starting fresh');
     showPrompt();
 
     return state.tutorialActive;
@@ -100,6 +120,7 @@ export const tutorial = (() => {
     // Check if skip button already exists
     if (document.getElementById('tutorial-skip')) {
       skipButton = document.getElementById('tutorial-skip');
+      skipButton.style.display = 'block'; // Make sure it's visible on restart
       return;
     }
 
@@ -114,6 +135,7 @@ export const tutorial = (() => {
   // Map steps to message IDs
   const STEP_MESSAGE_IDS = {
     [STEPS.CONTROLS]: 'tutorialControls',
+    [STEPS.FIRING]: 'tutorialFiring',
     [STEPS.MINING]: 'tutorialMining',
     [STEPS.RESOURCES]: 'tutorialPlanet',
     [STEPS.PLANET]: 'tutorialUnderAttack',
@@ -211,14 +233,21 @@ export const tutorial = (() => {
     switch (state.currentStep) {
       case STEPS.CONTROLS:
         // Check if player has moved forward
-        if (gameState.playerVelocity > 0.5 && timeSinceStep > 2000) {
+        if (gameState.playerVelocity > 0.3 && timeSinceStep > 1000) {
           state.hasMovedForward = true;
           advanceStep();
         }
         break;
 
+      case STEPS.FIRING:
+        // Check if player fired a laser
+        if (gameState.laserFired) {
+          advanceStep();
+        }
+        break;
+
       case STEPS.MINING:
-        // Check if player destroyed an asteroid
+        // Check if all asteroids destroyed
         if (gameState.asteroidDestroyed) {
           state.hasDestroyedAsteroid = true;
           advanceStep();
@@ -260,14 +289,19 @@ export const tutorial = (() => {
   const onAsteroidDestroyed = () => {
     if (state.tutorialActive && state.currentStep === STEPS.MINING) {
       state.tutorialAsteroidsDestroyed++;
-      console.log(`[TUTORIAL] Asteroid destroyed: ${state.tutorialAsteroidsDestroyed}/${state.tutorialAsteroidsTotal}`);
+      const remaining = state.tutorialAsteroidsTotal - state.tutorialAsteroidsDestroyed;
+      console.log(`[TUTORIAL] Asteroid destroyed: ${state.tutorialAsteroidsDestroyed}/${state.tutorialAsteroidsTotal} (${remaining} remaining)`);
 
-      // Update the prompt to show progress
-      const messageEl = document.getElementById('tutorial-message');
-      if (messageEl && state.tutorialAsteroidsTotal > 0) {
-        const remaining = state.tutorialAsteroidsTotal - state.tutorialAsteroidsDestroyed;
-        if (remaining > 0) {
-          messageEl.textContent = `Destroy all asteroids! ${remaining} remaining.`;
+      // Update the alert to show remaining count
+      const alertTitle = document.querySelector('.alert-title');
+      const alertText = document.querySelector('.alert-text');
+
+      if (remaining > 0) {
+        if (alertTitle) {
+          alertTitle.textContent = `${remaining} ASTEROIDS LEFT`;
+        }
+        if (alertText) {
+          alertText.textContent = `Destroy ${remaining} more!`;
         }
       }
 
@@ -291,6 +325,13 @@ export const tutorial = (() => {
   const onNearPlanet = () => {
     if (state.tutorialActive && state.currentStep === STEPS.RESOURCES) {
       update({ nearPlanet: true });
+    }
+  };
+
+  // Notify that player fired a laser (advances from firing to mining)
+  const onLaserFired = () => {
+    if (state.tutorialActive && state.currentStep === STEPS.FIRING) {
+      update({ laserFired: true });
     }
   };
 
@@ -323,7 +364,7 @@ export const tutorial = (() => {
 
     // Player faces -Z direction, so negative Z is "in front"
     return {
-      asteroid: { x: 0, y: 0, z: -1200 },    // Directly ahead, close
+      asteroid: { x: 0, y: 0, z: -1000 },    // Directly ahead, close
       planet: { x: 0, y: 0, z: -3600 }      // Further ahead, well spaced
     };
   };
@@ -353,6 +394,7 @@ export const tutorial = (() => {
     setTutorialAsteroidCount,
     setOnAsteroidsClearedCallback,
     onAsteroidDestroyed,
+    onLaserFired,
     onNearPlanet,
     onEnemiesSpawned,
     onPlanetSaved,

@@ -96,7 +96,7 @@ class Game {
     }
 
     if (this.playerEntity !== undefined && this.playerShip !== undefined) {
-      this.playerShip.setSpaceshipModel(0); // default ship 'SOLAR PHANTOM'
+      this.playerShip.setSpaceshipModel(1); // default ship 'VOID REAPER' (purple)
       this.playerEntity.AddComponent(new player_input.PlayerInput());
       this.playerEntity.InitEntity();
     } else {
@@ -188,10 +188,9 @@ class Game {
         this.gameStarted = true;
         console.log('🚀 Game started! Good luck, pilot!');
 
-        // Show tutorial prompts if tutorial is active
-        if (this.tutorialActive && tutorial.isActive()) {
-          tutorial.showPrompt();
-        }
+        // Reset and start tutorial fresh each time game starts
+        this.tutorialActive = tutorial.init();
+        console.log('[GAME] Tutorial initialized:', this.tutorialActive);
       }
     };
 

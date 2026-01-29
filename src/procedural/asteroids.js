@@ -69,8 +69,8 @@ export const asteroids = (() => {
       asteroidGroup.isTutorialAsteroid = true; // Mark for tutorial detection
       this.scene.add(asteroidGroup);
 
-      // Flat spiral formation with 14 asteroids
-      const numberOfAsteroids = 14;
+      // Flat spiral formation with 8 asteroids
+      const numberOfAsteroids = 8;
       const spiralTurns = 2; // Number of spiral rotations
       const startRadius = 20;
       const endRadius = 120;
@@ -114,8 +114,8 @@ export const asteroids = (() => {
         asteroidClone.healthBar = null;
         asteroidClone.isTutorialAsteroid = true; // Mark for tutorial tracking
 
-        // Asteroids get slightly larger toward the outside of spiral
-        const scale = 3 + progress * 2; // Scale 3-5
+        // Asteroids get slightly larger toward the outside of spiral (20% larger for visibility)
+        const scale = 3.6 + progress * 2.4; // Scale 3.6-6
         asteroidClone.scale.set(scale, scale, scale);
         asteroidClone.frustumCulled = false; // Disable culling for tutorial visibility
         asteroidGroup.add(asteroidClone);
@@ -198,7 +198,7 @@ export const asteroids = (() => {
             asteroidClone.health = 100;
             asteroidClone.maxHealth = 100; // Store max health for health bar calculation
             asteroidClone.healthBar = null;
-            const scale = Math.random() * 4 + 1; // Scale factor between 1 and 5
+            const scale = Math.random() * 4.8 + 1.2; // Scale factor between 1.2 and 6 (20% larger)
             asteroidClone.scale.set(scale, scale, scale);
             asteroidClone.frustumCulled = true; // Enable frustum culling for performance
             asteroidGroup.add(asteroidClone);

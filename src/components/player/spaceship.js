@@ -466,6 +466,11 @@ export const spaceship = (() => {
         this.lightSound.play();
       }
 
+      // Notify tutorial system that player fired
+      if (tutorial.isActive()) {
+        tutorial.onLaserFired();
+      }
+
       this.activeLasers.push({
         laserBeam: laserGroup,
         velocity,
@@ -609,7 +614,7 @@ export const spaceship = (() => {
     handleLaserMovement(asteroidLoader, enemyLoader) {
       if (this.activeLasers) {
         const currentTime = performance.now();
-        const maxLaserLifetime = 3000; // 3 seconds max lifetime to prevent accidental long-range hits
+        const maxLaserLifetime = 5000; // 5 seconds max lifetime for longer range
 
         // Iterate backwards for safe removal during iteration
         for (let index = this.activeLasers.length - 1; index >= 0; index--) {
@@ -621,7 +626,7 @@ export const spaceship = (() => {
 
           // Check distance OR lifetime - remove if too far OR too old
           if (
-            laserBeam.position.distanceTo(this.mesh.position) > 500 ||
+            laserBeam.position.distanceTo(this.mesh.position) > 800 ||
             age > maxLaserLifetime
           ) {
             this.scene.remove(laserBeam);
@@ -1297,38 +1302,40 @@ export const spaceship = (() => {
       audioManager.updateSpaceshipVolume(this.forwardVelocity);
     }
     calculateRotation() {
-      if (this.forwardVelocity > 0 || this.upwardVelocity > 0) {
-        // Use getter functions to support both desktop mouse and mobile input
-        const currentMouseX = getMouseX();
-        const currentMouseY = getMouseY();
+      // Allow steering at any speed - use reduced sensitivity when stationary
+      const currentMouseX = getMouseX();
+      const currentMouseY = getMouseY();
 
-        const continuousRotation = -(currentMouseX * 0.0001);
-        this.mesh.rotation.y += continuousRotation;
-        const targetX = this.mesh.children[0].rotation.x + currentMouseY * 0.0002;
-        const mappedTargetX = mapValue(
-          targetX,
-          -Math.PI,
-          Math.PI,
-          -Math.PI * 0.93,
-          Math.PI * 0.93
-        );
-        this.mesh.children[0].rotation.x = THREE.MathUtils.lerp(
-          this.mesh.children[0].rotation.x,
-          mappedTargetX,
-          0.8
-        );
+      // Slower rotation when stationary, normal when moving
+      const isMoving = this.forwardVelocity > 0.1 || Math.abs(this.upwardVelocity) > 0.1;
+      const rotationMultiplier = isMoving ? 1.0 : 0.5;
 
-        // YAW
-        const maxRotation = Math.PI / 2;
-        const midX = window.innerWidth / 2;
-        this.mesh.children[0].rotation.z = mapValue(
-          currentMouseX,
-          -midX,
-          midX,
-          -maxRotation,
-          maxRotation
-        );
-      }
+      const continuousRotation = -(currentMouseX * 0.00005 * rotationMultiplier);
+      this.mesh.rotation.y += continuousRotation;
+      const targetX = this.mesh.children[0].rotation.x + currentMouseY * 0.0001 * rotationMultiplier;
+      const mappedTargetX = mapValue(
+        targetX,
+        -Math.PI,
+        Math.PI,
+        -Math.PI * 0.93,
+        Math.PI * 0.93
+      );
+      this.mesh.children[0].rotation.x = THREE.MathUtils.lerp(
+        this.mesh.children[0].rotation.x,
+        mappedTargetX,
+        0.4
+      );
+
+      // YAW - visual tilt based on horizontal mouse position
+      const maxRotation = Math.PI / 2;
+      const midX = window.innerWidth / 2;
+      this.mesh.children[0].rotation.z = mapValue(
+        currentMouseX,
+        -midX,
+        midX,
+        -maxRotation,
+        maxRotation
+      );
     }
 
     calculateVelocity(forwardAcceleration, upwardAcceleration, timeElapsed) {

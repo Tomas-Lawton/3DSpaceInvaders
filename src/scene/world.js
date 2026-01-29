@@ -56,7 +56,7 @@ export const gameworld = (() => {
 
       // Create a single asteroid system at a fixed position ahead of player
       const tutorialPositions = tutorial.getTutorialPositions();
-      const position = tutorialPositions ? tutorialPositions.asteroid : { x: 0, y: 0, z: 1200 };
+      const position = tutorialPositions ? tutorialPositions.asteroid : { x: 0, y: 0, z: 100 };
 
       await asteroidLoader.initialiseTutorialSystem(position);
       console.log('[WORLD] Tutorial asteroid field created at', position);

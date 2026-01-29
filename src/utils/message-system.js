@@ -51,14 +51,29 @@ export const MESSAGES = {
     type: MessageType.HINT,
     title: 'FLIGHT CONTROLS',
     lines: [
-      'Hold W to accelerate forward.',
-      'Move your MOUSE to steer.',
-      'Use S to slow down.',
+      'Hold W to fly forward!',
+      'Move MOUSE to steer.',
       '',
-      '→ W = Accelerate | S = Brake',
-      '→ Mouse = Steer ship'
+      '→ W = Accelerate',
+      '→ S = Slow down',
+      '→ MOUSE = Steer ship'
     ],
     icon: '🎮',
+    read: false,
+    timestamp: Date.now()
+  },
+
+  tutorialFiring: {
+    id: 'tutorialFiring',
+    type: MessageType.HINT,
+    title: 'FIRE YOUR LASERS',
+    lines: [
+      'Click Mouse to fire!',
+      '',
+      '→ CLICK = Fire lasers',
+      '→ HOLD = Rapid fire'
+    ],
+    icon: '🔫',
     read: false,
     timestamp: Date.now()
   },
@@ -66,11 +81,11 @@ export const MESSAGES = {
   tutorialMining: {
     id: 'tutorialMining',
     type: MessageType.HINT,
-    title: 'ASTEROID MINING',
+    title: 'DESTROY 8 ASTEROIDS',
     lines: [
-      'Destroy ALL asteroids for resources (click to fire).',
+      'Destroy all 8 asteroids!',
+      'Fly close and shoot them.',
       '',
-      '→ Click = Fire lasers',
       '→ Blue marker = Asteroids'
     ],
     icon: '💎',
@@ -81,12 +96,12 @@ export const MESSAGES = {
   tutorialPlanet: {
     id: 'tutorialPlanet',
     type: MessageType.HINT,
-    title: 'PLANET INCOMING',
+    title: 'ASTEROIDS CLEARED!',
     lines: [
-      'Earth needs your help!',
-      'Fly toward the cyan marker.',
+      'Earth is under attack!',
+      'Fly toward the CYAN marker.',
       '',
-      '→ Cyan marker = Planet',
+      '→ Cyan marker = Planet location',
       '→ Check mini-map for direction'
     ],
     icon: '🌍',
@@ -97,13 +112,13 @@ export const MESSAGES = {
   tutorialUnderAttack: {
     id: 'tutorialUnderAttack',
     type: MessageType.WARNING,
-    title: 'PLANET UNDER ATTACK',
+    title: 'PLANET UNDER ATTACK!',
     lines: [
-      'Enemies are attacking!',
-      'Defend the planet!',
+      'Enemy ships detected!',
+      'Protect Earth - destroy all enemies!',
       '',
-      '→ Planet health bar above',
-      '→ Destroy all enemies!'
+      '→ Planet health bar = Top of screen',
+      '→ CLICK rapidly to fire lasers!'
     ],
     icon: '🚨',
     read: false,
@@ -113,13 +128,13 @@ export const MESSAGES = {
   tutorialCombat: {
     id: 'tutorialCombat',
     type: MessageType.WARNING,
-    title: 'ENGAGE HOSTILES',
+    title: 'DESTROY ALL ENEMIES',
     lines: [
-      'Kill all enemies to save EARTH!',
-      'Watch your health too.',
+      'CLICK to fire lasers at enemies!',
+      'Save Earth before it is destroyed.',
       '',
-      '→ Red markers = Enemies',
-      '→ Click rapidly to fire'
+      '→ Red markers = Enemy ships',
+      '→ Your health = Top-left corner'
     ],
     icon: '⚔️',
     read: false,
@@ -354,6 +369,16 @@ export const QUESTS = {
     status: QuestStatus.ACTIVE
   }
 };
+
+// Reset message system (for tutorial restart)
+export function resetMessageSystem() {
+  MESSAGE_SYSTEM.messages = [];
+  MESSAGE_SYSTEM.currentMessage = null;
+  MESSAGE_SYSTEM.unreadCount = 0;
+  MESSAGE_SYSTEM.quests = [];
+  localStorage.removeItem('spaceInvadersMessages');
+  console.log('[MESSAGE] Message system reset');
+}
 
 // Load state from localStorage
 export function loadMessageState() {

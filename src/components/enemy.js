@@ -100,7 +100,7 @@ export const enemy = (() => {
           }
         });
         loadedModel.rotation.y = 2 * (Math.PI / 2) + Math.PI;
-        loadedModel.scale.set(0.3, 0.3, 0.3); // Reduced from 0.5 for smaller enemies
+        loadedModel.scale.set(0.36, 0.36, 0.36); // 20% larger for better visibility
         enemyObject.add(loadedModel);
 
         // Optimized red light for better performance
